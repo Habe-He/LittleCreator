@@ -7,6 +7,8 @@ var cardInfo = require('./cardInfo');
 var baseCard = cc.Node.extend({
     ctor: function(cardId, level, usebg) {
         this._super();
+
+        
         this.isSelect = false; //是否被选中
         this.isReadyToSelect = false; //被框选但未弹起状态  只有在被框选的时候才为真。
         this.hasOut = false; //是否已被打出
@@ -21,7 +23,7 @@ var baseCard = cc.Node.extend({
         this.isUp = false;
         this.usebg = usebg;
 
-        this.init();
+        // this.init();
     },
 
     init: function() {

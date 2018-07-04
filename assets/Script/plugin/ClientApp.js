@@ -1,4 +1,4 @@
-var KBEngine = require("kbengine");
+var gameEngine = require("./gameEngine");
 cc.Class({
     extends: cc.Component,
 
@@ -9,10 +9,10 @@ cc.Class({
 
     // use this for initialization
     onLoad: function () {
-        var args = new KBEngine.KBEngineArgs();
+        var args = new gameEngine.gameEngineArgs();
 		args.ip = this.ip;
 		args.port = this.port;
-        KBEngine.create(args);       
+        gameEngine.create(args);
     },
 
     // called every frame, uncomment this function to activate update callback

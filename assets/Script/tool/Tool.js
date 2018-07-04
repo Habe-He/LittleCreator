@@ -72,7 +72,7 @@ Tool.logObj = function (obj, indent) {
         if (t_v == 'object') {
             formatting += "{";
             print_func(formatting);
-            logObj(v, indent + 1);
+            Tool.logObj(v, indent + 1);
             print_func(szPrefix + "},");
         } else if (t_v == 'string') {
             formatting += "\"" + v + "\"" + ",";
@@ -432,7 +432,7 @@ Tool.onLine = function () {
     cc.log("acc = " + acc);
     cc.log("pwd = " + pwd);
 
-    KBEngine.app.reset();
+    gameEngine.app.reset();
     if (!acc || acc == "") {
         var args = { eventType: 2, msg: "登录失败,帐号不能为空", pro: null, winType: 1 };
         KKVS.Event.fire("createTips", args);
@@ -494,7 +494,7 @@ Tool.onLine = function () {
         return;
     }
     var datas = JSON.stringify(login_extraDatas);
-    KBEngine.Event.fire("login", acc, pwd, datas);
+    gameEngine.Event.fire("login", acc, pwd, datas);
 }
 
 Tool.onRefreshSize = function (args) {

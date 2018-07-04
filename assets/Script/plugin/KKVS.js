@@ -1385,6 +1385,8 @@ KKVS.reset = function () {
     KKVS.ReRoomData = null; //reconnect room data
     KKVS.CurScene = 0; //current scene 0=login, 1=lobby
     KKVS.Kicked = false; //lobby socket kicked tag(true : only go to login scene)
+
+    KKVS.RRECON_PAICOUNT = [];
 };
 
 KKVS.reset();

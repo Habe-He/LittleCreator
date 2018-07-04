@@ -10,7 +10,7 @@
 
 var KKVS = require("./plugin/KKVS")
 var Tool = require("./tool/Tool")
-var KBEngine = require("kbengine");
+var gameEngine = require("./plugin/gameEngine")
 cc.Class({
     extends: cc.Component,
 
@@ -40,7 +40,7 @@ cc.Class({
     // LIFE-CYCLE CALLBACKS:
     onLoad: function() {
         var self = this;
-        self._weChatCheckSession();
+        // self._weChatCheckSession();
 
         this.button_login.node.on('click', this.login_callback, this);
         this.button_change.node.on('click', this.change_callback, this);
@@ -51,13 +51,12 @@ cc.Class({
     login_callback: function (event) {
         var self = this;
         cc.log("点击到登录按钮");
-        // KBEngine.Event.fire("login", this.editBoxName.string, this.editBoxPwd.string, "kbengine_cocos_creator_demo");
         
         // cc.director.loadScene("GameUI");
         
         // TODO 暂时使用游客登录
         KKVS.Login_type = Tool.VISITOR_LOGIN;
-        KKVS.Acc = 'ceshizhanghaoxg16000001' + Math.random(1, 999);
+        KKVS.Acc = 'ceshizhanghaoxg1600000101';
         KKVS.Pwd = '123456';
         Tool.OxLogin(KKVS.Acc, KKVS.Pwd);
     },
@@ -140,7 +139,6 @@ cc.Class({
     },
 
     change_callback: function (event) {
-        // KBEngine.Event.fire("createAccount", this.editBoxName.string, this.editBoxPwd.string, "kbengine_cocos_creator_demo");
         cc.log("点击到更换按钮");
     },
 
@@ -156,7 +154,7 @@ cc.Class({
         var self = this;
         var acc = KKVS.Acc;
         var pwd = KKVS.Pwd;
-        KBEngine.app.reset();
+        gameEngine.app.reset();
         if (!acc || acc == "") {
             var args = {
                 eventType: 1,
@@ -176,7 +174,7 @@ cc.Class({
         };
 
         var datas = JSON.stringify(login_extraDatas);
-        KBEngine.Event.fire("login", acc, pwd, datas);
+        gameEngine.Event.fire("login", acc, pwd, datas);
     },
 
     LoginGameSvrSuccess: function() {
