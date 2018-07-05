@@ -544,6 +544,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
 
     onHappy_GameEndInfo: function (lobby_id, field_id, room_id, table_id, card_list, score, times, isspring, difen) {
         console.log("->onHappy_GameEndInfo====");
+        retrun;
         var args = arguments;
         KKVS.IsShowSelf = false;
         var beishu = args[6];

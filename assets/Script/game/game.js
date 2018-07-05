@@ -2,9 +2,10 @@ var Tool = require("./../tool/Tool");
 var gameModel = require("./gameModel");
 var KKVS = require("./../plugin/KKVS");
 var gameEngine = require("./../plugin/gameEngine");
+var cardfabs = require('./../card/cardPer');
 
 cc.Class({
-    
+
     extends: cc.Component,
     properties: {
         btnPlay: cc.Button,
@@ -15,17 +16,23 @@ cc.Class({
         btn1: cc.Button,
         btn2: cc.Button,
         btn3: cc.Button,
-        btnScroeNo: cc.Button
+        btnScroeNo: cc.Button,
+
+        pokerCard: {
+            default: null,
+            type: cc.Prefab
+        },
     },
 
     // LIFE-CYCLE CALLBACKS:
     onLoad: function () {
         this.addEvent();
         this.necData();
+        
         console.log("进入到游戏场景中 onLoad");
     },
 
-    // 
+    // 数据初始化
     necData: function () {
         // 手牌数据
         this.cardList = [];
@@ -152,6 +159,8 @@ cc.Class({
             gameModel.isWaiting = false;
             gameModel.isWaitingData = [];
         }
+
+        this.addTouchLister();
     },
 
     playerEnter: function (args, viewID) {
@@ -213,35 +222,19 @@ cc.Class({
             self.m_Chairs[i].ready.active = false;
         }
 
+        var num = 0;
         self.cardList = [];
         var cardIds = Tool.toolSortArrayForSelf(gameModel.cardData);
         var len = cardIds.length;
-        cc.log("初始手牌0长度 = " + len);
 
         var size = cc.director.getVisibleSize();
         for (var i = 0; i < len; i++) {
-            cc.loader.loadRes("perfabs/card_bg", function (err, loadprefab) {
-                if (err) {
-                    cc.log("加载牌背预制出错, 原因：" + err);
-                    return;
-                };
-                if (!(loadprefab instanceof cc.Prefab)) {
-                    cc.log("载入的不是预制资源");
-                    return;
-                }
-                var cardNode = cc.instantiate(loadprefab);
-                cardNode.setPosition(self.midPos, size.height / 2);
-                self.myCardPanel.addChild(cardNode);
-                self.cardList.push(cardNode);
-                // if (self.cardList.length != 1)
-                //     cardNode.active = false;
-
-                if (self.cardList.length == len) {
-                    // 牌背预制加载结束
-                    self.showCardAction();
-                }
-            });
+            var cardNode = cc.instantiate(this.pokerCard);
+            cardNode.setPosition(self.midPos, size.height / 2);
+            self.myCardPanel.addChild(cardNode);
+            self.cardList.push(cardNode);
         }
+        self.showCardAction();
     },
 
     // 执行发牌动作
@@ -249,7 +242,6 @@ cc.Class({
         cc.log("执行发牌动作");
         var self = this;
         var len = self.cardList.length;
-        cc.log("手牌长度 = " + len);
         var midNum = (len - 1) / 2;
         var runTime = 0;
         var ghpTime = 0.05;
@@ -270,12 +262,34 @@ cc.Class({
         self.cardList[self.cardList.length - 1].isTop = true;
 
         // 绘制自己的手牌
-        
+        self.showSelfCardInfo();
+    },
+
+    // 发完牌 - 显示自己的手牌数据
+    showSelfCardInfo: function () {
+        var self = this;
+        var cardIds = Tool.toolSortArrayForSelf(gameModel.cardData);
+        var len = cardIds.length;
+        for (var i = 0; i < len; ++i) {
+            var singleCard = self.cardList[i].getComponent(cardfabs);
+            singleCard.showPoker(cardIds[i], i);
+        }
     },
 
     // 自己被踢出桌子
     leaveGame: function () {
         cc.director.loadScene("Login");
+    },
+
+    // 选牌操作
+    addTouchLister: function () {
+        var self = this;
+        this.touchstart_Point = null;
+        self.myCardPanel.active = true;
+        self.myCardPanel.on(cc.Node.EventType.TOUCH_START, function(event) {
+            this.touchstart_Point = event.getLocation();
+            cc.log("this.touchstart_Point.x = " + this.touchstart_Point.x + " this.touchstart_Point.y = " + this.touchstart_Point.y);
+        });
     },
 
     // 断线重连数据

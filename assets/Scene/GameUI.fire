@@ -8671,6 +8671,9 @@
     },
     "btnScroeNo": {
       "__id__": 179
+    },
+    "pokerCard": {
+      "__uuid__": "c3940f8d-334c-4b00-a731-8ef60e2e1a6f"
     }
   }
 ]
