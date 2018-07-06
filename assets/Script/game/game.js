@@ -28,7 +28,7 @@ cc.Class({
     onLoad: function () {
         this.addEvent();
         this.necData();
-        
+
         console.log("进入到游戏场景中 onLoad");
     },
 
@@ -286,10 +286,186 @@ cc.Class({
         var self = this;
         this.touchstart_Point = null;
         self.myCardPanel.active = true;
-        self.myCardPanel.on(cc.Node.EventType.TOUCH_START, function(event) {
+
+        self.myCardPanel.on(cc.Node.EventType.TOUCH_START, function (event) {
             this.touchstart_Point = event.getLocation();
-            cc.log("this.touchstart_Point.x = " + this.touchstart_Point.x + " this.touchstart_Point.y = " + this.touchstart_Point.y);
+            this.converBeginPos = self.myCardPanel.convertToNodeSpace(this.touchstart_Point);
+            self.selectCardList = [];
+            var card = self.getSelectCard(this.touchstart_Point);
+            if (card == null)
+                self.setAllNoneSelectCard();
+
+            var bY = this.converBeginPos.y;
+            var eY = this.converBeginPos.y;
+
+            var bX = this.converBeginPos.x;
+            var eX = this.converBeginPos.x;
+            self.isContentCard(bY, eY, bX, eX);
+
+            // cc.log("this.touchstart_Point.x = " + this.touchstart_Point.x + " this.touchstart_Point.y = " + this.touchstart_Point.y);
         });
+
+        self.myCardPanel.on(cc.Node.EventType.TOUCH_MOVE, function (event) {
+            var movePos = event.getLocation();
+            var converMovePos = self.myCardPanel.convertToNodeSpace(movePos);
+            var bY = this.converBeginPos.y < converMovePos.y ? this.converBeginPos.y : converMovePos.y;
+            var eY = this.converBeginPos.y > converMovePos.y ? this.converBeginPos.y : converMovePos.y;
+
+            var bX = this.converBeginPos.x < converMovePos.x ? this.converBeginPos.x : converMovePos.x;
+            var eX = this.converBeginPos.x > converMovePos.x ? this.converBeginPos.x : converMovePos.x;
+            self.isContentCard(bY, eY, bX, eX);
+        });
+
+        self.myCardPanel.on(cc.Node.EventType.TOUCH_END, function (event) {
+            if (self.selectCardList.length > 0) {
+                self.showAllSelectCard(true);
+            } else {
+                //console.log("onmouseUP**********************");
+                self.setAllNoneSelectCard();
+            };
+        });
+
+    },
+
+    // 获取选中的牌
+    getSelectCard: function (touchPos) {
+        var self = this;
+        var clen = self.cardList.length;
+
+        if (clen == 0) {
+            return null;
+        };
+
+        for (var i = clen - 1; 0 <= i; --i) {
+            var v = self.cardList[i].getComponent(cardfabs);
+            if (!v)
+                return null;
+
+            var size = v.getCSize();
+            var t_touchPos = v.covToSpace(touchPos);
+            var rect = cc.rect(0, 0, size.width, size.height);
+            if (cc.rectContainsPoint(rect, t_touchPos)) {
+                return v;
+            }
+        }
+        return null;
+    },
+
+    // 设置所有的牌为未选中
+    setAllNoneSelectCard: function () {
+        var self = this;
+        var clen = self.cardList.length;
+        for (var i = 0; i < clen; ++i) {
+            self.cardList[i].getComponent(cardfabs).setNoneSelect();
+            // self.cardList[i].cardimg.setColor(cc.color(255, 255, 255, 255));
+        }
+        // self.btnPlay.stopAllActions();
+        // self.btnPlay.setTouchEnabled(false);
+        // self.btnPlay.setBright(false);
+    },
+
+    // 选中了哪些牌
+    isContentCard: function (bY, eY, bX, eX) {
+        var self = this;
+        self.selectCardList = [];
+        var clen = self.cardList.length;
+
+        if (clen == 0)
+            return;
+
+        for (var i = clen - 1; i >= 0; i--) {
+            var v = self.cardList[i].getComponent(cardfabs);
+            if (!v)
+                return
+
+            var beginY = v.getPokerPosition().y;
+            var endY = beginY + v.getCSize().height * self.cardScale;
+            var bYIsIn = (bY < endY && bY > beginY);
+            var eYIsIn = (eY < endY && eY > beginY);
+            var touchYIsIn = (bY < endY && bY > beginY);
+            if (bYIsIn || eYIsIn || touchYIsIn) {
+                var beginX = v.getPokerPosition().x - 100;
+                var endX = v.isTop ? (beginX + v.getCSize().width * self.cardScale) : (beginX + self.ghp);
+                var beginIsIn = (beginX < eX && beginX > bX);
+                var endIsIn = (endX < eX && endX > bX);
+                var touchIsIn = (bX < endX && bX > beginX);
+                if (beginIsIn || endIsIn || touchIsIn) {
+                    v.isReadyToSelect = true;
+                    self.selectCardList.push(v);
+                    // v.cardimg.getComponent(cardfabs).setColor(cc.color(127, 127, 127, 255));
+                } else {
+                    v.isReadyToSelect = false;
+                    // v.cardimg.getComponent(cardfabs).setColor(cc.color(255, 255, 255, 255));
+                }
+            }
+        }
+        // if (gameModel.outCardViewID == 0 && self.selectCardList.length > 0) {
+        // 	self.btnPlay.setTouchEnabled(true);
+        // 	self.btnPlay.setBright(true);
+        // } else {
+        // 	self.btnPlay.setTouchEnabled(false);
+        // 	self.btnPlay.setBright(false);
+        // }
+    },
+
+    // 弹出所有选中的牌
+    showAllSelectCard: function () {
+        var self = this;
+        var cardValues = [];
+        var selfCards = [];
+        var objCards = [];
+        var toCheckCard = [];
+        var toCheckCardValues = [];
+        var clen = self.cardList.length;
+        for (var i = 0; i < clen; ++i) {
+            if (self.cardList[i].isReadyToSelect) {
+                toCheckCard.push(self.cardList[i]);
+                toCheckCardValues.push(self.cardList[i].cardValue);
+            }
+        }
+        //找牌形
+        if (self.selectCardList.length >= 5) {
+            var findCards = cardTypeUtil.autoTakeOutCardType(toCheckCardValues);
+
+            if (findCards != null && findCards.length > 3) {
+                var flen = findCards.length;
+                for (var i = 0; i < flen; i++) {
+                    var clen = toCheckCard.length;
+                    for (var k = (clen - 1); k >= 0; k--) {
+                        if (toCheckCard[k].cardValue == findCards[i]) {
+                            toCheckCard.splice(k, 1);
+                            break;
+                        };
+                    };
+                };
+                var tlen = toCheckCard.length;
+                for (var i = 0; i < tlen; ++i) {
+                    toCheckCard[i].isReadyToSelect = false;
+                }
+            };
+        };
+        var clen = self.cardList.length;
+
+        for (var i = 0; i < clen; ++i) {
+            self.cardList[i].showByReadySelect();
+            if (self.cardList[i] == self.upCard) {
+                self.upCard = null;
+            }
+            // if (bool)
+                // self.cardList[i].cardimg.setColor(cc.color(255, 255, 255, 255));
+
+            if (self.cardList[i].isSelect) {
+                selfCards.push(self.cardList[i].cardValue);
+            }
+        }
+        // if (selfCards.length > 0) {
+        //     self.btnPlay.setTouchEnabled(true);
+        //     self.btnPlay.setBright(true);
+        // } else {
+        //     self.btnPlay.stopAllActions();
+        //     self.btnPlay.setTouchEnabled(false);
+        //     self.btnPlay.setBright(false);
+        // }
     },
 
     // 断线重连数据
