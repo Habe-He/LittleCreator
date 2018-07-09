@@ -17,7 +17,7 @@ var GameManager = {
 
     // ST
     onSeverUserEnter: function (args) {
-        KKVS.INFO_MSG("onSeverUserEnter = 用户进入");
+        KKVS.INFO_MSG("onSeverUserEnter = 用户进入 name = " + args.nickname);
         var chairID = args.chairID;
         var playerID = args.playerId;
         var userName = args.nickname;

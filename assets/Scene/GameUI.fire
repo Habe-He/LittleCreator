@@ -725,7 +725,7 @@
       "__id__": 17
     },
     "_enabled": true,
-    "_useOriginalSize": true,
+    "_useOriginalSize": false,
     "_actualFontSize": 20,
     "_fontSize": 20,
     "_lineHeight": 20,
@@ -810,7 +810,7 @@
       "__id__": 20
     },
     "_enabled": true,
-    "_useOriginalSize": true,
+    "_useOriginalSize": false,
     "_actualFontSize": 20,
     "_fontSize": 20,
     "_lineHeight": 20,
@@ -5053,7 +5053,7 @@
     },
     "_fillStart": 0,
     "_fillRange": 0,
-    "_isTrimmedMode": true,
+    "_isTrimmedMode": false,
     "_srcBlendFactor": 770,
     "_dstBlendFactor": 771,
     "_atlas": null

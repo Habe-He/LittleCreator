@@ -275,4 +275,12 @@ Tool.toolSortArrayForSelf = function(m_data) {
     return m_data;
 }
 
+Tool.getViewChairID = function(nChairID) {
+    var PlayerCount = 3;
+    if (nChairID < PlayerCount) {
+        return (nChairID - KKVS.myChairID + PlayerCount) % PlayerCount;
+    }
+    return -1;
+},
+
 module.exports = Tool;

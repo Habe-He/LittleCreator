@@ -3,6 +3,7 @@ var gameModel = require("./gameModel");
 var KKVS = require("./../plugin/KKVS");
 var gameEngine = require("./../plugin/gameEngine");
 var cardfabs = require('./../card/cardPer');
+var cardTypeUtil = require('./../card/cardTypeUtil');
 
 cc.Class({
 
@@ -24,7 +25,6 @@ cc.Class({
         },
     },
 
-    // LIFE-CYCLE CALLBACKS:
     onLoad: function () {
         this.addEvent();
         this.necData();
@@ -139,7 +139,7 @@ cc.Class({
         self.btn2.tag = 1;
         self.btn3.tag = 2;
         self.btnScroeNo.tag = 3;
-        self.scoreBtnList = [self.btn1, self.btn2, self.btn3];
+        self.scoreBtnList = [self.btn1, self.btn2, self.btn3, self.btnScroeNo];
 
         // 托管
         self.tuoGuanBG = self.bg.getChildByName("tuoGuan");
@@ -163,8 +163,8 @@ cc.Class({
         this.addTouchLister();
     },
 
+    // 用户进入
     playerEnter: function (args, viewID) {
-        console.log("Little Creator uiChairUserInfo");
         var self = this;
         self.m_Chairs[viewID].headNode.active = true;
         self.m_Chairs[viewID].name.getComponent(cc.Label).string = args.name;
@@ -182,6 +182,8 @@ cc.Class({
     showTime: function (viewID, time) {
         var self = this;
         this.node.stopAllActions();
+        // cc.log("显示" + viewID + "的倒计时");
+        self.m_Chairs[viewID].clock.active = true;
         self.m_Chairs[viewID].clockTime.getComponent(cc.Label).string = time.toString();
 
         self.timeNum = time;
@@ -193,6 +195,9 @@ cc.Class({
                 if (viewID == 0) {
                     self.btnReady.active = false;
                     self.m_Chairs[0].clock.active = false;
+                    for (var i = 0; i < self.scoreBtnList.length; ++i) {
+                        self.scoreBtnList[i].active = false;
+                    }
                 }
                 return;
             };
@@ -320,7 +325,6 @@ cc.Class({
             if (self.selectCardList.length > 0) {
                 self.showAllSelectCard(true);
             } else {
-                //console.log("onmouseUP**********************");
                 self.setAllNoneSelectCard();
             };
         });
@@ -392,10 +396,10 @@ cc.Class({
                 if (beginIsIn || endIsIn || touchIsIn) {
                     v.isReadyToSelect = true;
                     self.selectCardList.push(v);
-                    // v.cardimg.getComponent(cardfabs).setColor(cc.color(127, 127, 127, 255));
+                    v.node.setColor(cc.color(127, 127, 127, 255));
                 } else {
                     v.isReadyToSelect = false;
-                    // v.cardimg.getComponent(cardfabs).setColor(cc.color(255, 255, 255, 255));
+                    v.node.setColor(cc.color(255, 255, 255, 255));
                 }
             }
         }
@@ -409,7 +413,7 @@ cc.Class({
     },
 
     // 弹出所有选中的牌
-    showAllSelectCard: function () {
+    showAllSelectCard: function (bool) {
         var self = this;
         var cardValues = [];
         var selfCards = [];
@@ -420,10 +424,11 @@ cc.Class({
         for (var i = 0; i < clen; ++i) {
             if (self.cardList[i].isReadyToSelect) {
                 toCheckCard.push(self.cardList[i]);
-                toCheckCardValues.push(self.cardList[i].cardValue);
+                toCheckCardValues.push(self.cardList[i].getComponent(cardfabs).cardValue);
             }
         }
-        //找牌形
+
+        // 找牌形
         if (self.selectCardList.length >= 5) {
             var findCards = cardTypeUtil.autoTakeOutCardType(toCheckCardValues);
 
@@ -444,20 +449,22 @@ cc.Class({
                 }
             };
         };
-        var clen = self.cardList.length;
 
+        var clen = self.cardList.length;
         for (var i = 0; i < clen; ++i) {
-            self.cardList[i].showByReadySelect();
+            var v = self.cardList[i].getComponent(cardfabs);
+            v.showByReadySelect();
             if (self.cardList[i] == self.upCard) {
                 self.upCard = null;
             }
-            // if (bool)
-                // self.cardList[i].cardimg.setColor(cc.color(255, 255, 255, 255));
+            if (bool)
+                v.node.setColor(cc.color(255, 255, 255, 255));
 
             if (self.cardList[i].isSelect) {
-                selfCards.push(self.cardList[i].cardValue);
+                selfCards.push(v.cardValue);
             }
         }
+
         // if (selfCards.length > 0) {
         //     self.btnPlay.setTouchEnabled(true);
         //     self.btnPlay.setBright(true);
@@ -476,24 +483,68 @@ cc.Class({
         self.showSelfCard();
     },
 
+    // 玩家叫分
+    callBanker: function(data) {
+        var self = this;
+        var viewID = Tool.getViewChairID(data.chairID);
+        if (viewID == -1) {
+            cc.log("出现叫分出错了 原因：chairID = " + data.chairID);
+            return;
+        }
+        for (var i = 0; i < 3; ++i) {
+            self.m_Chairs[i].ready.active = false;
+            self.m_Chairs[i].clock.active = false;
+        }
+        self.showTime(viewID, data.time);
+        if (viewID == 0) {
+            self.setCallScoreButton(data.multiple);
+        }
+    },
+
+    // 不可操作的叫分按钮
+    setCallScoreButton: function(multiple) {
+        var self = this;
+        for (var i = 0; i < self.scoreBtnList.length; ++i) {
+            self.scoreBtnList[i].active = true;
+            self.scoreBtnList[i].interactable = true;
+        }
+        if (multiple != -1) {
+            for (var i = 0; i < multiple; ++i) {
+                self.scoreBtnList[i].interactable = false;
+            }
+        }
+    },
+
+    // 确定地主
+    BankerInfo: function(data) {
+        // 地主标识显示
+        // 显示地主牌
+        // 更新地主手牌数量
+    },
+
     addEvent() {
         var self = this;
         self.btnReady.node.on("touchend", self.onBtnReady, this);
+        self.btnReady.node.on("touchend", self.btn1, this);
+        self.btnReady.node.on("touchend", self.btn2, this);
+        self.btnReady.node.on("touchend", self.btn3, this);
 
-        console.log("GameUI 注册Kbe事件");
+        cc.log("GameUI 注册Kbe事件");
         KKVS.Event.register("playerEnter", this, "playerEnter");
         KKVS.Event.register("showSelfCard", this, "showSelfCard");
         KKVS.Event.register("leaveGame", this, "leaveGame");
         KKVS.Event.register("reconnectionData", this, "reconnectionData");
+        KKVS.Event.register("callBanker", this, "callBanker");
+        KKVS.Event.register("BankerInfo", this, "BankerInfo");
     },
 
     onDestroy() {
-        console.log("GameUI has been destroy");
+        cc.log("GameUI has been destroy");
         KKVS.Event.deregister("playerEnter", this);
         KKVS.Event.deregister("showSelfCard", this);
         KKVS.Event.deregister("leaveGame", this);
         KKVS.Event.deregister("reconnectionData", this);
+        KKVS.Event.deregister("callBanker", this);
+        KKVS.Event.deregister("BankerInfo", this);
     },
-
-    // update (dt) {},
 });

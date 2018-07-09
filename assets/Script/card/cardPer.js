@@ -8,48 +8,36 @@ cc.Class({
             default: null,
             type: cc.Sprite
         },
-        isTouched: false,
-        isChoosed: false
+        isSelect: false,
+        isReadyToSelect: false,
+        
+        // 牌值
+        cardValue: 0,
     },
 
-    onLoad: function () {
-        this.touchEventMgr();
-        // cc.log("cardPer load perfabs");
-        // cc.loader.loadRes("perfabs/card_bg", function (err, loadprefab) {
-        //     if (err) {
-        //         cc.log("加载牌背预制出错 原因：" + err);
-        //         return;
-        //     };
-        //     if (!(loadprefab instanceof cc.Prefab)) {
-        //         cc.log("载入的不是预制资源");
-        //         return;
-        //     }
-        //     // var cardNode = cc.instantiate(loadprefab);
-        //     // this.cardNode = cardNode;
-        // });
-    },
+    onLoad: function () {},
 
     // 显示牌面
     showPoker: function (id, z_Order) {
         var self = this;
         // cc.log("id = " + id + " z_Order = " + z_Order);
-        var cardValue = cardTypeUtil.GetCardValue(id);
+        self.cardValue = cardTypeUtil.GetCardValue(id);
         var cardColorType = cardInfo[cardTypeUtil.GetCardColor(id)].cardType;
 
         var path = "";
         if (cardColorType == 0) {
-            path = "card/card_" + cardColorType + "_" + (cardValue - 78);
+            path = "card/card_" + cardColorType + "_" + (self.cardValue - 78);
         } else {
-            if (cardValue > 13)
-                path = "card/card_" + cardColorType + "_" + (cardValue - 13);
+            if (self.cardValue > 13)
+                path = "card/card_" + cardColorType + "_" + (self.cardValue - 13);
             else
-                path = "card/card_" + cardColorType + "_" + cardValue;
+                path = "card/card_" + cardColorType + "_" + self.cardValue;
 
-            if (cardValue == 1)
-                cardValue = 14;
+            if (self.cardValue == 1)
+                self.cardValue = 14;
 
-            if (cardValue == 2)
-                cardValue = 15;
+            if (self.cardValue == 2)
+                self.cardValue = 15;
         }
         // cc.log("path = " + path);
         cc.loader.loadRes(path, cc.SpriteFrame, function (err, spriteFrame) {
@@ -72,28 +60,24 @@ cc.Class({
         return this.pokerSprite.getComponent(cc.Sprite).node.getPosition();
     },
 
-    // 触摸监听
-    touchEventMgr: function() {
+    // 通过是否被框选，显示牌 --- 弹起选中的牌
+    showByReadySelect: function() {
         var self = this;
-        self.canTouch = true;
-
-        // this.node.on(cc.Node.EventType.TOUCH_START, function(event) {
-        //     if (self.canTouch) {
-        //         self.handleResponse(self.isTouched);
-        //         self.isTouched = (!self.isTouched);
-        //     }
-        // }, this);
+        if (self.isReadyToSelect) {
+            self.handleResponse();
+            self.isReadyToSelect = false;
+        }
     },
 
     // 点击到牌处理
     handleResponse: function () {
         var self = this;
-        if (self.isTouched) {
+        if (self.isSelect) {
             this.node.runAction(cc.moveBy(0.1, 0, -30));
-            this.isChoosed = false;
+            this.isSelect = false;
         } else {
             this.node.runAction(cc.moveBy(0.1, 0, 30));
-            this.isChoosed = true;
+            this.isSelect = true;
         }
     },
 
@@ -101,6 +85,7 @@ cc.Class({
     setNoneSelect: function() {
         var self = this;
         this.node.setPosition(cc.p(0, 30));
-        self.isTouched = false;
+        self.isSelect = false;
+        self.isReadyToSelect = false;
     },
 });

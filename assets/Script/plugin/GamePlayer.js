@@ -45,7 +45,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         this.reqEnterLobby(2);
     },
 
-    onPlayerData: function (params) { },
+    onPlayerData: function (params) {},
 
     onEnterLobby: function (lobbyID, bSuccess, ret_code) {
         console.log("KKVS.EnterLobbyID = " + KKVS.EnterLobbyID);
@@ -86,6 +86,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     onRoomList: function (lobbyID, params) {
         KKVS.INFO_MSG("房间列表");
     },
+
     onRoomDataChanged: function (lobbyID, fieldID, roomID, playersCount) {
         cc.log("->>>>>>onRoomDataChanged");
         var sKey = lobbyID.toString() + fieldID.toString() + roomID.toString();
@@ -250,19 +251,6 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         KKVS.SelectFieldID = fieldID;
         KKVS.EnterRoomID = roomID;
         KKVS.Event.fire("onEnterTableResult");
-        // console.log("KKVS.GAME_MODEL = " + KKVS.GAME_MODEL);
-        // if (KKVS.GAME_MODEL == 3) {
-        //     console.log("进入比赛房间 进入比赛桌子 成功");
-        //     KKVS.Event.fire("onMatchTableOK");
-        // } else if (KKVS.GAME_MODEL == 2) {
-        //     KKVS.Event.fire(EVENT_SHOW_VIEW, {
-        //         viewID: SCENE_ID_GAME
-        //     });
-        // } else {
-        //     KKVS.Event.fire(EVENT_SHOW_VIEW, {
-        //         viewID: SCENE_ID_GAME
-        //     });
-        // }
     },
 
     request_GetReady: function (lobby_id, field_id, room_id, table_id, chair_id) {
@@ -438,67 +426,50 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         GameManager.onSeverSendCard(cardList);
     },
 
-    onHappy_SendCallBanker: function (lobbyID, fieldID, roomID, tableID, chair_ID, beishu) {
-        console.log("->onHappy_SendCallBanker==== beishu = " + beishu);
-        var args = arguments;
-        var chairID = args[4];
-        var timeNum = args[5];
-        if (beishu == -1 && chair_ID != KKVS.myChairID) {
-            var data = {
-                chairID: chairID,
-                timeNum: 10
-            };
-            GameManager.onSeverStartScore(data);
-            return;
-        }
-
-        gameModel.callScoreChairID = chairID;
-        gameModel.callScoreTime = timeNum;
-        if (beishu > 0)
-            gameModel.callbeishu = beishu;
+    onHappy_SendCallBanker: function (lobbyID, fieldID, roomID, tableID, chair_ID, multiple) {
+        console.log("->onHappy_SendCallBanker");
 
         var data = {
-            chairID: chairID,
-            timeNum: 10
+            chairID: chair_ID,
+            multiple: multiple,
+            time: 10
         };
-        GameManager.onSeverStartScore(data);
 
-        if (beishu >= 0) {
-            var chairID2 = (3 + chairID - 1) % 3
-            var scoreNum = args[5];
-            var data2 = {
-                chairID: chairID2,
-                scoreNum: scoreNum
-            };
-            GameManager.onSeverReturnCallScore(data2);
-        }
+        KKVS.Event.fire("callBanker", data);
     },
 
-    onHappy_SendBankerInfo: function (lobbyID, fieldID, roomID, tableID, chairID, beishu, dipailist) {
-        console.log("->onHappy_SendBankerInfo====");
-        var args = arguments;
-        // var data = {banker: chairID, maxScore: beishu};
-        // GameManager.onSeverStart(data);
-
-        // 确定地主
-        var data2 = {
+    onHappy_SendBankerInfo: function (lobbyID, fieldID, roomID, tableID, chairID, multiple, dipailist) {
+        console.log("->onHappy_SendBankerInfo");
+        var data = {
             chairID: chairID,
-            diData: dipailist,
-            effNum: 0
+            multiple: multiple,
+            dipailist: dipailist,
+            time: 15,
+            mustPlay: 1
         };
-        GameManager.onSeverOpenCard(data2);
 
-        // 叫分倍数
-        GameManager.onSeverFanBei(beishu)
+        KKVS.Event.fire("BankerInfo", data);
 
-        var time2 = 15;
-        var mustplay = 1;
-        var data3 = {
-            chairID: chairID,
-            time: time2,
-            mustPlay: mustplay
-        };
-        GameManager.onToPlayCard(data3);
+        // var args = arguments;
+        // // 确定地主
+        // var data2 = {
+        //     chairID: chairID,
+        //     diData: dipailist,
+        //     effNum: 0
+        // };
+        // GameManager.onSeverOpenCard(data2);
+
+        // // 叫分倍数
+        // GameManager.onSeverFanBei(beishu)
+
+        // var time2 = 15;
+        // var mustplay = 1;
+        // var data3 = {
+        //     chairID: chairID,
+        //     time: time2,
+        //     mustPlay: mustplay
+        // };
+        // GameManager.onToPlayCard(data3);
     },
 
     onHappy_OutCardInfo: function (lobbyID, fieldID, roomID, tableID, chairID, cardlist, type, nowplayID, mustplay, cardNum) {
