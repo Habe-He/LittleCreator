@@ -867,6 +867,22 @@ cc.Class({
 			self.cardList[i].runAction(moveTo);
 		}
 		self.setTopCard();
+    },
+    
+    // 设置最上层的卡牌为最视图最上层
+	setTopCard: function () {
+		var self = this;
+		var len = self.cardList.length;
+		if (len == 0) {
+			return;
+		};
+		for (var i = 0; i < len; ++i) {
+			self.cardList[i].isTop = i == (len - 1) ? true : false;
+		}
+		//如果自己的地主自己的最上面一张牌上显示地主
+		if (KKVS.myChairID == gameModel.diZhuCharId) {
+			self.cardList[self.cardList.length - 1].showDiZhuSign();
+		}
 	},
 
     // 自己出牌
@@ -927,7 +943,7 @@ cc.Class({
 			cc.log("cardTypeUtil.linkDoubleCard");
         }
         
-        self.sortOutCardList(self.outCardList[0]);
+        Tool.sortOutCardList(self.outCardList[0]);
         var outLen = self.outCardList[0].length;
 		var midNum = (outLen - 1) / 2;
 		var cardIs = [];
