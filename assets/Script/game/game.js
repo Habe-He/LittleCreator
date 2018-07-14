@@ -4,6 +4,7 @@ var KKVS = require("./../plugin/KKVS");
 var gameEngine = require("./../plugin/gameEngine");
 var cardfabs = require('./../card/cardPer');
 var cardTypeUtil = require('./../card/cardTypeUtil');
+var cardInfo = require('./../card/cardInfo');
 
 cc.Class({
 
@@ -29,7 +30,7 @@ cc.Class({
         this.addEvent();
         this.necData();
 
-        console.log("进入到游戏场景中 onLoad");
+        cc.log("进入到游戏场景中 onLoad");
     },
 
     // 数据初始化
@@ -70,15 +71,29 @@ cc.Class({
 
         // 出牌操作按钮
         this.scoreBtnList = [];
+
+        // 地主三张牌
+        this.backPoker = [];
+
+        // 玩家出的牌
+        this.outCardList = [];
+        this.outCardList[0] = [];
+		this.outCardList[1] = [];
+		this.outCardList[2] = [];
+
+        // 出牌的玩家
+        this.lastCardData = [];
+
+        // 点击提示按钮次数
+        this.clickTipsCount = 0;
     },
 
     start: function () {
-        console.log("进入到游戏场景中 start");
+        cc.log("进入到游戏场景中 start");
         gameEngine.app.player().req_start_game(0);
 
         var self = this;
         self.bg = this.node.getChildByName("bg");
-        // this.bg.active = false;
 
         // 三个玩家信息初始化 -------- 编辑器中节点默认 active = false
         for (var i = 0; i < 3; ++i) {
@@ -107,6 +122,7 @@ cc.Class({
                 headNode: headNode,
                 role_image: role_image,
                 head: head,
+                cardNumBG: cardNumBG,
                 cardNum: cardNum,
                 name: name,
                 money: money,
@@ -149,6 +165,15 @@ cc.Class({
         self.myCardPanel = self.bg.getChildByName("myCardPanel");
         self.midPos = self.myCardPanel.getContentSize().width / 2 - 50;
 
+        // 地主三张牌
+        var leftInfo = self.bg.getChildByName("LeftInfo");
+        for (var i = 0; i < 3; ++i) {
+            var pokers = leftInfo.getChildByName("Card_" + i.toString());
+            self.backPoker.push(pokers);
+        }
+        self.diText = leftInfo.getChildByName("di_Text").getComponent(cc.Label);
+        self.multipleText = leftInfo.getChildByName("bei_Text").getComponent(cc.Label);
+
         // 有数据等待初始化
         if (gameModel.isWaiting) {
             var len = gameModel.isWaitingData.length;
@@ -182,7 +207,6 @@ cc.Class({
     showTime: function (viewID, time) {
         var self = this;
         this.node.stopAllActions();
-        // cc.log("显示" + viewID + "的倒计时");
         self.m_Chairs[viewID].clock.active = true;
         self.m_Chairs[viewID].clockTime.getComponent(cc.Label).string = time.toString();
 
@@ -194,7 +218,10 @@ cc.Class({
 
                 if (viewID == 0) {
                     self.btnReady.active = false;
-                    self.m_Chairs[0].clock.active = false;
+                    self.btnPlay.active = false;
+                    self.btnNotPlay.active = false;
+                    self.btnTips.active = false;
+
                     for (var i = 0; i < self.scoreBtnList.length; ++i) {
                         self.scoreBtnList[i].active = false;
                     }
@@ -218,10 +245,212 @@ cc.Class({
         self.m_Chairs[0].clock.active = false;
     },
 
+    onBtnOne: function (event) {
+        gameEngine.app.player().baseCall("reqKent_callbanker", KKVS.EnterLobbyID, KKVS.SelectFieldID,
+            KKVS.EnterRoomID, KKVS.EnterTableID, KKVS.EnterChairID, 1);
+        this.visibleCallScore(false);
+    },
+
+    onBtnSceond: function (event) {
+        gameEngine.app.player().baseCall("reqKent_callbanker", KKVS.EnterLobbyID, KKVS.SelectFieldID,
+            KKVS.EnterRoomID, KKVS.EnterTableID, KKVS.EnterChairID, 2);
+        this.visibleCallScore(false);
+    },
+
+    onBtnThree: function (event) {
+        gameEngine.app.player().baseCall("reqKent_callbanker", KKVS.EnterLobbyID, KKVS.SelectFieldID,
+            KKVS.EnterRoomID, KKVS.EnterTableID, KKVS.EnterChairID, 3);
+        this.visibleCallScore(false);
+    },
+
+    onBtnScroeLess: function (event) {
+        gameEngine.app.player().baseCall("reqKent_callbanker", KKVS.EnterLobbyID, KKVS.SelectFieldID,
+            KKVS.EnterRoomID, KKVS.EnterTableID, KKVS.EnterChairID, 0);
+        this.visibleCallScore(false);
+    },
+
+    onBtnPlay: function(event) {
+        this.playCard();
+    },
+
+    onBtnNotPlay: function(event) {
+        this.sendNotPlay();
+    },
+
+    onBtnTips: function(event) {
+        this.toTipsCard();
+    },
+
+    sendNotPlay: function () {
+		var self = this;
+		self.setAllNoneSelectCard();
+		self.visibleOperation(false);
+		self.m_Chairs[0].unOut.active = true;
+		gameEngine.app.player().baseCall("reqKent_outCard", KKVS.EnterLobbyID, KKVS.SelectFieldID,
+            KKVS.EnterRoomID, KKVS.EnterTableID, KKVS.EnterChairID, []);
+	},
+
+    // 发送出牌
+	playCard: function () {
+        var self = this;
+        var len = self.cardList.length;
+		for (var k = len - 1; k >= 0; k--) {
+			if (self.cardList[k].getComponent(cardfabs).isSelect) {
+				self.outCardList[0].push(self.cardList[k]);
+			}
+        }
+        Tool.sortCardList(self.outCardList[0]);
+        var outLen = self.outCardList[0].length;
+		var midNum = (outLen - 1) / 2;
+		var cardIs = [];
+		var cardvalue = [];
+		for (var p = 0; p < outLen; p++) {
+			cardIs.push(self.outCardList[0][p].getComponent(cardfabs).getCardId());
+			cardvalue.push(self.outCardList[0][p].getComponent(cardfabs).getCardValue());
+        };
+
+        // for (var i = 0; i < cardvalue.length; ++i) {
+        //     cc.log("玩家自己选中的牌值 = " + cardvalue[i]);
+        //     cc.log("玩家自己选中的牌的索引值 = " + cardIs[i]);
+        // }
+        var objCardType = cardTypeUtil.getCommonCardType(cardvalue);
+		if (objCardType == 0) {
+            self.recetCardList();
+            cc.log("出牌错误");
+			return;
+        }
+        
+        gameEngine.app.player().baseCall("reqKent_outCard", KKVS.EnterLobbyID, KKVS.SelectFieldID,
+            KKVS.EnterRoomID, KKVS.EnterTableID, KKVS.EnterChairID, cardIs);
+    },
+
+    // 重置自己手中的所有的牌为未选中
+	recetCardList: function () {
+		var self = this;
+		self.setAllNoneSelectCard();
+		self.isCanPlayCard();
+		self.outCardList[0] = [];
+    },
+    
+    isCanPlayCard: function () {
+		var self = this;
+		var selfCards = [];
+		var clen = self.cardList.length;
+		for (var i = 0; i < clen; ++i) {
+			if (self.cardList[i].isSelect) {
+				selfCards.push(self.cardList[i].getComponent(cardfabs).getCardValue());
+			}
+		}
+		if (selfCards.length > 0) {
+			self.btnPlay.active = true;
+		} else {
+			self.btnPlay.active = false;
+		}
+    },
+    
+    // 提示
+	toTipsCard: function () {
+		var self = this;
+		var objCards = null;
+		var selfCards = [];
+		self.setAllNoneSelectCard();
+		var cardList = self.cardList.slice(0);
+
+		var clen = cardList.length;
+		for (var i = 0; i < clen; ++i) {
+			selfCards.push(cardList[i].getComponent(cardfabs).getCardValue());
+		}
+
+		if (self.lastCardData.length != 0) {
+			objCards = [];
+			var llen = self.lastCardData.length;
+			for (var i = 0; i < llen; ++i) {
+				objCards.push(self.lastCardData[i].getComponent(cardfabs).getCardValue());
+			}
+        }
+        cc.log('目标牌型长度 objCards.length = ' + objCards.length);
+        // for (var i = 0; i < objCards.length; ++i) {
+        //     cc.log("目标牌型 值 = " + objCards[i]);
+        // }
+        var obj = cardTypeUtil.tipsCard(selfCards, objCards, 0, this.clickTipsCount);
+        cc.log("提示牌型长度 = " + obj.length);
+		if (obj) {
+			if (obj.length == 0) {
+				self.sendNotPlay();
+				return;
+			}
+		} else {
+			self.sendNotPlay();
+			return;
+		}
+        cc.log("可以弹出提示牌型");
+		var delay = cc.delayTime(0.1);
+		var callFunc = cc.callFunc(function () {
+			var olen = obj.length;
+			for (var p = 0; p < olen; p++) {
+				var len = cardList.length;
+				for (var i = len - 1; i >= 0; i--) {
+					var cType = cardInfo[cardTypeUtil.GetCardColor(obj[p])].cardType;
+					var sType = cardList[i].getComponent(cardfabs).getcardColorType();
+					if (cType == sType && sType == 5) {
+						cardList.splice(i, 1);
+					} else if (obj[p] == cardList[i].getComponent(cardfabs).getCardValue()) {
+						if (!cardList[i].getComponent(cardfabs).isSelect) {
+							cardList[i].getComponent(cardfabs).isReadyToSelect = true;
+							cardList[i].getComponent(cardfabs).showByReadySelect();
+						}
+						cardList.splice(i, 1);
+						break;
+					}
+				}
+			}
+		});
+		self.btnTips.runAction(cc.sequence(delay, callFunc));
+		if (obj.length > 0) {
+			self.btnPlay.active = true;
+		} else {
+			self.btnPlay.interactable = false;
+		}
+	},
+
+    // -- 叫分按钮是否可见
+    visibleCallScore: function (mBool) {
+        var self = this;
+        for (var i = 0; i < self.scoreBtnList.length; ++i) {
+            self.scoreBtnList[i].active = mBool;
+        }
+    },
+
+    // -- 出牌操作按钮是否可见
+    visibleOperation: function(mBool) {
+        var self = this;
+        self.btnPlay.active = mBool;
+        self.btnTips.active = mBool;
+        self.btnNotPlay.active = mBool;
+        self.btnYaoBuQi.active = mBool;
+    },
+
+    resettingData: function() {
+        var self = this;
+        // 清空自己手牌
+        self.myCardPanel.removeAllChildren();
+
+        // 清除玩家操作状态
+        for (var i = 0; i < 3; ++i) {
+            self.m_Chairs[i].unCall.active = false;
+            self.m_Chairs[i].unOut.active = false;
+            self.m_Chairs[i].CallScore.active = false;
+            self.m_Chairs[i].diZhuFlag.active = false;
+        }
+    },
+
     // 创建牌背在屏幕中
     showSelfCard: function () {
         cc.log("创建牌背在屏幕中");
         var self = this;
+
+        self.resettingData();
+
         self.myCardPanel.active = true;
         for (var i = 0; i < 3; ++i) {
             self.m_Chairs[i].ready.active = false;
@@ -268,6 +497,11 @@ cc.Class({
 
         // 绘制自己的手牌
         self.showSelfCardInfo();
+        self.m_Chairs[1].cardNumBG.active = true;
+        self.m_Chairs[1].cardNum.getComponent(cc.Label).string = "17";
+
+        self.m_Chairs[2].cardNumBG.active = true;
+        self.m_Chairs[2].cardNum.getComponent(cc.Label).string = "17";
     },
 
     // 发完牌 - 显示自己的手牌数据
@@ -361,11 +595,8 @@ cc.Class({
         var clen = self.cardList.length;
         for (var i = 0; i < clen; ++i) {
             self.cardList[i].getComponent(cardfabs).setNoneSelect();
-            // self.cardList[i].cardimg.setColor(cc.color(255, 255, 255, 255));
+            self.cardList[i].getComponent(cardfabs).node.setColor(cc.color(255, 255, 255, 255));
         }
-        // self.btnPlay.stopAllActions();
-        // self.btnPlay.setTouchEnabled(false);
-        // self.btnPlay.setBright(false);
     },
 
     // 选中了哪些牌
@@ -484,25 +715,48 @@ cc.Class({
     },
 
     // 玩家叫分
-    callBanker: function(data) {
+    callBanker: function (data) {
         var self = this;
         var viewID = Tool.getViewChairID(data.chairID);
-        if (viewID == -1) {
-            cc.log("出现叫分出错了 原因：chairID = " + data.chairID);
+        cc.log("viewID = " + viewID + " multiple = " + data.multiple);
+
+        if (viewID == -1)
+            return;
+        
+        var tempViewID = 0;
+        if (viewID == 0) {
+            tempViewID = 2;
+        } else if (viewID == 1) {
+            tempViewID = 0;
+        } else if (viewID == 2) {
+            tempViewID = 1;
+        }
+        if (data.multiple == 0) {
+            self.m_Chairs[tempViewID].unCall.active = true;
+
+        } else if (data.multiple != -1) {
+
+            self.m_Chairs[tempViewID].CallScore.active = true;
+            self.m_Chairs[tempViewID].CallScore.getComponent(cc.Label).string = data.multiple.toString();
+        }
+
+        if (data.multiple == -1 && viewID != 0) {
+            self.showTime(viewID, data.time);
             return;
         }
+
         for (var i = 0; i < 3; ++i) {
             self.m_Chairs[i].ready.active = false;
             self.m_Chairs[i].clock.active = false;
         }
+        
         self.showTime(viewID, data.time);
-        if (viewID == 0) {
+        if (viewID == 0)
             self.setCallScoreButton(data.multiple);
-        }
     },
 
     // 不可操作的叫分按钮
-    setCallScoreButton: function(multiple) {
+    setCallScoreButton: function (multiple) {
         var self = this;
         for (var i = 0; i < self.scoreBtnList.length; ++i) {
             self.scoreBtnList[i].active = true;
@@ -516,18 +770,263 @@ cc.Class({
     },
 
     // 确定地主
-    BankerInfo: function(data) {
+    BankerInfo: function (data) {
         // 地主标识显示
         // 显示地主牌
         // 更新地主手牌数量
+        // 更新倍数
+
+        var self = this;
+        // 显示地址标识
+        var viewID = Tool.getViewChairID(data.chairID);
+        self.m_Chairs[viewID].diZhuFlag.active = true;
+
+        // 确定地主后，其余玩家操作标志隐藏
+        for (var i = 0; i < 3; ++i) {
+            self.m_Chairs[i].unCall.active = false;
+            self.m_Chairs[i].unOut.active = false;
+            self.m_Chairs[i].ready.active = false;
+            self.m_Chairs[i].CallScore.active = false;
+            self.m_Chairs[i].clock.active = false;
+        }
+
+        // 地主牌显示
+        for (var i = 0; i < 3; i++) {
+            var cardNode = cc.instantiate(this.pokerCard);
+            cardNode.getComponent(cardfabs).setNodeScale(0.46);
+            cardNode.getComponent(cardfabs).showPoker(data.dipailist[i], i);
+            self.backPoker[i].addChild(cardNode);
+        }
+
+        // 更新地主手牌
+        if (viewID == 1) {
+            self.m_Chairs[1].cardNum.string = "20";
+        } else if (viewID == 2) {
+            self.m_Chairs[2].cardNum.string = "20";
+        }
+
+        // 更新倍数
+        self.multipleText.string = data.multiple.toString();
+
+        self.toPlayCard(data.chairID, 15, data.mustPlay);
+    },
+
+    // 出牌操作
+    toPlayCard: function(chairID, time, mustPlay) {
+        var self = this;
+        var viewID = Tool.getViewChairID(chairID);
+        cc.log("toPlayCard viewID = " + viewID);
+        self.visibleCallScore(false);
+
+        for (var i = 0; i < self.outCardList[viewID].length; ++i) {
+            if (self.outCardList[viewID][i])
+                self.outCardList[viewID][i].removeFromParent();
+        }
+
+        self.m_Chairs[viewID].unOut.active = false;
+
+        self.outCardList[viewID] = [];
+        if (viewID == 0) {
+            self.btnPlay.active = true;
+            self.btnNotPlay.active = true;
+            self.btnNotPlay.interactable = !mustPlay;
+            self.btnTips.active = true;
+
+            var objCards = [];
+            var selfCards = [];
+            var cardList = self.cardList.slice(0);
+            for (var i = 0; i < self.cardList.length; ++i)
+                selfCards.push(cardList[i].getComponent(cardfabs).getCardValue());
+
+            if (self.lastCardData.length != 0) {
+                for (var i = 0; i < self.lastCardData.length; ++i)
+                    objCards.push(self.lastCardData[i].getComponent(cardfabs).getCardValue());
+            }
+
+            var obj = cardTypeUtil.tipsCard(selfCards, objCards, 0);
+            if (obj && obj.length == 0) {
+				cc.log("没有大过上家的牌");
+			} else {
+                cc.log("打出自己选的牌");
+            }
+        }
+
+        self.showTime(viewID, time - 1);
+    },
+    
+    // 重新排列自己的牌的位置
+	resortCardListPos: function (bool) {
+		var self = this;
+		var len = self.cardList.length;
+		var midNum = (len - 1) / 2;
+		var runTime = 0.13;
+		for (var i = 0; i < len; i++) {
+			var objX = (i - midNum) * self.ghp + self.midPos;
+			var moveTo = cc.moveTo(runTime, cc.p(objX + 40, self.ghp * 2 - 20));
+			self.cardList[i].setLocalZOrder(i);
+			self.cardList[i].runAction(moveTo);
+		}
+		self.setTopCard();
+	},
+
+    // 自己出牌
+    playSelfCard: function(cardIds, chairID) {
+        var self = this;
+        cc.log("playSelfCard");
+        var viewID = Tool.getViewChairID(chairID);
+        cc.log("viewID = " + viewID);
+        cc.log("1 self.m_Chairs.length = " + self.m_Chairs.length);
+        if (self.m_Chairs[viewID].clock.active == true)
+            self.m_Chairs[viewID].clock.active = false;
+        
+        cc.log("000000000000");
+        if (cardIds.length == 0) {
+            cc.log("2 self.m_Chairs.length = " + self.m_Chairs.length);
+            self.m_Chairs[viewID].unOut.active = true;
+            return;
+        }
+        cc.log("11111111111111111");
+        if (cardIds.length != 0) {
+            self.outCardList[0] = [];
+            for (var i = 0; i < cardIds.length; ++i) {
+                for (var k = 0; k < self.cardList.length; ++k) {
+                    if (cardIds[i] == self.cardList[k].getComponent(cardfabs).getCardId()) {
+                        self.outCardList[0].push(self.cardList[k]);
+                        self.cardList.splice(k, 1);
+                    }
+                }
+            }
+        }
+        cc.log("222222222222222");
+        cc.log("cardIds.length = " + cardIds.length);
+        // return;
+
+        var cardvalue = [];
+        for (var i = 0; i < cardIds.length; ++i) {
+            cc.log("907 cardIds = " + cardIds[i]);
+            var value = cardTypeUtil.GetCardValue(cardIds[i]);
+            cc.log("value = " + value);
+            var cardType = cardInfo[cardTypeUtil.GetCardColor(cardIds[i])].cardType;
+            cc.log("cardType = " + cardType);
+            if (cardType == 0)
+                value = value;
+            cardvalue.push(value);
+        }
+        cc.log("3333333333333333");
+
+        var cardType = cardTypeUtil.getCardType(cardvalue);
+        if (cardType == cardTypeUtil.rocketCard) {
+			cc.log("cardTypeUtil.rocketCard");
+		} else if (cardType == cardTypeUtil.bormCard || cardType > 100) {
+			cc.log("cardTypeUtil.bormCard");
+		} else if (cardType == cardTypeUtil.planeTakeNoneCard || cardType == cardTypeUtil.planeTakeSingleCard || cardType == cardTypeUtil.planeTakeDoubleCard) {
+			cc.log("cardTypeUtil.planeTakeNoneCard");
+		} else if (cardType == cardTypeUtil.sequenceCard) {
+			cc.log("cardTypeUtil.sequenceCard");
+		} else if (cardType == cardTypeUtil.linkDoubleCard) {
+			cc.log("cardTypeUtil.linkDoubleCard");
+        }
+        
+        self.sortOutCardList(self.outCardList[0]);
+        var outLen = self.outCardList[0].length;
+		var midNum = (outLen - 1) / 2;
+		var cardIs = [];
+		for (var p = 0; p < outLen; ++p) {
+			var objX = (p - midNum) * 40 + self.midPos;
+			var moveTo = cc.moveTo(0.05, cc.p(objX, 350));
+			var scaleTo = cc.scaleTo(0.05, 0.6);
+
+            self.outCardList[0][p].getComponent(cardfabs).node.setColor(cc.color(255, 255, 255, 255));
+			self.outCardList[0][p].getComponent(cardfabs).node.setLocalZOrder(p); //设置坐标
+			self.outCardList[0][p].getComponent(cardfabs).node.setScale(0.6);
+			self.outCardList[0][p].getComponent(cardfabs).node.runAction(moveTo);
+			cardIs.push(self.outCardList[0][p].getComponent(cardfabs).getCardId());
+        };
+        cc.log("555555555555555555555");
+        
+        Tool.sortCardList(self.cardList);
+        self.resortCardListPos();
+    },
+
+    // 其它玩家打出牌
+	playerPlayCard: function (cardIds, chairID) {
+        var self = this;
+        var viewID = Tool.getViewChairID(chairID)
+        cc.log("playerPlayCard viewID = " + viewID);
+
+        for (var i = 0; i < 3; ++i) {
+            self.m_Chairs[viewID].unOut.active = false;
+        }
+
+        self.m_Chairs[viewID].clock.active = false;
+
+        if (cardIds.length == 0) {
+            self.m_Chairs[viewID].unOut.active = true;
+            return;
+        }
+
+        if (viewID == 1) {
+            var newCount = parseInt(self.m_Chairs[1].cardNum.getComponent(cc.Label).string) - cardIds.length;
+            self.m_Chairs[1].cardNum.getComponent(cc.Label).string = newCount.toString();
+        } else if (viewID == 2) {
+            var newCount = parseInt(self.m_Chairs[2].cardNum.getComponent(cc.Label).string) - cardIds.length;
+            self.m_Chairs[2].cardNum.getComponent(cc.Label).string = newCount.toString();
+        }
+
+        var cardvalue = [];
+		var cardIdsLen = cardIds.length;
+		for (var i = 0; i < cardIdsLen; ++i) {
+			var value = cardTypeUtil.GetCardValue(cardIds[i]);
+			var cardType = cardInfo[cardTypeUtil.GetCardColor(cardIds[i])].cardType;
+			if (cardType == 0) {
+				value = value;
+			};
+			cardvalue.push(value);
+        }
+        
+        var cardType = cardTypeUtil.getCardType(cardvalue);
+		if (cardType == cardTypeUtil.rocketCard) {
+			cc.log("2332222");
+		} else if (cardType == cardTypeUtil.bormCard || cardType > 100) {
+			cc.log("2332111");
+		} else if (cardType == cardTypeUtil.planeTakeNoneCard || cardType == cardTypeUtil.planeTakeSingleCard || cardType == cardTypeUtil.planeTakeDoubleCard) {
+			cc.log("2332qw");
+		} else if (cardType == cardTypeUtil.sequenceCard) {
+			cc.log("2332wewe");
+		} else if (cardType == cardTypeUtil.linkDoubleCard) {
+			cc.log("233223swe");
+		}
+        cardIds = Tool.toolSortArray(cardIds);
+        
+        var verCount = 8;
+		var len = cardIds.length;
+		var panelSize = self.myCardPanel.getContentSize();
+		var posS = [panelSize.width - 460, 465];
+		var starPos = posS[viewID - 1];
+		var frlen = len <= 8 ? len : 8;
+		var setaValue = viewID == 1 ? frlen : 0;
+		for (var i = 0; i < len; ++i) {
+            var card = cc.instantiate(this.pokerCard);
+            card.setPosition((i % verCount - setaValue) * 40 + starPos, 500 - Math.floor(i / verCount) * 40);
+            self.myCardPanel.addChild(card);
+            self.outCardList[viewID].push(card);
+            card.getComponent(cardfabs).showPoker(cardIds[i], i);
+        }
+        self.lastCardData = [];
+        self.lastCardData = self.outCardList[viewID];
     },
 
     addEvent() {
         var self = this;
         self.btnReady.node.on("touchend", self.onBtnReady, this);
-        self.btnReady.node.on("touchend", self.btn1, this);
-        self.btnReady.node.on("touchend", self.btn2, this);
-        self.btnReady.node.on("touchend", self.btn3, this);
+        self.btn1.node.on("touchend", self.onBtnOne, this);
+        self.btn2.node.on("touchend", self.onBtnSceond, this);
+        self.btn3.node.on("touchend", self.onBtnThree, this);
+        self.btnScroeNo.node.on("touchend", self.onBtnScroeLess, this);
+        self.btnPlay.node.on("touchend", self.onBtnPlay, this);
+        self.btnNotPlay.node.on("touchend", self.onBtnNotPlay, this);
+        self.btnTips.node.on("touchend", self.onBtnTips, this);
+        self.btnYaoBuQi.node.on("touchend", self.onBtnNotPlay, this);
 
         cc.log("GameUI 注册Kbe事件");
         KKVS.Event.register("playerEnter", this, "playerEnter");
@@ -536,6 +1035,9 @@ cc.Class({
         KKVS.Event.register("reconnectionData", this, "reconnectionData");
         KKVS.Event.register("callBanker", this, "callBanker");
         KKVS.Event.register("BankerInfo", this, "BankerInfo");
+        KKVS.Event.register("playerPlayCard", this, "playerPlayCard");
+        KKVS.Event.register("playSelfCard", this, "playSelfCard");
+        KKVS.Event.register("toPlayCard", this, "toPlayCard");
     },
 
     onDestroy() {
@@ -546,5 +1048,7 @@ cc.Class({
         KKVS.Event.deregister("reconnectionData", this);
         KKVS.Event.deregister("callBanker", this);
         KKVS.Event.deregister("BankerInfo", this);
+        KKVS.Event.deregister("playerPlayCard", this);
+        KKVS.Event.deregister("toPlayCard", this);
     },
 });

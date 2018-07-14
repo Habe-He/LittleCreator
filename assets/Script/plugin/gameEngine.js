@@ -1,6 +1,8 @@
 var KKVS = require("./KKVS")
 var ByteBuffer = require("./ByteBuffer");
 
+var WSSTR = 'wss://'
+
 var gameEngine = gameEngine || {};
 
 /*-----------------------------------------------------------------------------------------
@@ -2671,8 +2673,9 @@ gameEngine.gameEngineApp = function (gameEngineArgs) {
 
     this.createAccount_loginapp = function (noconnect) {
         if (noconnect) {
-            gameEngine.INFO_MSG("gameEngineApp::createAccount_loginapp: start connect to ws://" + gameEngine.app.ip + ":" + gameEngine.app.port + "!");
-            gameEngine.app.connect("ws://" + gameEngine.app.ip + ":" + gameEngine.app.port);
+            // gameEngine.INFO_MSG("gameEngineApp::createAccount_loginapp: start connect to ws://" + gameEngine.app.ip + ":" + gameEngine.app.port + "!");
+            gameEngine.INFO_MSG("gameEngineApp::createAccount_loginapp: start connect to wss://" + gameEngine.app.ip + ":" + gameEngine.app.port + "!");
+            gameEngine.app.connect(WSSTR + gameEngine.app.ip + ":" + gameEngine.app.port);
             gameEngine.app.socket.onopen = gameEngine.app.onOpenLoginapp_createAccount;
         }
         else {
@@ -2713,8 +2716,9 @@ gameEngine.gameEngineApp = function (gameEngineArgs) {
 
     this.login_loginapp = function (noconnect) {
         if (noconnect) {
-            gameEngine.INFO_MSG("gameEngineApp::login_loginapp: start connect to ws://" + gameEngine.app.ip + ":" + gameEngine.app.port + "!");
-            gameEngine.app.connect("ws://" + gameEngine.app.ip + ":" + gameEngine.app.port);
+            // gameEngine.INFO_MSG("gameEngineApp::login_loginapp: start connect to ws://" + gameEngine.app.ip + ":" + gameEngine.app.port + "!");
+            gameEngine.INFO_MSG("gameEngineApp::login_loginapp: start connect to wss://" + gameEngine.app.ip + ":" + gameEngine.app.port + "!");
+            gameEngine.app.connect(WSSTR + gameEngine.app.ip + ":" + gameEngine.app.port);
             gameEngine.app.socket.onopen = gameEngine.app.onOpenLoginapp_login;
         }
         else {
@@ -2752,8 +2756,9 @@ gameEngine.gameEngineApp = function (gameEngineArgs) {
 
     this.resetpassword_loginapp = function (noconnect) {
         if (noconnect) {
-            gameEngine.INFO_MSG("gameEngineApp::createAccount_loginapp: start connect to ws://" + gameEngine.app.ip + ":" + gameEngine.app.port + "!");
-            gameEngine.app.connect("ws://" + gameEngine.app.ip + ":" + gameEngine.app.port);
+            // gameEngine.INFO_MSG("gameEngineApp::createAccount_loginapp: start connect to ws://" + gameEngine.app.ip + ":" + gameEngine.app.port + "!");
+            gameEngine.INFO_MSG("gameEngineApp::createAccount_loginapp: start connect to wss://" + gameEngine.app.ip + ":" + gameEngine.app.port + "!");
+            gameEngine.app.connect(WSSTR + gameEngine.app.ip + ":" + gameEngine.app.port);
             gameEngine.app.socket.onopen = gameEngine.app.onOpenLoginapp_resetpassword;
         }
         else {
@@ -2783,8 +2788,9 @@ gameEngine.gameEngineApp = function (gameEngineArgs) {
     this.login_baseapp = function (noconnect) {
         if (noconnect) {
             gameEngine.Event.fire("onLoginBaseapp");
-            gameEngine.INFO_MSG("gameEngineApp::login_baseapp: start connect to ws://" + gameEngine.app.baseappIp + ":" + gameEngine.app.baseappPort + "!");
-            gameEngine.app.connect("ws://" + gameEngine.app.baseappIp + ":" + gameEngine.app.baseappPort);
+            // gameEngine.INFO_MSG("gameEngineApp::login_baseapp: start connect to ws://" + gameEngine.app.baseappIp + ":" + gameEngine.app.baseappPort + "!");
+            gameEngine.INFO_MSG("gameEngineApp::login_baseapp: start connect to wss://" + gameEngine.app.baseappIp + ":" + gameEngine.app.baseappPort + "!");
+            gameEngine.app.connect(WSSTR + gameEngine.app.baseappIp + ":" + gameEngine.app.baseappPort);
             gameEngine.app.socket.onopen = gameEngine.app.onOpenBaseapp;
         }
         else {
@@ -2798,8 +2804,9 @@ gameEngine.gameEngineApp = function (gameEngineArgs) {
 
     this.reLoginBaseapp = function () {
         gameEngine.Event.fire("onReLoginBaseapp");
-        gameEngine.INFO_MSG("gameEngineApp::reLoginBaseapp: start connect to ws://" + gameEngine.app.baseappIp + ":" + gameEngine.app.baseappPort + "!");
-        gameEngine.app.connect("ws://" + gameEngine.app.baseappIp + ":" + gameEngine.app.baseappPort);
+        // gameEngine.INFO_MSG("gameEngineApp::reLoginBaseapp: start connect to ws://" + gameEngine.app.baseappIp + ":" + gameEngine.app.baseappPort + "!");
+        gameEngine.INFO_MSG("gameEngineApp::reLoginBaseapp: start connect to wss://" + gameEngine.app.baseappIp + ":" + gameEngine.app.baseappPort + "!");
+        gameEngine.app.connect(WSSTR + gameEngine.app.baseappIp + ":" + gameEngine.app.baseappPort);
         gameEngine.app.socket.onopen = gameEngine.app.onReOpenBaseapp;
     }
 
@@ -2849,6 +2856,10 @@ gameEngine.gameEngineApp = function (gameEngineArgs) {
         gameEngine.app.username = accountName;
         gameEngine.app.baseappIp = args.readString();
         gameEngine.app.baseappPort = args.readUint16();
+        if (WSSTR == "wss://") {
+            gameEngine.app.baseappIp = "testsgame.kkvs.com";
+            gameEngine.app.baseappPort = gameEngine.app.baseappPort - 100;
+        }
         gameEngine.app.serverdatas = args.readBlob();
 
         gameEngine.INFO_MSG("gameEngineApp::Client_onLoginSuccessfully: accountName(" + accountName + "), addr(" +

@@ -85,7 +85,12 @@ Tool.enterRoom = function (field_id, error_str) {
     }
     if (!room_list || room_list.length == 0) {
         KKVS.Event.fire("deleteWaitUI"); //hideLoading
-        var args = { eventType: 1, msg: error_str, pro: null, winType: 1 };
+        var args = {
+            eventType: 1,
+            msg: error_str,
+            pro: null,
+            winType: 1
+        };
         KKVS.Event.fire("createTips", args);
         return;
     }
@@ -101,7 +106,12 @@ Tool.enterRoom = function (field_id, error_str) {
     }
     if (!room_select) {
         KKVS.Event.fire("deleteWaitUI"); //hideLoading
-        var args = { eventType: 1, msg: "进入房间失败!", pro: null, winType: 1 };
+        var args = {
+            eventType: 1,
+            msg: "进入房间失败!",
+            pro: null,
+            winType: 1
+        };
         KKVS.Event.fire("createTips", args);
     } else {
         enterGame(room_select["room_id"], room_select["room_type"], room_select["min_score"], room_select["max_score"], room_select.service_pay);
@@ -148,12 +158,20 @@ Tool.onLine = function () {
 
     gameEngine.app.reset();
     if (!acc || acc == "") {
-        var args = { eventType: 2, msg: "登录失败,帐号不能为空", pro: null, winType: 1 };
+        var args = {
+            eventType: 2,
+            msg: "登录失败,帐号不能为空",
+            pro: null,
+            winType: 1
+        };
         KKVS.Event.fire("createTips", args);
         return;
     }
     KKVS.MAC_ADDRESS = getPhoneUUIDMain();
-    var login_extraDatas = { plaza_id: "0", server_id: "1" }; //plaza_id:0=kk, 1=liebao
+    var login_extraDatas = {
+        plaza_id: "0",
+        server_id: "1"
+    }; //plaza_id:0=kk, 1=liebao
     if (KKVS.Login_type == VISITOR_LOGIN || KKVS.Login_type == "0") {
         //yk
         login_extraDatas.login_type = VISITOR_LOGIN;
@@ -197,13 +215,23 @@ Tool.onLine = function () {
         //qq
         login_extraDatas.login_type = QQ_LOGIN;
         //test
-        var args = { eventType: 2, msg: "暂不支持QQ登录", pro: null, winType: 1 };
+        var args = {
+            eventType: 2,
+            msg: "暂不支持QQ登录",
+            pro: null,
+            winType: 1
+        };
         KKVS.Event.fire("createTips", args);
         return;
     } else if (KKVS.Login_type == MOBILE_LOGIN) {
         login_extraDatas.login_type = MOBILE_LOGIN;
     } else {
-        var args = { eventType: 2, msg: "无效登录", pro: null, winType: 1 };
+        var args = {
+            eventType: 2,
+            msg: "无效登录",
+            pro: null,
+            winType: 1
+        };
         KKVS.Event.fire("createTips", args);
         return;
     }
@@ -220,8 +248,8 @@ Tool.goLogin = function (args) {
     OxLogin(acc, pwd);
 }
 
-Tool.toolSortArrayForSelf = function(m_data) {
-    m_data.sort(function(a, b) {
+Tool.toolSortArrayForSelf = function (m_data) {
+    m_data.sort(function (a, b) {
         var avalue = cardTypeUtil.GetCardValue(a);
         var aolorType = cardInfo[cardTypeUtil.GetCardColor(a)].cardType;
         var bvalue = cardTypeUtil.GetCardValue(b);
@@ -275,12 +303,148 @@ Tool.toolSortArrayForSelf = function(m_data) {
     return m_data;
 }
 
-Tool.getViewChairID = function(nChairID) {
+Tool.getViewChairID = function (nChairID) {
     var PlayerCount = 3;
     if (nChairID < PlayerCount) {
         return (nChairID - KKVS.myChairID + PlayerCount) % PlayerCount;
     }
     return -1;
 },
+
+// 排列打出去的牌
+Tool.sortOutCardList = function (objarr) {
+    objarr.sort(function (a, b) {
+        if ((a.cardColorType == 0 && b.cardColorType != 0) || (a.cardColorType != 0 && b.cardColorType == 0)) {
+            if (a.cardColorType < b.cardColorType) {
+                return -1;
+            } else if (a.cardColorType > b.cardColorType) {
+                return 1;
+            } else {
+                return 0;
+            }
+        } else if (a.cardColorType == 0 && b.cardColorType == 0) {
+            if (a.cardValue < b.cardValue) {
+                return 1;
+            } else if (a.cardValue > b.cardValue) {
+                return -1;
+            } else {
+                return 0;
+            }
+        } else {
+            if (a.cardValue == b.cardValue) {
+                if (a.cardColorType < b.cardColorType) {
+                    return -1;
+                } else if (a.cardColorType > b.cardColorType) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            } else {
+                if (a.cardValue < b.cardValue) {
+                    return 1;
+                } else if (a.cardValue > b.cardValue) {
+                    return -1;
+                } else {
+                    return 0;
+                }
+            }
+        }
+    });
+},
+
+// 排列自己手上的牌
+Tool.sortCardList = function(objarr) {
+    objarr.sort(function(a, b) {
+        if (a.cardColorType == 5 && b.cardColorType != 5 || a.cardColorType != 5 && b.cardColorType == 5) {
+            if (a.cardColorType < b.cardColorType) {
+                return 1;
+            } else if (a.cardColorType > b.cardColorType) {
+                return -1;
+            } else {
+                return 0;
+            }
+        } else if ((a.cardColorType == 0 && b.cardColorType != 0) || (a.cardColorType != 0 && b.cardColorType == 0)) {
+            if (a.cardColorType < b.cardColorType) {
+                return -1;
+            } else if (a.cardColorType > b.cardColorType) {
+                return 1;
+            } else {
+                return 0;
+            }
+        } else if (a.cardColorType == 0 && b.cardColorType == 0) {
+            if (a.cardValue < b.cardValue) {
+                return 1;
+            } else if (a.cardValue > b.cardValue) {
+                return -1;
+            } else {
+                return 0;
+            }
+        } else {
+            if (a.cardValue == b.cardValue) {
+                if (a.cardColorType < b.cardColorType) {
+                    return -1;
+                } else if (a.cardColorType > b.cardColorType) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            } else {
+                if (a.cardValue < b.cardValue) {
+                    return 1;
+                } else if (a.cardValue > b.cardValue) {
+                    return -1;
+                } else {
+                    return 0;
+                }
+            }
+        }
+    });
+},
+
+Tool.toolSortArray = function(m_data) {
+    m_data.sort(function(a, b) {
+        var avalue = cardTypeUtil.GetCardValue(a);
+        var aolorType = cardInfo[cardTypeUtil.GetCardColor(a)].cardType;
+        var bvalue = cardTypeUtil.GetCardValue(b);
+        var bcolorType = cardInfo[cardTypeUtil.GetCardColor(b)].cardType;
+        if ((aolorType == 0 && bcolorType != 0) || (aolorType != 0 && bcolorType == 0)) {
+            if (aolorType > bcolorType) {
+                return 1;
+            } else if (aolorType < bcolorType) {
+                return -1;
+            } else {
+                return 0;
+            }
+        } else if (aolorType == 0 && bcolorType == 0) {
+            if (avalue < bvalue) {
+                return 1;
+            } else if (avalue > bvalue) {
+                return -1;
+            } else {
+                return 0;
+            }
+        } else {
+            if (avalue == bvalue) {
+                if (aolorType > bcolorType) {
+                    return 1;
+                } else if (aolorType < bcolorType) {
+                    return -1;
+                } else {
+                    return 0;
+                }
+            } else {
+                if (avalue < bvalue) {
+                    return 1;
+                } else if (avalue > bvalue) {
+                    return -1;
+                } else {
+                    return 0;
+                }
+            }
+        }
+    })
+
+    return m_data;
+}
 
 module.exports = Tool;

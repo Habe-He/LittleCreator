@@ -11,23 +11,12 @@
 var KKVS = require("./plugin/KKVS")
 var Tool = require("./tool/Tool")
 var gameEngine = require("./plugin/gameEngine")
+var httpUtils = require('./plugin/httpUtils')
+
 cc.Class({
     extends: cc.Component,
 
     properties: {
-        username: {
-            default: null,
-            type: cc.Label
-        },
-
-        wxHead: {
-            default: null,
-            type: cc.Sprite
-        },
-
-        button_change: cc.Button,
-        button_login: cc.Button
-
         // 在这里执行自动登录
         // 获取用户微信昵称
         // 显示用户剩余挑战次数
@@ -35,65 +24,109 @@ cc.Class({
 
     start() {
         this.addEvent();
+
+        this.nickName = null;
+        this.avatarUrl = null;
     },
 
     // LIFE-CYCLE CALLBACKS:
-    onLoad: function() {
+    onLoad: function () {
         var self = this;
-        // self._weChatCheckSession();
-
-        this.button_login.node.on('click', this.login_callback, this);
-        this.button_change.node.on('click', this.change_callback, this);
+        self._weChatCheckSession();
     },
 
-    
+
 
     login_callback: function (event) {
         var self = this;
-        cc.log("点击到登录按钮");
-        
-        // cc.director.loadScene("GameUI");
-        
         // TODO 暂时使用游客登录
-        KKVS.Login_type = Tool.VISITOR_LOGIN;
-        KKVS.Acc = 'ceshizhanghaoxg1600000101';
-        KKVS.Pwd = '123456';
-        Tool.OxLogin(KKVS.Acc, KKVS.Pwd);
+        // KKVS.Login_type = Tool.VISITOR_LOGIN;
+        // KKVS.Acc = 'ceshizhanghaoxg1600000101';
+        // KKVS.Pwd = '123456';
+        // Tool.OxLogin(KKVS.Acc, KKVS.Pwd);
     },
 
     _weChatCheckSession: function () {
         var self = this;
         wx.checkSession({
             success: function () {
-                // 仍然是登录状态
-                console.log("仍然是登录状态");
-                self._weChatGetUserInfo();
+                cc.log("仍然是登录状态");
+                self._wxLoginCode(function(data) {
+                    self._serverLogin(data.code);
+                });
             },
 
             fail: function (res) {
-                // 登录状态已过期 或者 未登录过
-                console.log("登录状态已过期 或者 未登录过");
-                self._weChatLogin();
+                cc.log("登录状态已过期 或者 未登录过");
+                self._wxLoginCode(function(data) {
+                    self._weChatGetUserInfo(data);
+                });
             },
         });
     },
 
-    _weChatLogin: function () {
-        var self = this;
+    _wxLoginCode: function(callback) {
         wx.login({
             success: function (res) {
-                console.log("登录成功 code = " + res.code);
-                // 此处返回的Code  服务器进行验证登录
-                self._weChatGetUserInfo();
+                cc.log("登录成功 code = " + res.code);
+                callback(res);
             },
 
             fail: function (res) {
-                console.log("调用小游戏登录失败 code = " + res.errMsg.code);
+                cc.log("调用小游戏登录失败 code = " + res.errMsg.code);
             },
         });
     },
 
-    _weChatGetUserInfo: function () {
+    _serverLogin: function (code) {
+        var reqURL = "https://apiwxgame.kkvs.com/MobileApi/GetSgameAccounts?Code=" + code;
+        httpUtils.getInstance().httpGets(reqURL, function (data) {
+            cc.log("_serverLogin " + data);
+            if (data == -1) {
+                cc.log('请检查网络！');
+            } else {
+                var jsonD = JSON.parse(data);
+                cc.log(jsonD);
+                cc.log(jsonD[0].Accounts);
+                cc.log(jsonD[0].PassWord);
+
+                KKVS.Login_type = Tool.VISITOR_LOGIN;
+                KKVS.Acc = jsonD[0].Accounts;
+                KKVS.Pwd = jsonD[0].PassWord;
+
+                Tool.OxLogin(KKVS.Acc, KKVS.Pwd);
+            }
+        });
+    },
+
+    // 显示微信登录按钮
+    _showUserInfoButton(data) {
+        var self = this;
+        var _w = 0.2265625 * window.innerWidth;
+        var _h = 0.68326118 * window.innerHeight;
+        var _bw = window.innerWidth; //0.546875 * window.innerWidth;
+        var _bh = window.innerHeight; //0.1010101 * window.innerHeight;
+        // 创建授权按钮
+        try {
+            wx.userInfoButton(_w, _h, _bw, _bh, data, function (res) {
+                console.log(res);
+                if (res.userInfo) {
+                    //登录成功 保存用户信息
+                    cc.log("res.userInfo = " + res.userInfo);
+                    // wxsdk.set('userInfo', res.userInfo);
+                    // self.loginState = false;
+                    self._serverLogin(res.code);
+                } else {
+                    // self.loginState = true;
+                    cc.log("ffffff");
+                }
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    },
+
+    _weChatGetUserInfo: function (data) {
         var self = this;
         wx.getUserInfo({
             success: function (res) {
@@ -105,15 +138,18 @@ cc.Class({
                 // 2 ：女
                 var gender = res.userInfo.gender;
                 var nickName = res.userInfo.nickName;
-                console.log("city = " + city);
-                console.log("gender = " + gender);
-                console.log("nickName = " + nickName);
-                self.username.string = nickName;
-                self._weChatDownloadFile(avatarUrl);
+                cc.log("city = " + city);
+                cc.log("gender = " + gender);
+                cc.log("nickName = " + nickName);
+
+                // this.nickName = nickName;
+                // this.avatarUrl = avatarUrl;
+
+                self._serverLogin(data.code);
             },
 
             fail: function () {
-                console.log("用户未确认授权");
+                cc.log("用户未确认授权");
             },
         });
     },
@@ -133,21 +169,17 @@ cc.Class({
             },
 
             fail: function (err) {
-                console.log("下载微信头像失败 = " + err);
+                cc.log("下载微信头像失败 = " + err);
             },
         });
     },
 
-    change_callback: function (event) {
-        cc.log("点击到更换按钮");
-    },
-
     // 场景切换
     onLoginSuccess: function () {
-        console.log("登录服连接成功");
+        cc.log("登录服连接成功");
 
         // cc.director.loadScene("GameUI");
-        Tool.enterGame(1, 2, 0,  0, 0);
+        Tool.enterGame(1, 2, 0, 0, 0);
     },
 
     login: function () {
@@ -177,19 +209,15 @@ cc.Class({
         gameEngine.Event.fire("login", acc, pwd, datas);
     },
 
-    LoginGameSvrSuccess: function() {
-        cc.director.loadScene("GameUI");
-    },
-
     addEvent() {
-        console.log("注册Kbe事件");
+        cc.log("注册Kbe事件");
         KKVS.Event.register("goLogin", this, "login");
         KKVS.Event.register("onLoginSuccess", this, "onLoginSuccess");
         KKVS.Event.register("LoginGameSvrSuccess", this, "LoginGameSvrSuccess");
     },
 
     onDestroy() {
-        console.log("Login Scene has been destroy");
+        cc.log("Login Scene has been destroy");
         KKVS.Event.deregister("goLogin", this);
         KKVS.Event.deregister("onLoginSuccess", this);
         KKVS.Event.deregister("LoginGameSvrSuccess", this);

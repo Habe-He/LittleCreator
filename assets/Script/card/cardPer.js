@@ -13,6 +13,9 @@ cc.Class({
         
         // 牌值
         cardValue: 0,
+
+        // 牌的原始值
+        cardId: 0
     },
 
     onLoad: function () {},
@@ -21,17 +24,18 @@ cc.Class({
     showPoker: function (id, z_Order) {
         var self = this;
         // cc.log("id = " + id + " z_Order = " + z_Order);
+        self.cardId = id;
         self.cardValue = cardTypeUtil.GetCardValue(id);
-        var cardColorType = cardInfo[cardTypeUtil.GetCardColor(id)].cardType;
+        self.cardColorType = cardInfo[cardTypeUtil.GetCardColor(id)].cardType;
 
         var path = "";
-        if (cardColorType == 0) {
-            path = "card/card_" + cardColorType + "_" + (self.cardValue - 78);
+        if (self.cardColorType == 0) {
+            path = "card/card_" + self.cardColorType + "_" + (self.cardValue - 78);
         } else {
             if (self.cardValue > 13)
-                path = "card/card_" + cardColorType + "_" + (self.cardValue - 13);
+                path = "card/card_" + self.cardColorType + "_" + (self.cardValue - 13);
             else
-                path = "card/card_" + cardColorType + "_" + self.cardValue;
+                path = "card/card_" + self.cardColorType + "_" + self.cardValue;
 
             if (self.cardValue == 1)
                 self.cardValue = 14;
@@ -60,6 +64,10 @@ cc.Class({
         return this.pokerSprite.getComponent(cc.Sprite).node.getPosition();
     },
 
+    setNodeScale: function(data) {
+        this.pokerSprite.getComponent(cc.Sprite).node.scale = data;
+    },
+
     // 通过是否被框选，显示牌 --- 弹起选中的牌
     showByReadySelect: function() {
         var self = this;
@@ -84,8 +92,20 @@ cc.Class({
     // 设置为未选中
     setNoneSelect: function() {
         var self = this;
-        this.node.setPosition(cc.p(0, 30));
+        this.node.runAction(cc.moveBy(0.1, 0, 0));
         self.isSelect = false;
         self.isReadyToSelect = false;
+    },
+
+    getCardId: function() {
+        return this.cardId;
+    },
+
+    getCardValue: function() {
+        return this.cardValue;
+    },
+
+    getcardColorType: function() {
+        return this.cardColorType;
     },
 });

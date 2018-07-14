@@ -77,7 +77,7 @@ var GameManager = {
     // 服务端返回玩家叫分
     onSeverReturnCallScore: function (args) {
         if (this.m_pGameRoomView == null) {
-            console.log("游戏界面未初始化完成");
+            cc.log("游戏界面未初始化完成");
             return;
         }
         if (args.scoreNum > 0)

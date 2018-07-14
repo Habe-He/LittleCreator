@@ -45,13 +45,15 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         this.reqEnterLobby(2);
     },
 
-    onPlayerData: function (params) {},
+    onPlayerData: function (params) {
+        cc.log("onPlayerData");
+    },
 
     onEnterLobby: function (lobbyID, bSuccess, ret_code) {
-        console.log("KKVS.EnterLobbyID = " + KKVS.EnterLobbyID);
-        console.log("KKVS.SelectFieldID = " + KKVS.SelectFieldID);
+        cc.log("KKVS.EnterLobbyID = " + KKVS.EnterLobbyID);
+        cc.log("KKVS.SelectFieldID = " + KKVS.SelectFieldID);
         KKVS.SelectFieldID = 1;
-        console.log("KKVS.EnterRoomID = " + KKVS.EnterRoomID);
+        cc.log("KKVS.EnterRoomID = " + KKVS.EnterRoomID);
         if (bSuccess) {
             KKVS.EnterLobbyID = lobbyID;
             KKVS.Event.fire("onLoginGameSuccess", 1);
@@ -64,7 +66,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         // if (KKVS.GAME_MODEL == 0) {
         //     KKVS.KGOLD = money;
         // }
-        console.log("GamePlayer->>>>on_player_game_money_update money = " + money);
+        cc.log("GamePlayer->>>>on_player_game_money_update money = " + money);
         KKVS.Event.fire("refreshMyScoreDDZ", money);
     },
 
@@ -119,7 +121,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
                 pro: null,
                 winType: 1
             };
-            console.log("erorStr = " + erorStr);
+            cc.log("erorStr = " + erorStr);
             KKVS.Event.fire("createTips", args);
             KKVS.INFO_MSG("请求房间失败 GamePlayer-> 187 line");
             return;
@@ -134,9 +136,9 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         KKVS.INFO_MSG("->onRoomConfig");
         this.room_config = JSON.parse(room_config);
         var data = this.room_config;
-        console.log("room_config = " + room_config);
+        cc.log("room_config = " + room_config);
         gameModel.baseScore = this.room_config.multiples;
-        console.log("gameModel.baseScore = " + gameModel.baseScore);
+        cc.log("gameModel.baseScore = " + gameModel.baseScore);
         KKVS.GAME_MODEL = data.game_mode;
 
         gameModel.Bring = data.bring;
@@ -277,7 +279,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
             gameModel.isInGameStart = false;
         else
             gameModel.isInGameStart = true;
-        console.log("303 gameModel.isInGameStart = " + gameModel.isInGameStart);
+        cc.log("303 gameModel.isInGameStart = " + gameModel.isInGameStart);
         KKVS.Event.fire("onEnterTableResult");
     },
 
@@ -415,19 +417,19 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     },
 
     onHappy_SendCard: function (lobbyID, fieldID, roomID, tableID, cardList) {
-        console.log("->onHappy_SendCard====");
-        Tool.logObj(cardList);
-        KKVS.IsReconData = false;
-        KKVS.IsShowSelf = false;
-        KKVS.Event.fire("unShow");
-        KKVS.Event.fire("unShowResult");
+        cc.log("->onHappy_SendCard====");
+        // Tool.logObj(cardList);
+        // KKVS.IsReconData = false;
+        // KKVS.IsShowSelf = false;
+        // KKVS.Event.fire("unShow");
+        // KKVS.Event.fire("unShowResult");
 
-        gameModel.diZhuCharId = 65535;
+        // gameModel.diZhuCharId = 65535;
         GameManager.onSeverSendCard(cardList);
     },
 
     onHappy_SendCallBanker: function (lobbyID, fieldID, roomID, tableID, chair_ID, multiple) {
-        console.log("->onHappy_SendCallBanker");
+        cc.log("->onHappy_SendCallBanker");
 
         var data = {
             chairID: chair_ID,
@@ -439,68 +441,34 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     },
 
     onHappy_SendBankerInfo: function (lobbyID, fieldID, roomID, tableID, chairID, multiple, dipailist) {
-        console.log("->onHappy_SendBankerInfo");
+        cc.log("->onHappy_SendBankerInfo");
         var data = {
             chairID: chairID,
             multiple: multiple,
             dipailist: dipailist,
             time: 15,
-            mustPlay: 1
+            mustPlay: true
         };
 
         KKVS.Event.fire("BankerInfo", data);
-
-        // var args = arguments;
-        // // 确定地主
-        // var data2 = {
-        //     chairID: chairID,
-        //     diData: dipailist,
-        //     effNum: 0
-        // };
-        // GameManager.onSeverOpenCard(data2);
-
-        // // 叫分倍数
-        // GameManager.onSeverFanBei(beishu)
-
-        // var time2 = 15;
-        // var mustplay = 1;
-        // var data3 = {
-        //     chairID: chairID,
-        //     time: time2,
-        //     mustPlay: mustplay
-        // };
-        // GameManager.onToPlayCard(data3);
     },
 
     onHappy_OutCardInfo: function (lobbyID, fieldID, roomID, tableID, chairID, cardlist, type, nowplayID, mustplay, cardNum) {
-        console.log("onHappy_OutCardInfo");
-        var data2 = {
-            chairID: chairID,
-            cardData: cardlist
-        };
+        cc.log("onHappy_OutCardInfo");
+        var cardlist = cardlist;
         if (type == 0)
-            data2.cardData = [];
-        GameManager.onPlayerPlayCard(data2);
-        if (cardlist.length > 0) {
-            GameManager.setLastArray(cardlist);
+            cardlist = [];
+        if (chairID == KKVS.myChairID) {
+            KKVS.Event.fire("playSelfCard", cardlist, chairID);
+        } else {
+            KKVS.Event.fire("playerPlayCard", cardlist, chairID);
         }
 
-        var args = arguments;
-        var time2 = 15;
-        var data = {
-            chairID: nowplayID,
-            time: time2,
-            mustPlay: mustplay
-        };
-        GameManager.onToPlayCard(data);
-        gameModel.nowplayID = nowplayID;
-        // 刷新玩家的手牌
-        if (cardNum)
-            GameManager.refreshShouPai(cardNum);
+        KKVS.Event.fire("toPlayCard", nowplayID, 15, mustplay);
     },
 
     onHappy_openCard: function (lobbyID, fieldID, roomID, tableID, cardlist, isSpring) {
-        console.log("->onHappy_openCard====");
+        cc.log("->onHappy_openCard====");
         Tool.logObj(cardlist);
         for (var i = 0; i < cardlist.length; i++) {
             if (i != KKVS.myChairID) {
@@ -514,55 +482,56 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     },
 
     onHappy_GameEndInfo: function (lobby_id, field_id, room_id, table_id, card_list, score, times, isspring, difen) {
-        console.log("->onHappy_GameEndInfo====");
-        retrun;
-        var args = arguments;
-        KKVS.IsShowSelf = false;
-        var beishu = args[6];
-        // 显示结算界面
-        GameManager.showResultView(beishu, score, times, difen);
+        cc.log("->onHappy_GameEndInfo====");
+        return;
 
-        if (score.length == 0) {
-            console.log("结算时候分数长度为 0 这个是错误的");
-            return;
-        }
+        // var args = arguments;
+        // KKVS.IsShowSelf = false;
+        // var beishu = args[6];
+        // // 显示结算界面
+        // GameManager.showResultView(beishu, score, times, difen);
 
-        for (var i = 0; i < score.length; ++i) {
-            console.log(" fenshu = " + score[i])
-        }
-        console.log("gameModel.diZhuCharId = " + gameModel.diZhuCharId);
-        // 结算表情
-        if (Number(score[gameModel.diZhuCharId].toString()) > 0)
-            var winType = true;
-        else
-            var winType = false;
+        // if (score.length == 0) {
+        //     cc.log("结算时候分数长度为 0 这个是错误的");
+        //     return;
+        // }
 
-        var spring = 0;
-        if (isspring == 2)
-            spring = 1; //是否春天
-        else
-            spring = 0;
+        // for (var i = 0; i < score.length; ++i) {
+        //     cc.log(" fenshu = " + score[i])
+        // }
+        // cc.log("gameModel.diZhuCharId = " + gameModel.diZhuCharId);
+        // // 结算表情
+        // if (Number(score[gameModel.diZhuCharId].toString()) > 0)
+        //     var winType = true;
+        // else
+        //     var winType = false;
 
-        var oData = {
-            diFen: 0,
-            beiNum: beishu,
-            chairID: KKVS.myChairID,
-            winType: winType,
-            isSpring: spring,
-            score: score
-        };
-        GameManager.countScore(oData);
+        // var spring = 0;
+        // if (isspring == 2)
+        //     spring = 1; //是否春天
+        // else
+        //     spring = 0;
+
+        // var oData = {
+        //     diFen: 0,
+        //     beiNum: beishu,
+        //     chairID: KKVS.myChairID,
+        //     winType: winType,
+        //     isSpring: spring,
+        //     score: score
+        // };
+        // GameManager.countScore(oData);
     },
 
     onHappy_GameErrInfo: function (lobbyID, fieldID, roomID, tableID, msginfo) {
-        console.log("->onHappy_GameErrInfo==== msginfo = " + msginfo);
+        cc.log("->onHappy_GameErrInfo==== msginfo = " + msginfo);
         if (gameModel.nowplayID == KKVS.myChairID) {
             GameManager.onCardError(msginfo);
         }
     },
 
     send_LeaveTable: function (lobbyID, fieldID, roomID, tableID, chair_id) {
-        console.log("->send_LeaveTable====");
+        cc.log("->send_LeaveTable====");
         if (chair_id == KKVS.EnterChairID) {
             KKVS.Event.fire("leaveGame");
         } else {
@@ -574,10 +543,10 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     },
 
     onKent_tick: function (lobbyID, fieldID, roomID, tableID, chair_id) {
-        console.log("->onKent_tick====");
+        cc.log("->onKent_tick====");
         if (chair_id == KKVS.EnterChairID) {
-            cc.log("自己被踢出桌子 -- 注释");
-            // KKVS.Event.fire("leaveGame");
+            // cc.log("自己被踢出桌子 -- 注释");
+            KKVS.Event.fire("leaveGame");
         } else {
             cc.log("别的玩家被踢出桌子");
             var data = {
@@ -588,12 +557,12 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     },
 
     req_room_msg: function (type, datas) {
-        console.log("->req_room_msg====");
+        cc.log("->req_room_msg====");
         this.baseCall("req_room_msg", type, datas);
     },
 
     onHappy_Again: function () {
-        console.log("->onHappy_Again====");
+        cc.log("->onHappy_Again====");
         var args = arguments;
         Tool.logObj(args);
         var reData = {
@@ -637,17 +606,17 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     },
 
     onHappy_Trusteeship: function (lobbyID, fieldID, roomID, tableID) {
-        console.log("->onHappy_SendCallBanker====");
+        cc.log("->onHappy_SendCallBanker====");
         GameManager.inTrusteeship();
     },
 
     on_room_msg: function (type, args) {
-        console.log("->ST on_room_msg args ==== " + args);
-        console.log("->ST on_room_msg type ==== " + type);
+        cc.log("->ST on_room_msg args ==== " + args);
+        cc.log("->ST on_room_msg type ==== " + type);
         var datas = JSON.parse(args);
         if (type == ROOM_MSG_ID_JOIN_ROOM) {
             if (!datas.success) {
-                console.log("加入比赛房间失败 【" + datas.code + "】");
+                cc.log("加入比赛房间失败 【" + datas.code + "】");
                 if (typeof KKVS.MatchData == 'object' && typeof KKVS.MatchData[datas["MatchID"]] != 'undefined') {
                     KKVS.MatchData[datas["MatchID"]] = null;
                 }
@@ -678,7 +647,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     ////////////
 
     on_task_get: function () {
-        console.log('on_task_get');
+        cc.log('on_task_get');
         var args = arguments;
         Tool.logObj(args);
         // var info = JSON.parse(args[3]);
@@ -691,7 +660,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     },
 
     on_task_progress: function () {
-        console.log('on_task_progress');
+        cc.log('on_task_progress');
         var args = arguments;
         Tool.logObj(args);
         var data = {
@@ -702,7 +671,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     },
 
     on_task_award: function () {
-        console.log('on_task_award')
+        cc.log('on_task_award')
         var args = arguments;
         Tool.logObj(args);
         var data = {
@@ -716,12 +685,12 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     // 房卡模式新增 消息
     // room_id 房间号
     onHappy_fk_update: function (lobbyID, fieldID, roomID, tableID, scores, zongJuShu, curJuShu, difen, beishu, room_id) {
-        console.log("newLand GamePlayer->onHappy_fk_update");
+        cc.log("newLand GamePlayer->onHappy_fk_update");
         var args = arguments;
         // logObj(args);
 
         for (var i = 0; i < scores.length; ++i) {
-            console.log(i + " jinbi = " + scores[i]);
+            cc.log(i + " jinbi = " + scores[i]);
         }
 
         var data = {
@@ -736,7 +705,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     },
 
     onHappy_fk_finish: function (lobbyID, fieldID, roomID, tableID, rocks, booms, springs, fanSprings, scores, fangzhu, fanghao, time, names) {
-        console.log("newLand GamePlayer->onHappy_fk_finish");
+        cc.log("newLand GamePlayer->onHappy_fk_finish");
         var args = arguments;
         // logObj(args);
 
