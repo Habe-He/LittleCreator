@@ -290,15 +290,15 @@ var GameManager = {
     },
     exitGameWithGold: function () {
         cc.log("---------离开游戏,断开socket-----------");
-        gameEngine.destroy();
-        var my_gold = parseInt(KKVS.KGOLD);
-        cc.log("myGold=" + my_gold + ", KKVS.MinScore=" + KKVS.MinScore + ", KKVS.MaxScore=" + KKVS.MaxScore);
-        if (my_gold >= KKVS.MinScore && (KKVS.MaxScore == 0 || my_gold <= KKVS.MaxScore)) {
-            this.exitGame();
-        } else {
-            var str = my_gold < KKVS.MinScore ? "退出房间，金币少于" + getGoldTxt(KKVS.MinScore) : "退出房间，金币大于" + getGoldTxt(KKVS.MaxScore);
-            KKVS.Event.fire("exitByGold", str);
-        }
+        // gameEngine.destroy();
+        // var my_gold = parseInt(KKVS.KGOLD);
+        // cc.log("myGold=" + my_gold + ", KKVS.MinScore=" + KKVS.MinScore + ", KKVS.MaxScore=" + KKVS.MaxScore);
+        // if (my_gold >= KKVS.MinScore && (KKVS.MaxScore == 0 || my_gold <= KKVS.MaxScore)) {
+        //     this.exitGame();
+        // } else {
+        //     var str = my_gold < KKVS.MinScore ? "退出房间，金币少于" + getGoldTxt(KKVS.MinScore) : "退出房间，金币大于" + getGoldTxt(KKVS.MaxScore);
+        //     KKVS.Event.fire("exitByGold", str);
+        // }
     },
     exitGameMatch: function () {
         cc.log("---------离开比赛,断开socket-----------");

@@ -1204,13 +1204,13 @@ gameEngine.Entity = gameEngine.Class.extend(
 
             this.base.newMail();
             this.base.bundle.writeUint16(methodID);
-            cc.log("gameEngine baseCall :");
-            cc.log("methodID = " + methodID.toString());
+            // cc.log("gameEngine baseCall :");
+            // cc.log("methodID = " + methodID.toString());
             try {
                 for (var i = 0; i < args.length; i++) {
                     if (args[i].isSameType(arguments[i + 1])) {
                         args[i].addToStream(this.base.bundle, arguments[i + 1]);
-                        cc.log("arguments " + i + " = " + arguments[i + 1]);
+                        // cc.log("arguments " + i + " = " + arguments[i + 1]);
                     }
                     else {
                         throw new Error("gameEngine.Entity::baseCall: arg[" + i + "] is error!");

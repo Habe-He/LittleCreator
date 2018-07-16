@@ -7,6 +7,10 @@ var KKVS = KKVS || {};
  * By Kent
  * MIT Licensed.
  */
+var PLAYER_MSG_ID_REQ_COMPETITIVE_RANKING = 5; // 排位赛季信息
+var PLAYER_MSG_ID_REQ_PLAYER_COMPETITIVE_RANKING = 16 ;//发送玩家排位积分信息
+
+
 KKVS.Class = function () {
 };
 KKVS.Class.extend = function (prop) {

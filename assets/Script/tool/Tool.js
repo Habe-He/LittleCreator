@@ -3,6 +3,7 @@ var md5 = require("./md5");
 var gameEngine = require("./../plugin/gameEngine");
 var cardTypeUtil = require('./../card/cardTypeUtil');
 var cardInfo = require('./../card/cardInfo');
+var cardfabs = require('./../card/cardPer');
 
 var Tool = Tool || {};
 
@@ -149,6 +150,7 @@ Tool.enterGame = function (room_id, room_type, min_score, max_score, service_pay
         gameEngine.app.player().reqEnterRoom(KKVS.EnterLobbyID, KKVS.SelectFieldID, KKVS.EnterRoomID);
     }
 }
+
 //连线
 Tool.onLine = function () {
     var acc = KKVS.Acc;
@@ -314,6 +316,8 @@ Tool.getViewChairID = function (nChairID) {
 // 排列打出去的牌
 Tool.sortOutCardList = function (objarr) {
     objarr.sort(function (a, b) {
+        a = a.getComponent(cardfabs);
+        b = b.getComponent(cardfabs);
         if ((a.cardColorType == 0 && b.cardColorType != 0) || (a.cardColorType != 0 && b.cardColorType == 0)) {
             if (a.cardColorType < b.cardColorType) {
                 return -1;
@@ -355,6 +359,8 @@ Tool.sortOutCardList = function (objarr) {
 // 排列自己手上的牌
 Tool.sortCardList = function(objarr) {
     objarr.sort(function(a, b) {
+        a = a.getComponent(cardfabs);
+        b = b.getComponent(cardfabs);
         if (a.cardColorType == 5 && b.cardColorType != 5 || a.cardColorType != 5 && b.cardColorType == 5) {
             if (a.cardColorType < b.cardColorType) {
                 return 1;
@@ -445,6 +451,29 @@ Tool.toolSortArray = function(m_data) {
     })
 
     return m_data;
+}
+
+Tool.sortListBy2T3 = function(data, operator) {
+    if (data == undefined)
+        return;
+
+    data.sort(function(x, y) {
+        if (operator == "从小到大") {
+            if (Number(x) < Number(y)) {
+                return -1;
+            } else {
+                return 1;
+            }
+        } else if (operator == "从大到小") {
+            if (Number(x) > Number(y)) {
+                return -1;
+            } else if (Number(x == Number(y))) {
+                return -1;
+            } else {
+                return 1;
+            }
+        }
+    });
 }
 
 module.exports = Tool;
