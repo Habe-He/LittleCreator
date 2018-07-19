@@ -45,7 +45,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     },
 
     onPlayerData: function (params) {
-        cc.log(" onPlayerData msg");
+        cc.log("onPlayerData msg");
         cc.log("params = " + params);
         // logObj(params);
         KKVS.UID = this.id;
@@ -57,6 +57,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         KKVS.VIP = params.vip;
         KKVS.HEAD_URL = params.head_url;
         cc.log("KKVS.HEAD_URL=" + KKVS.HEAD_URL);
+        cc.log("KKVS.NICKNAME=" + KKVS.NICKNAME);
         KKVS.GAME_ACC = params.account;
         cc.director.loadScene("Lobby");
     },
@@ -368,7 +369,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
             chairID: chairID,
             playerID: playerID
         };
-        GameManager.onSeverLeaveTable(data);
+        // GameManager.onSeverLeaveTable(data);
     },
 
     onKent_GameSay: function () { //手机版本与pc版本不同
@@ -463,7 +464,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         // KKVS.Event.fire("unShow");
         // KKVS.Event.fire("unShowResult");
 
-        // gameModel.diZhuCharId = 65535;
+        gameModel.diZhuCharId = 65535;
         GameManager.onSeverSendCard(cardList);
     },
 
@@ -488,7 +489,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
             time: 15,
             mustPlay: true
         };
-
+        gameModel.diZhuCharId = chairID;
         KKVS.Event.fire("BankerInfo", data);
     },
 
@@ -498,9 +499,9 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         if (type == 0)
             cardlist = [];
         if (chairID == KKVS.myChairID) {
-            KKVS.Event.fire("playSelfCard", cardlist, chairID, chairID);
+            KKVS.Event.fire("playSelfCard", cardlist, chairID);
         } else {
-            KKVS.Event.fire("playerPlayCard", cardlist, chairID, chairID);
+            KKVS.Event.fire("playerPlayCard", cardlist, chairID);
         }
 
         KKVS.Event.fire("toPlayCard", nowplayID, 15, mustplay);
@@ -508,21 +509,39 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
 
     onHappy_openCard: function (lobbyID, fieldID, roomID, tableID, cardlist, isSpring) {
         cc.log("->onHappy_openCard====");
-        Tool.logObj(cardlist);
-        for (var i = 0; i < cardlist.length; i++) {
-            if (i != KKVS.myChairID) {
-                var data = {
-                    chairID: i,
-                    cardData: cardlist[i]
-                };
-                GameManager.onSurplusCard(data, isSpring);
-            }
-        }
+        // Tool.logObj(cardlist);
+        // for (var i = 0; i < cardlist.length; i++) {
+        //     if (i != KKVS.myChairID) {
+        //         var data = {
+        //             chairID: i,
+        //             cardData: cardlist[i]
+        //         };
+        //         GameManager.onSurplusCard(data, isSpring);
+        //     }
+        // }
     },
 
-    onHappy_GameEndInfo: function (lobby_id, field_id, room_id, table_id, card_list, score, times, isspring, difen) {
+    onHappy_GameEndInfo: function (lobby_id, field_id, room_id, table_id, card_list, scores, times, isspring, difen) {
         cc.log("->onHappy_GameEndInfo====");
-        return;
+
+        var data = [];
+        for (var i = 0; i < gameModel.playerData.length; ++i) {
+            var name = gameModel.playerData[i].name;
+            var baseScore = difen;
+            var chairID = gameModel.playerData[i].chairID;
+            var score = Number(scores[i].toString());
+            var multiple = times;
+            var sData = {
+                'name': name,
+                'baseScore': baseScore,
+                'chairID': chairID,
+                'score': score,
+                'multiple': multiple
+            };
+            data.push(sData);
+        }
+
+        KKVS.Event.fire("EndInfo", data);
 
         // var args = arguments;
         // KKVS.IsShowSelf = false;
@@ -577,7 +596,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
             var data = {
                 chairID: chair_id
             };
-            GameManager.onSeverLeaveTable(data);
+            // GameManager.onSeverLeaveTable(data);
         }
     },
 
@@ -591,7 +610,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
             var data = {
                 chairID: chair_id
             };
-            GameManager.onSeverLeaveTable(data);
+            // GameManager.onSeverLeaveTable(data);
         }
     },
 
@@ -646,7 +665,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
 
     onHappy_Trusteeship: function (lobbyID, fieldID, roomID, tableID) {
         cc.log("->onHappy_SendCallBanker====");
-        GameManager.inTrusteeship();
+        // GameManager.inTrusteeship();
     },
 
     on_room_msg: function (type, args) {

@@ -21,7 +21,7 @@ var gameModel = {
     // gameModel.laiZiCardValue = null;
 
     // // 提示点击次数 出牌以后重置为 0
-    // gameModel.tipsClickNum = 0;
+    tipsClickNum: 0,
 
     // // 当前是否自己出牌
     // gameModel.isMySelfToPlay = false;

@@ -8,6 +8,12 @@ cc.Class({
             default: null,
             type: cc.Sprite
         },
+
+        flagSprite: {
+            default: null,
+            type: cc.Sprite
+        },
+
         isSelect: false,
         isReadyToSelect: false,
         
@@ -46,7 +52,8 @@ cc.Class({
         // cc.log("path = " + path);
         cc.loader.loadRes(path, cc.SpriteFrame, function (err, spriteFrame) {
             self.pokerSprite.getComponent(cc.Sprite).spriteFrame = spriteFrame;
-        })
+        });
+        this.flagSprite.node.active = false;
     },
 
     // 获取节点大小
@@ -92,9 +99,17 @@ cc.Class({
     // 设置为未选中
     setNoneSelect: function() {
         var self = this;
-        this.node.runAction(cc.moveBy(0.1, 0, 0));
+        if (self.isSelect) {
+            this.node.runAction(cc.moveBy(0.1, 0, -30));
+        }
+        
         self.isSelect = false;
         self.isReadyToSelect = false;
+    },
+
+    // 显示地主牌标
+    showFlag: function() {
+        this.flagSprite.node.active = true;
     },
 
     getCardId: function() {

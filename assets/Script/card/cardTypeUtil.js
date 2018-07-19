@@ -1445,459 +1445,459 @@ cardTypeUtil.getArray = function (arr, value, count) {
 //1：自已首出牌  依次从小到大弹出该牌值的所有牌，不拆牌  (腾讯欢乐斗地主规则：先从单张开始出，依次从小到大弹出，)
 //2：管上家牌  依次从小到在能管住的牌形，拆牌    (腾讯欢乐斗地主规则：依次从小到在能管住的牌形，拆牌 )
 //备注:当三带一对，或是飞机带一对，或者四带二对中的对子寻找，需要优化算法。带的对子当中应该也可以带laizi
-cardTypeUtil.tipsCard = function (cardValues, objCards, objLaiZiNum, tipsClickNum) {
+cardTypeUtil.tipsCard = function (cardValues, objCards, objLaiZiNum) {
     if (cardValues == null) {
-        cc.log("参数为NULL***************");
-        return;
-    }
-    if (cardValues.length == 0) {
-        cc.log("参数长度为0***************");
-        return;
-    }
-    var info = cardTypeUtil.getCardInfo(cardValues);
-    var singeArr = info[0];
-    var doubleArr = info[1];
-    var threeArr = info[2];
-    var fourArr = info[3];
-    //目标牌的来自数量，要从外面传进来 不传默认为0
-    var objLaiZiNum = objLaiZiNum ? objLaiZiNum : 0;
+		console.log("参数为NULL***************");
+		return;
+	}
+	if (cardValues.length == 0) {
+		console.log("参数长度为0***************");
+		return;
+	}
+	var info = cardTypeUtil.getCardInfo(cardValues);
+	var singeArr = info[0];
+	var doubleArr = info[1];
+	var threeArr = info[2];
+	var fourArr = info[3];
+	//目标牌的来自数量，要从外面传进来 不传默认为0
+	var objLaiZiNum = objLaiZiNum ? objLaiZiNum : 0;
 
-    //要返回的数组
-    var backArr = [];
-    //自己出牌。
-    if (objCards == null) {
-        if (cardValues.length == 0) {
-            return [];
-        }
-        var findBackArr = function () {
-            if (singeArr.length > 0 && tipsClickNum < singeArr.length) {
-                var startNum = tipsClickNum;
-                tipsClickNum += 1;
-                backArr.push(singeArr[startNum]);
-                return backArr;
-            } else if (doubleArr.length > 0 && (tipsClickNum - singeArr.length) < doubleArr.length) {
-                var startNum = tipsClickNum - singeArr.length;
-                tipsClickNum += 1;
-                backArr.push(doubleArr[startNum]);
-                backArr.push(doubleArr[startNum]);
-                return backArr;
-            } else if (threeArr.length > 0 && (tipsClickNum - singeArr.length - doubleArr.length) < threeArr.length) {
-                var startNum = (tipsClickNum - singeArr.length - doubleArr.length);
-                tipsClickNum += 1;
-                backArr.push(threeArr[startNum]);
-                backArr.push(threeArr[startNum]);
-                backArr.push(threeArr[startNum]);
-                return backArr;
-            } else if (fourArr.length > 0 && (tipsClickNum - singeArr.length - doubleArr.length - threeArr.length) < fourArr.length) {
-                var startNum = (tipsClickNum - singeArr.length - doubleArr.length - threeArr.length);
-                tipsClickNum += 1;
-                backArr.push(fourArr[startNum]);
-                backArr.push(fourArr[startNum]);
-                backArr.push(fourArr[startNum]);
-                backArr.push(fourArr[startNum]);
-                return backArr;
-            } else {
-                //重新执行第一次点提示
-                tipsClickNum = 0;
-                return findBackArr();
-            }
-        }
-        return findBackArr();
+	//要返回的数组
+	var backArr = [];
+	//自己出牌。
+	if (objCards == null) {
+		if (cardValues.length == 0) {
+			return [];
+		}
+		var findBackArr = function() {
+			if (singeArr.length > 0 && gameModel.tipsClickNum < singeArr.length) {
+				var startNum = gameModel.tipsClickNum;
+				gameModel.tipsClickNum += 1;
+				backArr.push(singeArr[startNum]);
+				return backArr;
+			} else if (doubleArr.length > 0 && (gameModel.tipsClickNum - singeArr.length) < doubleArr.length) {
+				var startNum = gameModel.tipsClickNum - singeArr.length;
+				gameModel.tipsClickNum += 1;
+				backArr.push(doubleArr[startNum]);
+				backArr.push(doubleArr[startNum]);
+				return backArr;
+			} else if (threeArr.length > 0 && (gameModel.tipsClickNum - singeArr.length - doubleArr.length) < threeArr.length) {
+				var startNum = (gameModel.tipsClickNum - singeArr.length - doubleArr.length);
+				gameModel.tipsClickNum += 1;
+				backArr.push(threeArr[startNum]);
+				backArr.push(threeArr[startNum]);
+				backArr.push(threeArr[startNum]);
+				return backArr;
+			} else if (fourArr.length > 0 && (gameModel.tipsClickNum - singeArr.length - doubleArr.length - threeArr.length) < fourArr.length) {
+				var startNum = (gameModel.tipsClickNum - singeArr.length - doubleArr.length - threeArr.length);
+				gameModel.tipsClickNum += 1;
+				backArr.push(fourArr[startNum]);
+				backArr.push(fourArr[startNum]);
+				backArr.push(fourArr[startNum]);
+				backArr.push(fourArr[startNum]);
+				return backArr;
+			} else {
+				//重新执行第一次点提示
+				gameModel.tipsClickNum = 0;
+				return findBackArr();
+			}
+		}
+		return findBackArr();
 
-    } else {
-        //只要做普通的牌形判断即可
-        var objCardType = cardTypeUtil.getCommonCardType(objCards);
-        //cc.log("目标牌形是：：：：" + objCardType);
-        var objLen = objCards.length;
-        if (objCardType == cardTypeUtil.oneCard || objCardType == cardTypeUtil.doubleCard || objCardType == cardTypeUtil.threeCard) {
-            var arr = [];
-            if (objCardType == cardTypeUtil.oneCard) {
-                arr = cardTypeUtil.findAllBigs(objCards[0], info, objLen, 80);
-            } else {
-                arr = cardTypeUtil.findAllBigs(objCards[0], info, objLen);
-            }
-            cardTypeUtil.sortLaiziArray(arr);
-            var findBackArr = function () {
-                var len = arr.length;
-                if (len == 0 || tipsClickNum >= len) {
-                    if (gameModel.laiZiCardValue && gameModel.laiZiCardNum > 0) {
-                        var laiziBackArr = cardTypeUtil.laiziTips(cardValues, objCards, objCardType, info);
-                        cardTypeUtil.sortLaiziDoubleArray(laiziBackArr);
-                        var laiziLen = laiziBackArr.length;
-                        if (laiziLen == 0) {
-                            return cardTypeUtil.findBoom(cardValues, info, len, backArr, findBackArr);
-                        } else {
-                            var allLen = len + laiziLen;
-                            if (tipsClickNum >= allLen) {
-                                return cardTypeUtil.findBoom(cardValues, info, allLen, backArr, findBackArr);
-                            }
-                            var startNum = tipsClickNum - len;
-                            tipsClickNum += 1;
-                            return laiziBackArr[startNum];
-                        }
-                    } else {
-                        return cardTypeUtil.findBoom(cardValues, info, len, backArr, findBackArr);
-                    }
-                }
+	} else {
+		//只要做普通的牌形判断即可
+		var objCardType = cardTypeUtil.getCommonCardType(objCards);
+		//console.log("目标牌形是：：：：" + objCardType);
+		var objLen = objCards.length;
+		if (objCardType == cardTypeUtil.oneCard || objCardType == cardTypeUtil.doubleCard || objCardType == cardTypeUtil.threeCard) {
+			var arr = [];
+			if (objCardType == cardTypeUtil.oneCard) {
+				arr = cardTypeUtil.findAllBigs(objCards[0], info, objLen, 80);
+			} else {
+				arr = cardTypeUtil.findAllBigs(objCards[0], info, objLen);
+			}
+			cardTypeUtil.sortLaiziArray(arr);
+			var findBackArr = function() {
+				var len = arr.length;
+				if (len == 0 || gameModel.tipsClickNum >= len) {
+					if (gameModel.laiZiCardValue && gameModel.laiZiCardNum > 0) {
+						var laiziBackArr = cardTypeUtil.laiziTips(cardValues, objCards, objCardType, info);
+						cardTypeUtil.sortLaiziDoubleArray(laiziBackArr);
+						var laiziLen = laiziBackArr.length;
+						if (laiziLen == 0) {
+							return cardTypeUtil.findBoom(cardValues, info, len, backArr, findBackArr);
+						} else {
+							var allLen = len + laiziLen;
+							if (gameModel.tipsClickNum >= allLen) {
+								return cardTypeUtil.findBoom(cardValues, info, allLen, backArr, findBackArr);
+							}
+							var startNum = gameModel.tipsClickNum - len;
+							gameModel.tipsClickNum += 1;
+							return laiziBackArr[startNum];
+						}
+					} else {
+						return cardTypeUtil.findBoom(cardValues, info, len, backArr, findBackArr);
+					}
+				}
 
-                var startNum = tipsClickNum;
-                tipsClickNum += 1;
-                if (arr.length > 0) {
-                    backArr = cardTypeUtil.getArray(backArr, arr[startNum], objLen);
-                }
-                return backArr;
-            }
-            return findBackArr();
-            //大小规则：：
-            //1:不同张数，张数多的大
-            //2:相同张数，laizi少的大
-            //3:相同张数，相同laizi数,值大的大
+				var startNum = gameModel.tipsClickNum;
+				gameModel.tipsClickNum += 1;
+				if (arr.length > 0) {
+					backArr = cardTypeUtil.getArray(backArr, arr[startNum], objLen);
+				}
+				return backArr;
+			}
+			return findBackArr();
+			//大小规则：：
+			//1:不同张数，张数多的大
+			//2:相同张数，laizi少的大
+			//3:相同张数，相同laizi数,值大的大
 
-            //寻找方法，确定目标炸弹长度，癞子数, 目标值
-            //先寻找能组合出相同癞子数，相同长度且值比目标值更大的炸弹，( 目标炸弹长度 - 癞子数 = 找现有的牌里面的牌应该有的最小张数 同时找出比目标炸弹值更大的值)(先决条件，自己有的laizi数量要大于等于目标牌的laizi数量)
-            //寻找能组合出相同长度的炸弹，且比目标牌laizi值更少的炸弹(先决条件，目标一定要有癞子数，如果没有不可能比他更少)
-            //再寻找比目标长度更长的炸弹  目标牌长度 - 4 + 1 = 自己至少需要有的癞子数量
-        } else if (objCardType == cardTypeUtil.bormCard || objCardType > 100) {
-            var objLen = objCards.length;
-            var objValue = objCards[0];
-            var arr = [];
-            var isIgore = true;
-            if (objLaiZiNum == objLen) { //如果laizi数量等于炸弹的长度，说明该炸弹是四张癞子，应该作为本身值，癞子数量归0
-                objLaiZiNum = 0;
-                isIgore = false;
-            }
-            //cc.log("0000000000000000000000000000000000000000000000" + isIgore);
-            if (gameModel.laiZiCardNum >= objLaiZiNum) {
-                var sameLenSameLaiZiArr = cardTypeUtil.findBigs(objValue, info[objLen - objLaiZiNum - 1], 16, isIgore);
-                var sameLen = sameLenSameLaiZiArr.length;
-                if (sameLen > 0) {
-                    for (var i = 0; i < sameLen; i++) {
-                        var boom = [];
-                        for (var p = 0; p < objLen; p++) {
-                            if (p < objLaiZiNum) {
-                                boom.push(gameModel.laiZiCardValue);
-                            } else {
-                                boom.push(sameLenSameLaiZiArr[i]);
-                            }
-                        }
-                        arr.push(boom);
-                    }
-                }
-            }
-            //cc.log("11111111111111111" + isIgore);
-            //logObj(arr);
-            if (objLaiZiNum > 0) {
-                var objValueLen = objLen - objLaiZiNum; //目标炸弹除掉癞子的长度
-                var slenOne = objValueLen + 1; //自己至少需要的相同牌的长度
-                var slenTwo = objLen - gameModel.laiZiCardNum; //根据自己的癞子长度至少需要的相同牌长度
-                var flen = slenOne > slenTwo ? slenOne : slenTwo;
-                var sameLenLessLaiZiArr = cardTypeUtil.mergeInfo(info, flen - 1, [16, 17, gameModel.laiZiCardValue]);
-                var sameLessLen = sameLenLessLaiZiArr.length;
-                if (sameLessLen > 0) {
-                    for (var p = 0; p < sameLessLen; p++) {
-                        var boom = [];
-                        var count = cardTypeUtil.count(cardValues, sameLenLessLaiZiArr[p]);
-                        for (var m = 0; m < objLen; m++) {
-                            if (m < count) {
-                                boom.push(sameLenLessLaiZiArr[p]);
-                            } else {
-                                boom.push(gameModel.laiZiCardValue);
-                            }
-                        }
-                        arr.push(boom);
-                    }
-                }
-            }
-            //cc.log("22222222222222222222222" + isIgore);
-            //logObj(arr);
-            var needLaiziNum = objLen - 4 + 1; //至少需要的laizi数量
-            if (gameModel.laiZiCardNum >= needLaiziNum) {
-                var slen = objLen + 1 - gameModel.laiZiCardNum;
-                var moreArr = cardTypeUtil.mergeInfo(info, slen - 1, [16, 17, gameModel.laiZiCardValue]);
+			//寻找方法，确定目标炸弹长度，癞子数, 目标值
+			//先寻找能组合出相同癞子数，相同长度且值比目标值更大的炸弹，( 目标炸弹长度 - 癞子数 = 找现有的牌里面的牌应该有的最小张数 同时找出比目标炸弹值更大的值)(先决条件，自己有的laizi数量要大于等于目标牌的laizi数量)
+			//寻找能组合出相同长度的炸弹，且比目标牌laizi值更少的炸弹(先决条件，目标一定要有癞子数，如果没有不可能比他更少)
+			//再寻找比目标长度更长的炸弹  目标牌长度 - 4 + 1 = 自己至少需要有的癞子数量
+		} else if (objCardType == cardTypeUtil.bormCard || objCardType > 100) {
+			var objLen = objCards.length;
+			var objValue = objCards[0];
+			var arr = [];
+			var isIgore = true;
+			if (objLaiZiNum == objLen) { //如果laizi数量等于炸弹的长度，说明该炸弹是四张癞子，应该作为本身值，癞子数量归0
+				objLaiZiNum = 0;
+				isIgore = false;
+			}
+			//console.log("0000000000000000000000000000000000000000000000" + isIgore);
+			if (gameModel.laiZiCardNum >= objLaiZiNum) {
+				var sameLenSameLaiZiArr = cardTypeUtil.findBigs(objValue, info[objLen - objLaiZiNum - 1], 16, isIgore);
+				var sameLen = sameLenSameLaiZiArr.length;
+				if (sameLen > 0) {
+					for (var i = 0; i < sameLen; i++) {
+						var boom = [];
+						for (var p = 0; p < objLen; p++) {
+							if (p < objLaiZiNum) {
+								boom.push(gameModel.laiZiCardValue);
+							} else {
+								boom.push(sameLenSameLaiZiArr[i]);
+							}
+						}
+						arr.push(boom);
+					}
+				}
+			}
+			//console.log("11111111111111111" + isIgore);
+			//logObj(arr);
+			if (objLaiZiNum > 0) {
+				var objValueLen = objLen - objLaiZiNum; //目标炸弹除掉癞子的长度
+				var slenOne = objValueLen + 1; //自己至少需要的相同牌的长度
+				var slenTwo = objLen - gameModel.laiZiCardNum; //根据自己的癞子长度至少需要的相同牌长度
+				var flen = slenOne > slenTwo ? slenOne : slenTwo;
+				var sameLenLessLaiZiArr = cardTypeUtil.mergeInfo(info, flen - 1, [16, 17, gameModel.laiZiCardValue]);
+				var sameLessLen = sameLenLessLaiZiArr.length;
+				if (sameLessLen > 0) {
+					for (var p = 0; p < sameLessLen; p++) {
+						var boom = [];
+						var count = cardTypeUtil.count(cardValues, sameLenLessLaiZiArr[p]);
+						for (var m = 0; m < objLen; m++) {
+							if (m < count) {
+								boom.push(sameLenLessLaiZiArr[p]);
+							} else {
+								boom.push(gameModel.laiZiCardValue);
+							}
+						}
+						arr.push(boom);
+					}
+				}
+			}
+			//console.log("22222222222222222222222" + isIgore);
+			//logObj(arr);
+			var needLaiziNum = objLen - 4 + 1; //至少需要的laizi数量
+			if (gameModel.laiZiCardNum >= needLaiziNum) {
+				var slen = objLen + 1 - gameModel.laiZiCardNum;
+				var moreArr = cardTypeUtil.mergeInfo(info, slen - 1, [16, 17, gameModel.laiZiCardValue]);
 
-                var moreLen = moreArr.length;
-                if (moreLen > 0) {
-                    for (var p = 0; p < moreLen; p++) {
-                        var boom = [];
-                        var count = cardTypeUtil.count(cardValues, moreArr[p]);
-                        var curNeedLaiziNum = objLen - count + 1; //当前这个值至少需要的癞子数量
-                        for (var m = 0; m < count; m++) {
-                            boom.push(moreArr[p]);
-                        }
-                        for (var k = 0; k < curNeedLaiziNum; k++) {
-                            boom.push(gameModel.laiZiCardValue);
-                        }
-                        arr.push(boom);
-                    }
-                }
-            }
-            //cc.log("3.333333333333333333333333333333333" + isIgore);
-            //logObj(arr);
-            var findBackArr = function () {
-                var len = arr.length;
-                if (len == 0) {
-                    if (cardTypeUtil.findRock(cardValues)) {
-                        tipsClickNum += 1;
-                        return [78, 79];
-                    } else {
-                        tipsClickNum = 0;
-                        return [];
-                    }
-                } else {
-                    if (tipsClickNum == len) {
-                        if (cardTypeUtil.findRock(cardValues)) {
-                            tipsClickNum += 1;
-                            return [78, 79];
-                        } else {
-                            tipsClickNum = 0;
-                            return findBackArr();
-                        }
-                    } else if (tipsClickNum > len) {
-                        tipsClickNum = 0;
-                        return findBackArr();
-                    }
-                    var startNum = tipsClickNum;
-                    tipsClickNum += 1;
-                    backArr = arr[startNum];
-                    return backArr;
-                }
-            }
-            return findBackArr();
-        } else if (objCardType == cardTypeUtil.rocketCard) {
-            return backArr; //要不起空数组
-        } else if (objCardType == cardTypeUtil.threeTakeOneCard || objCardType == cardTypeUtil.threeTakeTwoCard) {
-            var objValue = cardTypeUtil.takeSameCardValue(objCards, 3);
-            var arr = cardTypeUtil.findAllBigs(objValue, info, 3);
-            var len = arr.length;
-            //如果没有找到比目标大的值 ，再看看有没有炸弹，有炸弹返回炸弹，没有返回空数组
-            var findBackArr = function () {
-                if (len == 0 || tipsClickNum >= len) {
-                    if (gameModel.laiZiCardValue && gameModel.laiZiCardNum > 0) {
-                        var laiziBackArr = cardTypeUtil.laiziTips(cardValues, objCards, objCardType, info);
-                        cardTypeUtil.sortLaiziDoubleArray(laiziBackArr);
-                        var laiziLen = laiziBackArr.length;
-                        if (laiziLen == 0) {
-                            return cardTypeUtil.findBoom(cardValues, info, len, backArr, findBackArr);
-                        } else {
-                            var allLen = len + laiziLen;
-                            if (tipsClickNum >= allLen) {
-                                return cardTypeUtil.findBoom(cardValues, info, allLen, backArr, findBackArr);
-                            }
-                            var startNum = tipsClickNum - len;
-                            tipsClickNum += 1;
-                            return laiziBackArr[startNum];
-                        }
-                    } else {
-                        return cardTypeUtil.findBoom(cardValues, info, len, backArr, findBackArr);
-                    }
-                }
-                var startNum = tipsClickNum;
-                tipsClickNum += 1;
-                //加入当前大于目标牌的值
-                backArr = cardTypeUtil.getArray(backArr, arr[startNum], 3);
-                //如果为三带一最一张最小的单张
-                if ((objLen - 3) == 1) {
-                    var num = cardTypeUtil.findOneCard(info, [arr[startNum]]);
-                    if (num > 0) {
-                        backArr.push(num);
-                        return backArr;
-                    } else {
-                        return [];
-                    }
-                    //如果为三带二长一对最小的对子
-                } else if ((objLen - 3) == 2) {
-                    var num = cardTypeUtil.findTwoCard(info, [arr[startNum]]);
-                    if (num > 0) {
-                        backArr.push(num);
-                        backArr.push(num);
-                        return backArr;
-                    } else {
-                        return [];
-                    }
-                }
-            }
-            return findBackArr();
-        } else if (objCardType == cardTypeUtil.fourTakeSingleCard || objCardType == cardTypeUtil.fourTakeDoubleCard) {
-            var objValue = cardTypeUtil.takeSameCardValue(objCards, 4);
-            var arr = cardTypeUtil.findAllBigs(objValue, info, 4);
-            var len = arr.length;
-            var findBackArr = function () {
-                if (len == 0 || tipsClickNum >= len) {
-                    if (gameModel.laiZiCardValue && gameModel.laiZiCardNum > 0) {
-                        var laiziBackArr = cardTypeUtil.laiziTips(cardValues, objCards, objCardType, info);
-                        cardTypeUtil.sortLaiziDoubleArray(laiziBackArr);
-                        var laiziLen = laiziBackArr.length;
-                        if (laiziLen == 0) {
-                            return cardTypeUtil.findBoom(cardValues, info, len, backArr, findBackArr);
-                        } else {
-                            var allLen = len + laiziLen;
-                            if (tipsClickNum >= allLen) {
-                                return cardTypeUtil.findBoom(cardValues, info, allLen, backArr, findBackArr);
-                            }
-                            var startNum = tipsClickNum - len;
-                            tipsClickNum += 1;
-                            return laiziBackArr[startNum];
-                        }
-                    } else {
-                        return cardTypeUtil.findBoom(cardValues, info, len, backArr, findBackArr);
-                    }
-                }
-                var startNum = tipsClickNum;
-                tipsClickNum += 1;
-                //加入当前大于目标牌的值
-                backArr = cardTypeUtil.getArray(backArr, arr[startNum], 4);
-                //如果为四带二张单牌，找两张最小的单张
-                if ((objLen - 4) == 2) {
-                    var num = cardTypeUtil.findOneCard(info, [arr[startNum]]);
-                    if (num > 0) {
-                        var scondNum = cardTypeUtil.findOneCard(info, [arr[startNum], num]);
-                        if (scondNum > 0) {
-                            backArr.push(num);
-                            backArr.push(scondNum);
-                        }
-                        return backArr;
-                    } else {
-                        return [];
-                    }
-                    //如果为四带二,找两对最小的对子
-                } else if ((objLen - 4) == 4) {
-                    var num = cardTypeUtil.findTwoCard(info, arr[startNum]);
-                    if (num > 0) {
-                        var scondNum = cardTypeUtil.findTwoCard(info, [arr[startNum], num]);
-                        if (scondNum > 0) {
-                            backArr.push(num);
-                            backArr.push(num);
-                            backArr.push(scondNum);
-                            backArr.push(scondNum);
-                        }
-                        return backArr;
-                    } else {
-                        return [];
-                    }
-                }
-            }
-            return findBackArr();
-        } else if (objCardType == cardTypeUtil.sequenceCard) {
-            var findBackArr = function () {
-                var shunZi = cardTypeUtil.findAllBigLaiZiShunZi(cardValues, objCards); //顺子在这个方法里面包括了laizi
-                var len = shunZi.length;
-                if (len == 0 || tipsClickNum >= len) {
-                    return cardTypeUtil.findBoom(cardValues, info, len, backArr, findBackArr);
-                }
-                if (tipsClickNum >= len) {
-                    tipsClickNum = 0;
-                }
-                if (len > 0) {
-                    var startNum = tipsClickNum;
-                    tipsClickNum += 1;
-                    return shunZi[startNum];
-                } else {
-                    return [];
-                }
-            }
-            return findBackArr();
-        } else if (objCardType == cardTypeUtil.linkDoubleCard || objCardType == cardTypeUtil.planeTakeNoneCard) {
-            //cc.log("进到双顺的判断里面来了");
-            var objArr = cardTypeUtil.setCount(objCards);
-            var slen = objCards.length / objArr.length;
-            //去重后的所有牌组
-            var sarr = [];
-            cardTypeUtil.setCountOver(cardValues, sarr);
+				var moreLen = moreArr.length;
+				if (moreLen > 0) {
+					for (var p = 0; p < moreLen; p++) {
+						var boom = [];
+						var count = cardTypeUtil.count(cardValues, moreArr[p]);
+						var curNeedLaiziNum = objLen - count + 1; //当前这个值至少需要的癞子数量
+						for (var m = 0; m < count; m++) {
+							boom.push(moreArr[p]);
+						}
+						for (var k = 0; k < curNeedLaiziNum; k++) {
+							boom.push(gameModel.laiZiCardValue);
+						}
+						arr.push(boom);
+					}
+				}
+			}
+			//console.log("3.333333333333333333333333333333333" + isIgore);
+			//logObj(arr);
+			var findBackArr = function() {
+				var len = arr.length;
+				if (len == 0) {
+					if (cardTypeUtil.findRock(cardValues)) {
+						gameModel.tipsClickNum += 1;
+						return [78, 79];
+					} else {
+						gameModel.tipsClickNum = 0;
+						return [];
+					}
+				} else {
+					if (gameModel.tipsClickNum == len) {
+						if (cardTypeUtil.findRock(cardValues)) {
+							gameModel.tipsClickNum += 1;
+							return [78, 79];
+						} else {
+							gameModel.tipsClickNum = 0;
+							return findBackArr();
+						}
+					} else if (gameModel.tipsClickNum > len) {
+						gameModel.tipsClickNum = 0;
+						return findBackArr();
+					}
+					var startNum = gameModel.tipsClickNum;
+					gameModel.tipsClickNum += 1;
+					backArr = arr[startNum];
+					return backArr;
+				}
+			}
+			return findBackArr();
+		} else if (objCardType == cardTypeUtil.rocketCard) {
+			return backArr; //要不起空数组
+		} else if (objCardType == cardTypeUtil.threeTakeOneCard || objCardType == cardTypeUtil.threeTakeTwoCard) {
+			var objValue = cardTypeUtil.takeSameCardValue(objCards, 3);
+			var arr = cardTypeUtil.findAllBigs(objValue, info, 3);
+			var len = arr.length;
+			//如果没有找到比目标大的值 ，再看看有没有炸弹，有炸弹返回炸弹，没有返回空数组
+			var findBackArr = function() {
+				if (len == 0 || gameModel.tipsClickNum >= len) {
+					if (gameModel.laiZiCardValue && gameModel.laiZiCardNum > 0) {
+						var laiziBackArr = cardTypeUtil.laiziTips(cardValues, objCards, objCardType, info);
+						cardTypeUtil.sortLaiziDoubleArray(laiziBackArr);
+						var laiziLen = laiziBackArr.length;
+						if (laiziLen == 0) {
+							return cardTypeUtil.findBoom(cardValues, info, len, backArr, findBackArr);
+						} else {
+							var allLen = len + laiziLen;
+							if (gameModel.tipsClickNum >= allLen) {
+								return cardTypeUtil.findBoom(cardValues, info, allLen, backArr, findBackArr);
+							}
+							var startNum = gameModel.tipsClickNum - len;
+							gameModel.tipsClickNum += 1;
+							return laiziBackArr[startNum];
+						}
+					} else {
+						return cardTypeUtil.findBoom(cardValues, info, len, backArr, findBackArr);
+					}
+				}
+				var startNum = gameModel.tipsClickNum;
+				gameModel.tipsClickNum += 1;
+				//加入当前大于目标牌的值
+				backArr = cardTypeUtil.getArray(backArr, arr[startNum], 3);
+				//如果为三带一最一张最小的单张
+				if ((objLen - 3) == 1) {
+					var num = cardTypeUtil.findOneCard(info, [arr[startNum]]);
+					if (num > 0) {
+						backArr.push(num);
+						return backArr;
+					} else {
+						return [];
+					}
+					//如果为三带二长一对最小的对子
+				} else if ((objLen - 3) == 2) {
+					var num = cardTypeUtil.findTwoCard(info, [arr[startNum]]);
+					if (num > 0) {
+						backArr.push(num);
+						backArr.push(num);
+						return backArr;
+					} else {
+						return [];
+					}
+				}
+			}
+			return findBackArr();
+		} else if (objCardType == cardTypeUtil.fourTakeSingleCard || objCardType == cardTypeUtil.fourTakeDoubleCard) {
+			var objValue = cardTypeUtil.takeSameCardValue(objCards, 4);
+			var arr = cardTypeUtil.findAllBigs(objValue, info, 4);
+			var len = arr.length;
+			var findBackArr = function() {
+				if (len == 0 || gameModel.tipsClickNum >= len) {
+					if (gameModel.laiZiCardValue && gameModel.laiZiCardNum > 0) {
+						var laiziBackArr = cardTypeUtil.laiziTips(cardValues, objCards, objCardType, info);
+						cardTypeUtil.sortLaiziDoubleArray(laiziBackArr);
+						var laiziLen = laiziBackArr.length;
+						if (laiziLen == 0) {
+							return cardTypeUtil.findBoom(cardValues, info, len, backArr, findBackArr);
+						} else {
+							var allLen = len + laiziLen;
+							if (gameModel.tipsClickNum >= allLen) {
+								return cardTypeUtil.findBoom(cardValues, info, allLen, backArr, findBackArr);
+							}
+							var startNum = gameModel.tipsClickNum - len;
+							gameModel.tipsClickNum += 1;
+							return laiziBackArr[startNum];
+						}
+					} else {
+						return cardTypeUtil.findBoom(cardValues, info, len, backArr, findBackArr);
+					}
+				}
+				var startNum = gameModel.tipsClickNum;
+				gameModel.tipsClickNum += 1;
+				//加入当前大于目标牌的值
+				backArr = cardTypeUtil.getArray(backArr, arr[startNum], 4);
+				//如果为四带二张单牌，找两张最小的单张
+				if ((objLen - 4) == 2) {
+					var num = cardTypeUtil.findOneCard(info, [arr[startNum]]);
+					if (num > 0) {
+						var scondNum = cardTypeUtil.findOneCard(info, [arr[startNum], num]);
+						if (scondNum > 0) {
+							backArr.push(num);
+							backArr.push(scondNum);
+						}
+						return backArr;
+					} else {
+						return [];
+					}
+					//如果为四带二,找两对最小的对子
+				} else if ((objLen - 4) == 4) {
+					var num = cardTypeUtil.findTwoCard(info, arr[startNum]);
+					if (num > 0) {
+						var scondNum = cardTypeUtil.findTwoCard(info, [arr[startNum], num]);
+						if (scondNum > 0) {
+							backArr.push(num);
+							backArr.push(num);
+							backArr.push(scondNum);
+							backArr.push(scondNum);
+						}
+						return backArr;
+					} else {
+						return [];
+					}
+				}
+			}
+			return findBackArr();
+		} else if (objCardType == cardTypeUtil.sequenceCard) {
+			var findBackArr = function() {
+				var shunZi = cardTypeUtil.findAllBigLaiZiShunZi(cardValues, objCards); //顺子在这个方法里面包括了laizi
+				var len = shunZi.length;
+				if (len == 0 || gameModel.tipsClickNum >= len) {
+					return cardTypeUtil.findBoom(cardValues, info, len, backArr, findBackArr);
+				}
+				if (gameModel.tipsClickNum >= len) {
+					gameModel.tipsClickNum = 0;
+				}
+				if (len > 0) {
+					var startNum = gameModel.tipsClickNum;
+					gameModel.tipsClickNum += 1;
+					return shunZi[startNum];
+				} else {
+					return [];
+				}
+			}
+			return findBackArr();
+		} else if (objCardType == cardTypeUtil.linkDoubleCard || objCardType == cardTypeUtil.planeTakeNoneCard) {
+			//console.log("进到双顺的判断里面来了");
+			var objArr = cardTypeUtil.setCount(objCards);
+			var slen = objCards.length / objArr.length;
+			//去重后的所有牌组
+			var sarr = [];
+			cardTypeUtil.setCountOver(cardValues, sarr);
 
-            var duishun = cardTypeUtil.findAllBigLaiZiShuangShunZi(cardValues, sarr[0], objArr, slen);
-            //cc.log("duishun的长度 ******************" + duishun.length  );
-            var len = duishun.length;
-            var findBackArr = function () {
-                if (len == 0 || tipsClickNum >= len) {
-                    return cardTypeUtil.findBoom(cardValues, info, len, backArr, findBackArr);
-                }
-                if (len > 0) {
-                    var startNum = tipsClickNum;
-                    tipsClickNum += 1;
+			var duishun = cardTypeUtil.findAllBigLaiZiShuangShunZi(cardValues, sarr[0], objArr, slen);
+			//console.log("duishun的长度 ******************" + duishun.length  );
+			var len = duishun.length;
+			var findBackArr = function() {
+				if (len == 0 || gameModel.tipsClickNum >= len) {
+					return cardTypeUtil.findBoom(cardValues, info, len, backArr, findBackArr);
+				}
+				if (len > 0) {
+					var startNum = gameModel.tipsClickNum;
+					gameModel.tipsClickNum += 1;
 
-                    return duishun[startNum];
-                } else {
-                    return [];
-                }
-            }
-            return findBackArr();
-        } else if (objCardType == cardTypeUtil.planeTakeSingleCard || objCardType == cardTypeUtil.planeTakeDoubleCard) {
-            //cc.log("进入飞机判断");
-            var objNumList = [];
-            var objLen = objCards.length;
-            for (var i = 0; i < objLen; i++) {
-                if (cardTypeUtil.count(objCards, objCards[i]) >= 3) objNumList.push(objCards[i]);
-            }
-            //去重后的所有牌组
-            var sarr = [];
-            cardTypeUtil.setCountOver(cardValues, sarr);
-            var objshunzi = cardTypeUtil.setCount(objNumList);
+					return duishun[startNum];
+				} else {
+					return [];
+				}
+			}
+			return findBackArr();
+		} else if (objCardType == cardTypeUtil.planeTakeSingleCard || objCardType == cardTypeUtil.planeTakeDoubleCard) {
+			//console.log("进入飞机判断");
+			var objNumList = [];
+			var objLen = objCards.length;
+			for (var i = 0; i < objLen; i++) {
+				if (cardTypeUtil.count(objCards, objCards[i]) >= 3) objNumList.push(objCards[i]);
+			}
+			//去重后的所有牌组
+			var sarr = [];
+			cardTypeUtil.setCountOver(cardValues, sarr);
+			var objshunzi = cardTypeUtil.setCount(objNumList);
 
-            var sanshun = cardTypeUtil.findAllBigLaiZiShuangShunZi(cardValues, sarr[0], objshunzi, 3);
-            //cc.log("进入飞机判断*********" + sanshun.length);
-            var len = sanshun.length;
-            var findBackArr = function () {
-                if (len == 0) {
-                    return cardTypeUtil.findBoom(cardValues, info, len, backArr, findBackArr);
-                }
-                if (tipsClickNum >= len) {
-                    return cardTypeUtil.findBoom(cardValues, info, len, backArr, findBackArr);
-                }
-                if (tipsClickNum >= len) {
-                    tipsClickNum = 0;
-                }
-                //有三顺根据是飞机带单还是飞机带双补冲数据
-                if (len > 0) {
-                    var startNum = tipsClickNum;
-                    tipsClickNum += 1;
-                    var arr = sanshun[startNum];
-                    var rarr = arr.slice(0);
-                    if (gameModel.laiZiCardValue) {
-                        rarr.push(gameModel.laiZiCardValue);
-                    }
+			var sanshun = cardTypeUtil.findAllBigLaiZiShuangShunZi(cardValues, sarr[0], objshunzi, 3);
+			//console.log("进入飞机判断*********" + sanshun.length);
+			var len = sanshun.length;
+			var findBackArr = function() {
+				if (len == 0) {
+					return cardTypeUtil.findBoom(cardValues, info, len, backArr, findBackArr);
+				}
+				if (gameModel.tipsClickNum >= len) {
+					return cardTypeUtil.findBoom(cardValues, info, len, backArr, findBackArr);
+				}
+				if (gameModel.tipsClickNum >= len) {
+					gameModel.tipsClickNum = 0;
+				}
+				//有三顺根据是飞机带单还是飞机带双补冲数据
+				if (len > 0) {
+					var startNum = gameModel.tipsClickNum;
+					gameModel.tipsClickNum += 1;
+					var arr = sanshun[startNum];
+					var rarr = arr.slice(0);
+					if (gameModel.laiZiCardValue) {
+						rarr.push(gameModel.laiZiCardValue);
+					}
 
-                    if (objCards.length % 4 == 0) {
-                        var num = cardTypeUtil.findOneCard(info, rarr);
-                        if (num > 0) {
+					if (objCards.length % 4 == 0) {
+						var num = cardTypeUtil.findOneCard(info, rarr);
+						if (num > 0) {
 
-                            rarr.push(num);
-                            var scondNum = cardTypeUtil.findOneCard(info, rarr);
-                            if (scondNum > 0) {
-                                arr.push(num);
-                                arr.push(scondNum);
-                            } else {
-                                return findBackArr();
-                            }
-                            return arr;
-                        } else {
-                            return findBackArr();
-                        }
-                    } else if (objCards.length % 5 == 0) {
-                        var num = cardTypeUtil.findTwoCard(info, rarr);
-                        if (num > 0) {
-                            rarr.push(num);
-                            var scondNum = cardTypeUtil.findTwoCard(info, rarr);
-                            if (scondNum > 0) {
-                                arr.push(num);
-                                arr.push(num);
-                                arr.push(scondNum);
-                                arr.push(scondNum);
-                            } else {
-                                return findBackArr();
-                            }
-                            return arr;
-                        } else {
-                            return findBackArr();
-                        }
-                    }
-                    return arr;
-                } else {
-                    return [];
-                }
-            }
-            return findBackArr();
-        }
-    }
+							rarr.push(num);
+							var scondNum = cardTypeUtil.findOneCard(info, rarr);
+							if (scondNum > 0) {
+								arr.push(num);
+								arr.push(scondNum);
+							} else {
+								return findBackArr();
+							}
+							return arr;
+						} else {
+							return findBackArr();
+						}
+					} else if (objCards.length % 5 == 0) {
+						var num = cardTypeUtil.findTwoCard(info, rarr);
+						if (num > 0) {
+							rarr.push(num);
+							var scondNum = cardTypeUtil.findTwoCard(info, rarr);
+							if (scondNum > 0) {
+								arr.push(num);
+								arr.push(num);
+								arr.push(scondNum);
+								arr.push(scondNum);
+							} else {
+								return findBackArr();
+							}
+							return arr;
+						} else {
+							return findBackArr();
+						}
+					}
+					return arr;
+				} else {
+					return [];
+				}
+			}
+			return findBackArr();
+		}
+	}
 };
 //找来自的数量，
 //objCardIds卡牌的ID而不是卡牌值

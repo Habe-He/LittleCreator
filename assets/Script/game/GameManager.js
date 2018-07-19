@@ -75,32 +75,32 @@ var GameManager = {
     },
 
     // 服务端返回玩家叫分
-    onSeverReturnCallScore: function (args) {
-        if (this.m_pGameRoomView == null) {
-            cc.log("游戏界面未初始化完成");
-            return;
-        }
-        if (args.scoreNum > 0)
-            gameModel.scoreNum = args.scoreNum;
+    // onSeverReturnCallScore: function (args) {
+    //     if (this.m_pGameRoomView == null) {
+    //         cc.log("游戏界面未初始化完成");
+    //         return;
+    //     }
+    //     if (args.scoreNum > 0)
+    //         gameModel.scoreNum = args.scoreNum;
 
-        // 当前这个操作是谁记录下来
-        for (var m = 0; m < 3; m++) {
-            if (typeof gameModel.playerData[m] == 'undefined') {
-                break;
-            }
-            if (gameModel.playerData[m].chairID == args.chairID)
-                gameModel.nowPlayer = gameModel.playerData[m];
+    //     // 当前这个操作是谁记录下来
+    //     for (var m = 0; m < 3; m++) {
+    //         if (typeof gameModel.playerData[m] == 'undefined') {
+    //             break;
+    //         }
+    //         if (gameModel.playerData[m].chairID == args.chairID)
+    //             gameModel.nowPlayer = gameModel.playerData[m];
 
-            // 记录这个玩家翻倍的信息
-            if (args.scoreNum > 0) {
-                gameModel.playerData[m].beiNum = args.scoreNum;
-            }
-        };
-        var viewID = this.getViewChairID(args.chairID);
-        if (typeof gameModel.playerData[viewID] != 'undefined') {
-            this.m_pGameRoomView.showScoreValue(viewID, args.scoreNum);
-        }
-    },
+    //         // 记录这个玩家翻倍的信息
+    //         if (args.scoreNum > 0) {
+    //             gameModel.playerData[m].beiNum = args.scoreNum;
+    //         }
+    //     };
+    //     var viewID = this.getViewChairID(args.chairID);
+    //     if (typeof gameModel.playerData[viewID] != 'undefined') {
+    //         this.m_pGameRoomView.showScoreValue(viewID, args.scoreNum);
+    //     }
+    // },
 
     // 发牌
     onSeverSendCard: function (cardData) {
@@ -111,14 +111,14 @@ var GameManager = {
     },
 
     // 出牌广播
-    onToPlayCard: function (args) {
-        if (this.m_pGameRoomView) {
-            var viewID = this.getViewChairID(args.chairID);
-            var time = args.time;
-            var mustPlay = args.mustPlay;
-            this.m_pGameRoomView.toPlayCard(viewID, time, mustPlay);
-        }
-    },
+    // onToPlayCard: function (args) {
+    //     if (this.m_pGameRoomView) {
+    //         var viewID = this.getViewChairID(args.chairID);
+    //         var time = args.time;
+    //         var mustPlay = args.mustPlay;
+    //         this.m_pGameRoomView.toPlayCard(viewID, time, mustPlay);
+    //     }
+    // },
 
     // 牌形错误
     onCardError: function (errorType) {
@@ -140,135 +140,135 @@ var GameManager = {
     },
 
     // 确定地主
-    onSeverOpenCard: function (args) {
-        if (this.m_pGameRoomView) {
-            var viewID = this.getViewChairID(args.chairID);
-            gameModel.diCardData = args.diData;
-            gameModel.diZhuCharId = args.chairID;
-            this.m_pGameRoomView.setDiZhuRoleImg(viewID);
-            this.m_pGameRoomView.showDiPai(viewID);
-            this.m_pGameRoomView.setDiZhuCardNum(viewID);
-        }
-    },
+    // onSeverOpenCard: function (args) {
+    //     if (this.m_pGameRoomView) {
+    //         var viewID = this.getViewChairID(args.chairID);
+    //         gameModel.diCardData = args.diData;
+    //         gameModel.diZhuCharId = args.chairID;
+    //         this.m_pGameRoomView.setDiZhuRoleImg(viewID);
+    //         this.m_pGameRoomView.showDiPai(viewID);
+    //         this.m_pGameRoomView.setDiZhuCardNum(viewID);
+    //     }
+    // },
 
-    // 有玩家出牌
-    onPlayerPlayCard: function (args) {
-        var viewID = this.getViewChairID(args.chairID);
-        var cardIds = args.cardData;
-        if (this.m_pGameRoomView) {
-            for (var m = 0; m < 3; m++) {
-                if (typeof gameModel.playerData[m] == 'undefined')
-                    break;
+    // // 有玩家出牌
+    // onPlayerPlayCard: function (args) {
+    //     var viewID = this.getViewChairID(args.chairID);
+    //     var cardIds = args.cardData;
+    //     if (this.m_pGameRoomView) {
+    //         for (var m = 0; m < 3; m++) {
+    //             if (typeof gameModel.playerData[m] == 'undefined')
+    //                 break;
 
-                if (gameModel.playerData[m].chairID == args.chairID) {
-                    gameModel.nowPlayer = gameModel.playerData[m];
-                }
-            }
-            if (typeof gameModel.playerData[viewID] != 'undefined') {
-                if (args.chairID == KKVS.myChairID) {
-                    gameModel.lastCardData = null;
-                    this.m_pGameRoomView.playSelfCard(cardIds, viewID, args.chairID);
-                    return;
-                } else {
-                    this.m_pGameRoomView.playerPlayCard(cardIds, viewID, args.chairID);
-                }
-            }
-        }
-    },
+    //             if (gameModel.playerData[m].chairID == args.chairID) {
+    //                 gameModel.nowPlayer = gameModel.playerData[m];
+    //             }
+    //         }
+    //         if (typeof gameModel.playerData[viewID] != 'undefined') {
+    //             if (args.chairID == KKVS.myChairID) {
+    //                 gameModel.lastCardData = null;
+    //                 this.m_pGameRoomView.playSelfCard(cardIds, viewID, args.chairID);
+    //                 return;
+    //             } else {
+    //                 this.m_pGameRoomView.playerPlayCard(cardIds, viewID, args.chairID);
+    //             }
+    //         }
+    //     }
+    // },
 
-    setLastArray: function (array) {
-        if (this.m_pGameRoomView) {
-            this.m_pGameRoomView.setLastCardList(array);
-        }
-    },
+    // setLastArray: function (array) {
+    //     if (this.m_pGameRoomView) {
+    //         this.m_pGameRoomView.setLastCardList(array);
+    //     }
+    // },
 
-    refreshShouPai: function (cardNum) {
-        if (this.m_pGameRoomView)
-            this.m_pGameRoomView.refreshShouPai(cardNum);
-    },
+    // refreshShouPai: function (cardNum) {
+    //     if (this.m_pGameRoomView)
+    //         this.m_pGameRoomView.refreshShouPai(cardNum);
+    // },
 
-    // 玩家进入托管
-    inTrusteeship: function () {
-        if (this.m_pGameRoomView)
-            this.m_pGameRoomView.inTrusteeship();
-    },
+    // // 玩家进入托管
+    // inTrusteeship: function () {
+    //     if (this.m_pGameRoomView)
+    //         this.m_pGameRoomView.inTrusteeship();
+    // },
 
-    // 用户离开
-    onSeverLeaveTable: function (args) {
-        var viewID = this.getViewChairID(args.chairID);
-        if (this.m_pGameRoomView) {
-            this.m_pGameRoomView.uiChairLeaveTable(viewID);
-        };
-        if (args.chairID == KKVS.myChairID) {
-            if (this.forceLeave) {
-                cc.log("=>自己离开");
-                this.exitGameWithGold();
-            } else {
-                this.forceLeave = true;
-            }
-        }
-    },
+    // // 用户离开
+    // onSeverLeaveTable: function (args) {
+    //     var viewID = this.getViewChairID(args.chairID);
+    //     if (this.m_pGameRoomView) {
+    //         this.m_pGameRoomView.uiChairLeaveTable(viewID);
+    //     };
+    //     if (args.chairID == KKVS.myChairID) {
+    //         if (this.forceLeave) {
+    //             cc.log("=>自己离开");
+    //             this.exitGameWithGold();
+    //         } else {
+    //             this.forceLeave = true;
+    //         }
+    //     }
+    // },
 
-    // 显示结算界面
-    showResultView: function (beishus, scores, times, difen) {
-        if (this.m_pGameRoomView) {
-            gameModel.isInGameStart = false;
-            var data = [];
-            for (var i = 0; i < gameModel.playerData.length; ++i) {
-                var name = gameModel.playerData[i].name;
-                var basescore = difen;
-                var chair_id = gameModel.playerData[i].chairID;
-                var score = Number(scores[chair_id].toString());
-                var p = {
-                    "name": name,
-                    "basescore": basescore,
-                    "times": beishus,
-                    "score": score,
-                    "chair_id": chair_id
-                };
-                data.push(p);
-            }
-            var win_Type = 1;
-            var myScore = Number(scores[KKVS.myChairID].toString());
-            if (myScore > 0)
-                win_Type = 0;
+    // // 显示结算界面
+    // showResultView: function (beishus, scores, times, difen) {
+    //     if (this.m_pGameRoomView) {
+    //         gameModel.isInGameStart = false;
+    //         var data = [];
+    //         for (var i = 0; i < gameModel.playerData.length; ++i) {
+    //             var name = gameModel.playerData[i].name;
+    //             var basescore = difen;
+    //             var chair_id = gameModel.playerData[i].chairID;
+    //             var score = Number(scores[chair_id].toString());
+    //             var p = {
+    //                 "name": name,
+    //                 "basescore": basescore,
+    //                 "times": beishus,
+    //                 "score": score,
+    //                 "chair_id": chair_id
+    //             };
+    //             data.push(p);
+    //         }
+    //         var win_Type = 1;
+    //         var myScore = Number(scores[KKVS.myChairID].toString());
+    //         if (myScore > 0)
+    //             win_Type = 0;
 
-            this.m_pGameRoomView.showResultView(win_Type, myScore, gameModel.diZhuCharId, data);
-        }
-    },
+    //         this.m_pGameRoomView.showResultView(win_Type, myScore, gameModel.diZhuCharId, data);
+    //     }
+    // },
 
-    // 摊牌
-    onSurplusCard: function (args, isSpring) {
-        if (this.m_pGameRoomView) {
-            var viewID = this.getViewChairID(args.chairID);
-            this.m_pGameRoomView.showResultCard(args.cardData, viewID, null, isSpring);
-        }
-    },
+    // // 摊牌
+    // onSurplusCard: function (args, isSpring) {
+    //     if (this.m_pGameRoomView) {
+    //         var viewID = this.getViewChairID(args.chairID);
+    //         this.m_pGameRoomView.showResultCard(args.cardData, viewID, null, isSpring);
+    //     }
+    // },
 
-    // 游戏结算数据
-    countScore: function (args) {
-        if (this.m_pGameRoomView) {
-            var viewID = this.getViewChairID(args.chairID);
-            if (!gameModel.resultData) {
-                gameModel.resultData = {};
-            }
-            gameModel.isplayIngCard = false;
-            gameModel.resultData.diFen = args.diFen;
-            gameModel.resultData.beiNum = args.beiNum;
-            gameModel.resultData.chairID = args.chairID;
-            gameModel.resultData.winType = args.winType;
-            gameModel.resultData.isSpring = args.isSpring;
-            gameModel.RESULT_TYPE = args.winType;
-            this.m_pGameRoomView.showResultFace(args);
-        }
-    },
+    // // 游戏结算数据
+    // countScore: function (args) {
+    //     if (this.m_pGameRoomView) {
+    //         var viewID = this.getViewChairID(args.chairID);
+    //         if (!gameModel.resultData) {
+    //             gameModel.resultData = {};
+    //         }
+    //         gameModel.isplayIngCard = false;
+    //         gameModel.resultData.diFen = args.diFen;
+    //         gameModel.resultData.beiNum = args.beiNum;
+    //         gameModel.resultData.chairID = args.chairID;
+    //         gameModel.resultData.winType = args.winType;
+    //         gameModel.resultData.isSpring = args.isSpring;
+    //         gameModel.RESULT_TYPE = args.winType;
+    //         this.m_pGameRoomView.showResultFace(args);
+    //     }
+    // },
 
-    // 叫分翻倍
-    onSeverFanBei: function (beiNum) {
-        if (this.m_pGameRoomView) {
-            this.m_pGameRoomView.setBeiShu(beiNum);
-        }
-    },
+    // // 叫分翻倍
+    // onSeverFanBei: function (beiNum) {
+    //     if (this.m_pGameRoomView) {
+    //         this.m_pGameRoomView.setBeiShu(beiNum);
+    //     }
+    // },
 
     //强行离开
     onForceleave: function () {
