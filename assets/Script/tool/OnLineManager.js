@@ -1,8 +1,9 @@
 /**
- * Á¬Ïß»úÖÆ
+ * è¿çº¿æœºåˆ¶
  */
 var KKVS = require("./../plugin/KKVS");
 var gameEngine = require("./../plugin/gameEngine");
+var AppHelper = require("./../AppHelper");
 
 var OnLineManager = {};
 
@@ -15,8 +16,8 @@ OnLineManager._kicked = false;
 
 OnLineManager.init = function () {
     OnLineManager.reset();
-    KKVS.Event.deregister("onLoginSuccess", OnLineManager);
-    KKVS.Event.register("onLoginSuccess", OnLineManager, "_onLineCallback");
+    KKVS.Event.deregister("onLoginGameSuccess", OnLineManager);
+    KKVS.Event.register("onLoginGameSuccess", OnLineManager, "_onLineCallback");
 }
 OnLineManager.reset = function () {
     OnLineManager._forceOffLine = false;
@@ -24,20 +25,18 @@ OnLineManager.reset = function () {
 }
 
 OnLineManager.onLine = function () {
-    //KKVS.Event.fire(EVENT_LOADING,{event:EVENT_LOADING_SHOW});
-    //modulelobby.showLoading(null, null, 15);
+    AppHelper.get().showLoading(null, null, 15);
     cc.log("->OnLineManager.onLine");
     cc.log("->OnLineManager._onlineTime = " + OnLineManager._onlineTime.toString());
     OnLineManager._forceOffLine = false;
     OnLineManager._onLine = false;
-    //onLine();
     var acc = KKVS.Acc;
     var pwd = KKVS.Pwd; //Pwd_MD5
     cc.log("acc = " + acc);
     cc.log("pwd = " + pwd);
     gameEngine.app.reset();
     if(!acc || acc == "") {
-        //modulelobby.showTxtDialog({title : "ÏµÍ³ÌáÊ¾", txt : "µÇÂ¼Ê§°Ü,ÕÊºÅ²»ÄÜÎª¿Õ"});
+        AppHelper.get().showTxtDialog({title : "ç³»ç»Ÿæç¤º", txt : "ç™»å½•å¤±è´¥,å¸å·ä¸èƒ½ä¸ºç©º"});
         return;
     }
     var login_extraDatas = {
@@ -59,20 +58,11 @@ OnLineManager.offLine = function () {
 };
 OnLineManager._onLineCallback = function () {
     cc.log("->OnLineManager._onLineCallback");
-    //Ë¢ĞÂ±ä¶¯µÄĞÅÏ¢
+    //åˆ·æ–°å˜åŠ¨çš„ä¿¡æ¯
     OnLineManager.reset();
     OnLineManager._onLine = true;
-    KKVS.Event.fire("updateLobbyUI"); //ÓÃÓÚ¸üĞÂ¶ÏÏßÖØÁ¬ºóËùÓĞÊı¾İ
-    //KKVS.Event.fire(EVENT_LOADING,{event:EVENT_LOADING_HIDE});
-    //modulelobby.hideLoading();
-}
-OnLineManager.forceOffLine = function () {
-    //OnLineManager.reset();
-    //OnLineManager._forceOffLine = true;
-    //if (gameEngine.app && gameEngine.app.player()) {
-    //    gameEngine.app.player().req_charge("");
-    //    //gameEngine.app.reset();
-    //}
+    KKVS.Event.fire("updateLobbyUI"); //ç”¨äºæ›´æ–°æ–­çº¿é‡è¿åæ‰€æœ‰æ•°æ®
+    AppHelper.get().hideLoading();
 }
 OnLineManager.isForceOffLine = function () {
     return OnLineManager._forceOffLine;

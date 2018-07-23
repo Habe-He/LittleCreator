@@ -490,6 +490,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
             mustPlay: true
         };
         gameModel.diZhuCharId = chairID;
+        cc.log("地主的椅子号 gameModel.diZhuCharId = " + gameModel.diZhuCharId);
         KKVS.Event.fire("BankerInfo", data);
     },
 
@@ -524,7 +525,12 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     onHappy_GameEndInfo: function (lobby_id, field_id, room_id, table_id, card_list, scores, times, isspring, difen) {
         cc.log("->onHappy_GameEndInfo====");
         cc.log("=> gameModel.playerData.length" + gameModel.playerData.length);
-        Tool.logObj(scores);
+        // Tool.logObj(scores);
+        if (scores.length == 0) {
+            cc.log("游戏界面出现错误");
+            return;
+        }
+
         var data = [];
         for (var i = 0; i < gameModel.playerData.length; ++i) {
             var name = gameModel.playerData[i].name;
@@ -543,43 +549,6 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         }
 
         KKVS.Event.fire("EndInfo", data);
-
-        // var args = arguments;
-        // KKVS.IsShowSelf = false;
-        // var beishu = args[6];
-        // // 显示结算界面
-        // GameManager.showResultView(beishu, score, times, difen);
-
-        // if (score.length == 0) {
-        //     cc.log("结算时候分数长度为 0 这个是错误的");
-        //     return;
-        // }
-
-        // for (var i = 0; i < score.length; ++i) {
-        //     cc.log(" fenshu = " + score[i])
-        // }
-        // cc.log("gameModel.diZhuCharId = " + gameModel.diZhuCharId);
-        // // 结算表情
-        // if (Number(score[gameModel.diZhuCharId].toString()) > 0)
-        //     var winType = true;
-        // else
-        //     var winType = false;
-
-        // var spring = 0;
-        // if (isspring == 2)
-        //     spring = 1; //是否春天
-        // else
-        //     spring = 0;
-
-        // var oData = {
-        //     diFen: 0,
-        //     beiNum: beishu,
-        //     chairID: KKVS.myChairID,
-        //     winType: winType,
-        //     isSpring: spring,
-        //     score: score
-        // };
-        // GameManager.countScore(oData);
     },
 
     onHappy_GameErrInfo: function (lobbyID, fieldID, roomID, tableID, msginfo) {
@@ -604,8 +573,8 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     onKent_tick: function (lobbyID, fieldID, roomID, tableID, chair_id) {
         cc.log("->onKent_tick====");
         if (chair_id == KKVS.EnterChairID) {
-            // cc.log("自己被踢出桌子 -- 注释");
-            KKVS.Event.fire("leaveGame");
+            cc.log("自己被踢出桌子 -- 注释");
+            // KKVS.Event.fire("leaveGame");
         } else {
             cc.log("别的玩家被踢出桌子");
             var data = {
@@ -623,7 +592,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     onHappy_Again: function () {
         cc.log("->onHappy_Again====");
         var args = arguments;
-        // Tool.logObj(args);
+        Tool.logObj(args);
         var data = {
             lobbyID: args[0],
             FieldID: args[1],
@@ -645,26 +614,6 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         };
 
         KKVS.Event.fire("again", data);
-
-        // gameModel.reConnectData = reData;
-
-        // // 显示其它玩家剩下的牌 4 = 游戏结束
-        // if (args[4] != 5) {
-        //     for (var i = 0; i < args[6].length; i++) {
-        //         var chairID = i;
-        //         var cardData = args[6][i];
-        //         var data = {
-        //             chairID: chairID,
-        //             cardData: cardData
-        //         };
-        //         KKVS.RRECON_PAICOUNT.push(data);
-        //     }
-        //     args[5] = [55, 53];
-        //     gameModel.cardData = args[5];
-        //     KKVS.DiZhuPai = args[15];
-        // }
-        // KKVS.IsReconData = true;
-        // KKVS.Event.fire("reconnectionData", reData);
     },
 
     onHappy_Trusteeship: function (lobbyID, fieldID, roomID, tableID) {

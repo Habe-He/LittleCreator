@@ -34,48 +34,6 @@ cc.Class({
     onLoad: function () {
         cc.log("=> onLoad Game");
         var isBackGround = false;
-        // cc.game.on(cc.game.EVENT_HIDE, function (event) {
-        //     if (!isBackGround) {
-        //         isBackGround = true;
-        //         cc.log("切换后台", event);
-        //     }
-        // });
-        // cc.game.on(cc.game.EVENT_SHOW, function (event) {
-        //     if (isBackGround) {
-        //         cc.log("切换前台", event);
-        //         isBackGround = false;
-        //     }
-        // });
-
-        wx.onHide(function() {
-            cc.log("监听到微信小游戏  切换后台");
-            //OnLineManager.offLine();
-        });
-
-        wx.onShow(function() {
-            cc.log("监听到微信小游戏  切换前台");
-            //var self = this;
-            ////cc.log("connect OnLineManager._autoConnect=" + OnLineManager._autoConnect.toString());
-            //if (!OnLineManager._kicked && OnLineManager._autoConnect && !KBEngine.app.socket) {
-            //    if (OnLineManager.isOnLine()) {
-            //        OnLineManager.reset();
-            //        OnLineManager.onLine();
-            //    } else {
-            //        if (this.dialog) {
-            //            this.dialog.close();
-            //            this.dialog = null;
-            //        }
-            //        this.dialog = modulelobby.showTxtDialog({title : "系统提示", txt : "与服务器断开连接,确认重新连接?", type : 2, cb : function () {
-            //            self.dialog = null;
-            //            OnLineManager.reset();
-            //            OnLineManager.onLine();
-            //        }, cb2 : function () {
-            //            self.dialog = null;
-            //            modulelobby.rootScene(modulelobby.Login);
-            //        }});
-            //    }
-            //}
-        });
         
         this.addEvent();
         this.necData();
@@ -157,7 +115,6 @@ cc.Class({
                 cardNum = cardNumBG.getChildByName("count");
             }
             var name = headNode.getChildByName("name");
-            name.string = "初始值";
             var money = headNode.getChildByName("playerKB").getChildByName("money");
             var diZhuFlag = headNode.getChildByName("DiZhuFlag");
             var clock = headNode.getChildByName("clock");
@@ -236,7 +193,7 @@ cc.Class({
     playerEnter: function (args, viewID) {
         var self = this;
         self.m_Chairs[viewID].headNode.active = true;
-        self.m_Chairs[viewID].name.getComponent(cc.Label).string = args.name;
+        self.m_Chairs[viewID].name.getComponent(cc.Label).string = Tool.InterceptDiyStr(Tool.encryptMoblieNumber(args.name), 4);
         self.m_Chairs[viewID].money.getComponent(cc.Label).string = args.gold;
 
         if (viewID == 0 && args.status == 0) {
@@ -1115,9 +1072,9 @@ cc.Class({
     // 结算界面
     endInfo: function (data) {
         var self = this;
-        // var endNode = cc.instantiate(this.endPrefab);
-        // endNode.getComponent(endNodePrefab).setData(data, endNode);
-        // self.myCardPanel.addChild(endNode, 9999);
+        var endNode = cc.instantiate(this.endPrefab);
+        endNode.getComponent(endNodePrefab).setData(data, endNode);
+        this.node.addChild(endNode, 9999);
     },
 
     // 断线重连后   更新其余玩家手牌数量
@@ -1134,7 +1091,7 @@ cc.Class({
     },
 
     // 断线重连
-    again: function(data) {
+    onLine_Again: function(data) {
         // 显示自己手牌
         var self = this;
         gameModel.cardData = data.User_cards
@@ -1152,9 +1109,9 @@ cc.Class({
         if (data.outCards != "" && data.userOutCard != 65535 && Tool.getViewChairID(data.userOutCard) != 0) {
             self.drawCard(data.outCards, Tool.getViewChairID(data.userOutCard));
             gameModel.lastCardData = [];
-            for (var i = 0; i < data.outCards.length; ++i) {
+            for (var i in data.outCards) {
                 var data = {
-                    "cardValue": cardTypeUtil.GetCardValue(reData.outCards[i])
+                    "cardValue": cardTypeUtil.GetCardValue(data.outCards[i])
                 };
                 gameModel.lastCardData.push(data);
             }
@@ -1236,7 +1193,7 @@ cc.Class({
         KKVS.Event.register("playSelfCard", this, "playSelfCard");
         KKVS.Event.register("toPlayCard", this, "toPlayCard");
         KKVS.Event.register("EndInfo", this, "endInfo");
-        KKVS.Event.register("again", this, "again");
+        KKVS.Event.register("again", this, "onLine_Again");
 
     },
 

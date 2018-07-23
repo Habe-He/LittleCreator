@@ -466,7 +466,7 @@
       }
     ],
     "_tag": -1,
-    "_active": true,
+    "_active": false,
     "_components": [
       {
         "__id__": 17
@@ -609,7 +609,7 @@
     },
     "_enabled": true,
     "_spriteFrame": {
-      "__uuid__": "bd1daafb-c324-4641-b5f6-0edbf574cef7"
+      "__uuid__": "ac00bb05-4945-4fbb-a0c1-1e510d918166"
     },
     "_type": 0,
     "_sizeMode": 1,
@@ -3052,12 +3052,8 @@
     "_N$normalSprite": {
       "__uuid__": "434e7c4d-6b7f-46eb-9d35-d7d99e9fe77f"
     },
-    "_N$pressedSprite": {
-      "__uuid__": "434e7c4d-6b7f-46eb-9d35-d7d99e9fe77f"
-    },
-    "pressedSprite": {
-      "__uuid__": "434e7c4d-6b7f-46eb-9d35-d7d99e9fe77f"
-    },
+    "_N$pressedSprite": null,
+    "pressedSprite": null,
     "_N$hoverSprite": null,
     "hoverSprite": null,
     "_N$disabledSprite": {
@@ -3111,13 +3107,7 @@
     "node": {
       "__id__": 1
     },
-    "_enabled": true,
-    "exitBtn": {
-      "__id__": 89
-    },
-    "contBtn": {
-      "__id__": 96
-    }
+    "_enabled": true
   },
   {
     "__type__": "cc.PrefabInfo",

@@ -1,5 +1,5 @@
-
 var DialogViewComp = require('DialogViewComp');
+
 cc.Class({
     extends: DialogViewComp,
     init : function (data) {
@@ -28,6 +28,7 @@ cc.Class({
         var yes_btn = cc.find("alertBackground/enterButton", prefabNode);
         //var close_btn = cc.find("alertBackground/enterButton", prefabNode);
         no_btn.on('click', function (event) {
+            this.enabled = false;
             this.node.close();
             if (typeof (this._cb2) == 'function') {
                 if (this._target2) {
@@ -39,6 +40,7 @@ cc.Class({
             cc.log("click no btn");
         }, this);
         yes_btn.on('click', function (event) {
+            this.enabled = false;
             this.node.close();
             if (typeof (this._cb) == 'function') {
                 if (this._target) {

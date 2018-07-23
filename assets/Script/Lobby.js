@@ -1,6 +1,9 @@
 var KKVS = require("./plugin/KKVS");
-var DialogView = require("DialogView");
-var TxtDialogComp = require("TxtDialogComp");
+var OnLineManager = require("./tool/OnLineManager");
+//var DialogView = require("./widget/DialogView");
+//var TxtDialogComp = require("./widget/TxtDialogComp");
+//var TipDialogComp = require("./widget/TipDialogComp");
+//var AppHelper = require("./AppHelper");
 
 cc.Class({
     extends: cc.Component,
@@ -9,7 +12,8 @@ cc.Class({
     },
 
     onLoad: function () {
-        cc.log("=> onLoad Lobby");
+        cc.log("=> Lobby::onLoad()");
+        OnLineManager._autoConnect = true;
         var self = this;
         self.addEvent();
         this.btnJinBI.node.on("touchend", self.jinBiBtnTouchEvent, this);
@@ -27,8 +31,9 @@ cc.Class({
 
     jinBiBtnTouchEvent: function (event) {
         cc.log("点击金币场次");
-        //cc.director.loadScene("GameUI");
-        (new DialogView()).build(TxtDialogComp, {txt : "测试用例", type : 2}).show();
+        cc.director.loadScene("GameUI");
+        //(new DialogView()).build(TxtDialogComp, {txt : "测试用例", type : 2}).show();
+        //AppHelper.get().showLoading(null, null, 15);
     },
 
     shareBtnTouchEvent: function (event) {
@@ -51,6 +56,7 @@ cc.Class({
 
     onDestroy() {
         //KKVS.Event.deregister("reConnectGameSvrSuccess", this);
+        cc.log("=> Lobby::onDestroy()");
     },
 
 });

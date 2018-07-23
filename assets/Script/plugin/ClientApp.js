@@ -9,6 +9,7 @@ cc.Class({
 
     // use this for initialization
     onLoad: function () {
+        gameEngine.destroy();
         var args = new gameEngine.gameEngineArgs();
 		args.ip = this.ip;
 		args.port = this.port;

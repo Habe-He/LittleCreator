@@ -54,21 +54,21 @@ cc.Class({
         wx.checkSession({
             success: function () {
                 cc.log("仍然是登录状态");
-                self._wxLoginCode(function(data) {
+                self._wxLoginCode(function (data) {
                     self._serverLogin(data.code);
                 });
             },
 
             fail: function (res) {
                 cc.log("登录状态已过期 或者 未登录过");
-                self._wxLoginCode(function(data) {
+                self._wxLoginCode(function (data) {
                     self._weChatGetUserInfo(data);
                 });
             },
         });
     },
 
-    _wxLoginCode: function(callback) {
+    _wxLoginCode: function (callback) {
         wx.login({
             success: function (res) {
                 cc.log("登录成功 code = " + res.code);
@@ -82,6 +82,27 @@ cc.Class({
     },
 
     _serverLogin: function (code) {
+        // var nickName = null;
+        // var avatarUrl = null;
+        // var gender = null;
+
+        // try {
+        //     nickName = wx.getStorageSync('nickName');
+        //     avatarUrl = wx.getStorageSync('avatarUrl');
+        //     gender = wx.getStorageSync('gender');
+        //   } catch (e) {
+        //     cc.log("get getStorageSync errr");
+        //   }
+
+        // if (nickName == null || avatarUrl == null || gender == null) {
+        //     wx.showToast({
+        //         title: '获取本地保存数据失败',
+        //         icon: 'none',
+        //         duration: 1000
+        //     })
+        //     return;
+        // }
+        // var reqURL = "https://apiwxgame.kkvs.com/MobileApi/GetSgameAccounts?Code=" + code + "?nickname=" + nickName + "?faceurl=" + avatarUrl + "?gender=" + gender;
         var reqURL = "https://apiwxgame.kkvs.com/MobileApi/GetSgameAccounts?Code=" + code;
         httpUtils.getInstance().httpGets(reqURL, function (data) {
             cc.log("_serverLogin " + data);
@@ -115,7 +136,7 @@ cc.Class({
             wx.userInfoButton(_w, _h, _bw, _bh, data, function (res) {
                 console.log(res);
                 if (res.userInfo) {
-                    //登录成功 保存用户信息
+                    // 登录成功 保存用户信息
                     cc.log("res.userInfo = " + res.userInfo);
                     // wxsdk.set('userInfo', res.userInfo);
                     // self.loginState = false;
@@ -142,12 +163,27 @@ cc.Class({
                 // 2 ：女
                 var gender = res.userInfo.gender;
                 var nickName = res.userInfo.nickName;
-                cc.log("city = " + city);
-                cc.log("gender = " + gender);
-                cc.log("nickName = " + nickName);
+                // cc.log("city = " + city);
+                // cc.log("gender = " + gender);
+                // cc.log("nickName = " + nickName);
 
                 // this.nickName = nickName;
                 // this.avatarUrl = avatarUrl;
+
+                wx.setStorage({
+                    key: "nickName",
+                    data: nickName
+                });
+
+                wx.setStorage({
+                    key: "avatarUrl",
+                    data: avatarUrl
+                });
+
+                wx.setStorage({
+                    key: "gender",
+                    data: gender
+                });
 
                 self._serverLogin(data.code);
             },
@@ -188,50 +224,14 @@ cc.Class({
         }
     },
 
-    //login: function () {
-    //    var self = this;
-    //    var acc = KKVS.Acc;
-    //    var pwd = KKVS.Pwd;
-    //    gameEngine.app.reset();
-    //    if (!acc || acc == "") {
-    //        var args = {
-    //            eventType: 1,
-    //            msg: "登录失败,帐号不能为空",
-    //            pro: null,
-    //            winType: 1
-    //        };
-    //        KKVS.Event.fire("createTips", args);
-    //        return;
-    //    }
-    //
-    //    // 45
-    //    var login_extraDatas = {
-    //        login_type: Tool.VISITOR_LOGIN,
-    //        plaza_id: "0",
-    //        server_id: "1"
-    //    };
-    //
-    //    var datas = JSON.stringify(login_extraDatas);
-    //    gameEngine.Event.fire("login", acc, pwd, datas);
-    //},
-
-    //reConnectGameSvrSuccess: function() {
-    //    cc.log("Login reConnectGameSvrSuccess");
-    //    cc.director.loadScene("GameUI");
-    //},
-
     addEvent() {
         cc.log("注册Kbe事件");
-        //KKVS.Event.register("goLogin", this, "login");
         KKVS.Event.register("onLoginGameSuccess", this, "onLoginGameSuccess");
-        //KKVS.Event.register("reConnectGameSvrSuccess", this, "reConnectGameSvrSuccess");
     },
 
     onDestroy() {
         cc.log("Login Scene has been destroy");
-        //KKVS.Event.deregister("goLogin", this);
         KKVS.Event.deregister("onLoginGameSuccess", this);
-        //KKVS.Event.deregister("reConnectGameSvrSuccess", this);
     },
 
     // update (dt) {},
