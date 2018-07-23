@@ -5,6 +5,9 @@ var gameEngine = require("./../plugin/gameEngine");
 var cardfabs = require('./../card/cardPer');
 var cardTypeUtil = require('./../card/cardTypeUtil');
 var cardInfo = require('./../card/cardInfo');
+var endNodePrefab = require('./gameEnd');
+
+var OnLineManager = require('./../tool/OnLineManager')
 
 cc.Class({
 
@@ -24,9 +27,12 @@ cc.Class({
             default: null,
             type: cc.Prefab
         },
+
+        endPrefab: cc.Prefab,
     },
 
     onLoad: function () {
+        cc.log("=> onLoad Game");
         var isBackGround = false;
         // cc.game.on(cc.game.EVENT_HIDE, function (event) {
         //     if (!isBackGround) {
@@ -43,10 +49,32 @@ cc.Class({
 
         wx.onHide(function() {
             cc.log("监听到微信小游戏  切换后台");
+            //OnLineManager.offLine();
         });
 
         wx.onShow(function() {
             cc.log("监听到微信小游戏  切换前台");
+            //var self = this;
+            ////cc.log("connect OnLineManager._autoConnect=" + OnLineManager._autoConnect.toString());
+            //if (!OnLineManager._kicked && OnLineManager._autoConnect && !KBEngine.app.socket) {
+            //    if (OnLineManager.isOnLine()) {
+            //        OnLineManager.reset();
+            //        OnLineManager.onLine();
+            //    } else {
+            //        if (this.dialog) {
+            //            this.dialog.close();
+            //            this.dialog = null;
+            //        }
+            //        this.dialog = modulelobby.showTxtDialog({title : "系统提示", txt : "与服务器断开连接,确认重新连接?", type : 2, cb : function () {
+            //            self.dialog = null;
+            //            OnLineManager.reset();
+            //            OnLineManager.onLine();
+            //        }, cb2 : function () {
+            //            self.dialog = null;
+            //            modulelobby.rootScene(modulelobby.Login);
+            //        }});
+            //    }
+            //}
         });
         
         this.addEvent();
@@ -536,6 +564,7 @@ cc.Class({
 
     // 自己被踢出桌子
     leaveGame: function () {
+        cc.log("=> leaveGame");
         cc.director.loadScene("Lobby");
     },
 
@@ -1084,8 +1113,104 @@ cc.Class({
     },
 
     // 结算界面
-    endInfo: function(data) {
-        gameEnd.show(data);
+    endInfo: function (data) {
+        var self = this;
+        // var endNode = cc.instantiate(this.endPrefab);
+        // endNode.getComponent(endNodePrefab).setData(data, endNode);
+        // self.myCardPanel.addChild(endNode, 9999);
+    },
+
+    // 断线重连后   更新其余玩家手牌数量
+    reInitShouPai: function(data) {
+        var self = this;
+        for (var i = 0; i < data.length; ++i) {
+            var viewID = Tool.getViewChairID(data[i]);
+            if (viewID == 1) {
+                self.m_Chairs[1].cardNum.getComponent(cc.Label).string = data.User_cards_count[i].toString();
+            } else if (viewID == 2) {
+                self.m_Chairs[2].cardNum.getComponent(cc.Label).string = data.User_cards_count[i].toString();
+            }
+        }
+    },
+
+    // 断线重连
+    again: function(data) {
+        // 显示自己手牌
+        var self = this;
+        gameModel.cardData = data.User_cards
+        self.showSelfCard();
+        self.reInitShouPai(data.User_cards_count);
+        gameModel.diZhuCharId = data.zhuang_ID;
+
+        if (Tool.getViewChairID(data.cur_user) == 0 && data.User_cards_count[0] != 0 && data.User_cards_count[1] != 0 && data.User_cards_count[2] != 0) {
+            self.visibleOperation(true);
+            self.btnNotPlay.interactable = (data.mustPlay == 2) ? false : true;
+        }
+        self.showTime(Tool.getViewChairID(data.cur_user), 13);
+
+        // 绘制上家扑克
+        if (data.outCards != "" && data.userOutCard != 65535 && Tool.getViewChairID(data.userOutCard) != 0) {
+            self.drawCard(data.outCards, Tool.getViewChairID(data.userOutCard));
+            gameModel.lastCardData = [];
+            for (var i = 0; i < data.outCards.length; ++i) {
+                var data = {
+                    "cardValue": cardTypeUtil.GetCardValue(reData.outCards[i])
+                };
+                gameModel.lastCardData.push(data);
+            }
+        } else {
+            gameModel.lastCardData = null;
+        }
+
+        if (data.cur_user == KKVS.myChairID) {
+            if (gameModel.diZhuCharId == 65535) {
+                self.visibleCallScore(true);
+            } else {
+                if (gameModel.lastCardData == null || data.userOutCard == 0) {
+                    if (data.User_cards_count[0] != 0 && data.User_cards_count[1] != 0 && data.User_cards_count[2] != 0) {
+                        self.visibleOperation(true);
+                    }
+                    self.btnPlay.interactable = false;
+                } else {
+                    var objCards = null;
+					var selfCards = [];
+					var cardList = self.cardList.slice(0);
+					var clen = cardList.length;
+					for (var i = 0; i < clen; ++i) {
+						selfCards.push(cardList[i].getComponent(cardfabs).getCardValue());
+                    }
+                    // 有上家的牌
+                    if (gameModel.lastCardData) {
+                        objCards = [];
+						var llen = gameModel.lastCardData.length;
+						for (var i = 0; i < llen; ++i) {
+							objCards.push(gameModel.lastCardData[i].getComponent(cardfabs).getCardValue());
+						}
+                    }
+                }
+            }
+        }
+    },
+
+    drawCard: function (cardIds, viewID) {
+        var self = this;
+        cc.log("绘制上家扑克");
+        var verCount = 8;
+		var len = cardIds.length;
+		var panelSize = self.myCardPanel.getContentSize();
+		var posS = [panelSize.width - 460, 465];
+		var starPos = posS[viewID - 1];
+		var frlen = len <= 8 ? len : 8;
+		var setaValue = viewID == 1 ? frlen : 0;
+        var scale = 0.5;
+        for (var i = 0; i < len; ++i) {
+            var card = cc.instantiate(this.pokerCard);
+			card.setScale(scale);
+            card.setPosition((i % verCount - setaValue) * 30 + starPos, 500 - Math.floor(i / verCount) * 40);
+            card.getComponent(cardfabs).showPoker(cardIds[i], i);
+			self.myCardPanel.addChild(card);
+			self.outCardList[viewID].push(card);
+		}
     },
 
     addEvent() {
@@ -1111,6 +1236,8 @@ cc.Class({
         KKVS.Event.register("playSelfCard", this, "playSelfCard");
         KKVS.Event.register("toPlayCard", this, "toPlayCard");
         KKVS.Event.register("EndInfo", this, "endInfo");
+        KKVS.Event.register("again", this, "again");
+
     },
 
     onDestroy() {
@@ -1125,5 +1252,6 @@ cc.Class({
         KKVS.Event.deregister("playSelfCard", this);
         KKVS.Event.deregister("toPlayCard", this);
         KKVS.Event.deregister("EndInfo", this);
+        KKVS.Event.deregister("again", this);
     },
 });

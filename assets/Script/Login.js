@@ -12,6 +12,7 @@ var KKVS = require("./plugin/KKVS")
 var Tool = require("./tool/Tool")
 var gameEngine = require("./plugin/gameEngine")
 var httpUtils = require('./plugin/httpUtils')
+var OnLineManager = require("./tool/OnLineManager");
 
 cc.Class({
     extends: cc.Component,
@@ -24,27 +25,29 @@ cc.Class({
 
     start() {
         this.addEvent();
-
+        cc.log("Login start");
         this.nickName = null;
         this.avatarUrl = null;
     },
 
     // LIFE-CYCLE CALLBACKS:
     onLoad: function () {
+        cc.log("=> onLoad Login");
         var self = this;
+        cc.log("Login onLoad");
         self._weChatCheckSession();
     },
 
 
 
-    login_callback: function (event) {
-        var self = this;
-        // TODO 暂时使用游客登录
-        // KKVS.Login_type = Tool.VISITOR_LOGIN;
-        // KKVS.Acc = 'ceshizhanghaoxg1600000101';
-        // KKVS.Pwd = '123456';
-        // Tool.OxLogin(KKVS.Acc, KKVS.Pwd);
-    },
+    //login_callback: function (event) {
+    //    var self = this;
+    //    // TODO 暂时使用游客登录
+    //    // KKVS.Login_type = Tool.VISITOR_LOGIN;
+    //    // KKVS.Acc = 'ceshizhanghaoxg1600000101';
+    //    // KKVS.Pwd = '123456';
+    //    // Tool.OxLogin(KKVS.Acc, KKVS.Pwd);
+    //},
 
     _weChatCheckSession: function () {
         var self = this;
@@ -94,7 +97,8 @@ cc.Class({
                 KKVS.Acc = jsonD[0].Accounts;
                 KKVS.Pwd = jsonD[0].PassWord;
 
-                Tool.OxLogin(KKVS.Acc, KKVS.Pwd);
+                //Tool.OxLogin(KKVS.Acc, KKVS.Pwd);
+                OnLineManager.onLine();
             }
         });
     },
@@ -175,52 +179,59 @@ cc.Class({
     },
 
     // 场景切换
-    onLoginSuccess: function () {
-        cc.log("登录服连接成功");
-
-        // cc.director.loadScene("GameUI");
-        Tool.enterGame(1, 2, 0, 0, 0);
-    },
-
-    login: function () {
-        var self = this;
-        var acc = KKVS.Acc;
-        var pwd = KKVS.Pwd;
-        gameEngine.app.reset();
-        if (!acc || acc == "") {
-            var args = {
-                eventType: 1,
-                msg: "登录失败,帐号不能为空",
-                pro: null,
-                winType: 1
-            };
-            KKVS.Event.fire("createTips", args);
-            return;
+    onLoginGameSuccess: function (args) {
+        cc.log("登录服连接成功 => " + args);
+        if (args == 1) {
+            cc.director.loadScene("Lobby");
+        } else if (args == 2) {
+            cc.director.loadScene("GameUI");
         }
-
-        // 45
-        var login_extraDatas = {
-            login_type: Tool.VISITOR_LOGIN,
-            plaza_id: "0",
-            server_id: "1"
-        };
-
-        var datas = JSON.stringify(login_extraDatas);
-        gameEngine.Event.fire("login", acc, pwd, datas);
     },
+
+    //login: function () {
+    //    var self = this;
+    //    var acc = KKVS.Acc;
+    //    var pwd = KKVS.Pwd;
+    //    gameEngine.app.reset();
+    //    if (!acc || acc == "") {
+    //        var args = {
+    //            eventType: 1,
+    //            msg: "登录失败,帐号不能为空",
+    //            pro: null,
+    //            winType: 1
+    //        };
+    //        KKVS.Event.fire("createTips", args);
+    //        return;
+    //    }
+    //
+    //    // 45
+    //    var login_extraDatas = {
+    //        login_type: Tool.VISITOR_LOGIN,
+    //        plaza_id: "0",
+    //        server_id: "1"
+    //    };
+    //
+    //    var datas = JSON.stringify(login_extraDatas);
+    //    gameEngine.Event.fire("login", acc, pwd, datas);
+    //},
+
+    //reConnectGameSvrSuccess: function() {
+    //    cc.log("Login reConnectGameSvrSuccess");
+    //    cc.director.loadScene("GameUI");
+    //},
 
     addEvent() {
         cc.log("注册Kbe事件");
-        KKVS.Event.register("goLogin", this, "login");
-        KKVS.Event.register("onLoginSuccess", this, "onLoginSuccess");
-        KKVS.Event.register("LoginGameSvrSuccess", this, "LoginGameSvrSuccess");
+        //KKVS.Event.register("goLogin", this, "login");
+        KKVS.Event.register("onLoginGameSuccess", this, "onLoginGameSuccess");
+        //KKVS.Event.register("reConnectGameSvrSuccess", this, "reConnectGameSvrSuccess");
     },
 
     onDestroy() {
         cc.log("Login Scene has been destroy");
-        KKVS.Event.deregister("goLogin", this);
-        KKVS.Event.deregister("onLoginSuccess", this);
-        KKVS.Event.deregister("LoginGameSvrSuccess", this);
+        //KKVS.Event.deregister("goLogin", this);
+        KKVS.Event.deregister("onLoginGameSuccess", this);
+        //KKVS.Event.deregister("reConnectGameSvrSuccess", this);
     },
 
     // update (dt) {},

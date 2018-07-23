@@ -59,7 +59,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         cc.log("KKVS.HEAD_URL=" + KKVS.HEAD_URL);
         cc.log("KKVS.NICKNAME=" + KKVS.NICKNAME);
         KKVS.GAME_ACC = params.account;
-        cc.director.loadScene("Lobby");
+        //cc.director.loadScene("Lobby");
     },
 
     on_item: function () {
@@ -220,7 +220,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
                 return;
             }
             this.bReconnect = false;
-            KKVS.Event.fire("onLoginGameSuccess", 1);
+            KKVS.Event.fire("onLoginGameSuccess", 2);
             cc.log("########");
             cc.log("GamePlayer::onReConnectGameTable info=" + info);
             cc.log("########");
@@ -231,36 +231,36 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
             KKVS.EnterRoomID = roomID;
             KKVS.EnterTableID = tableID;
             KKVS.EnterChairID = chairID;
-            var roomData = null;
-            for (var i = 0, s = KKVS.RoomListInfo.length; i < s; ++i) {
-                var field = KKVS.RoomListInfo[i]["field_id"];
-                if (field == KKVS.SelectFieldID) {
-                    var roomList = KKVS.RoomListInfo[i]["roomList"];
-                    for (var r = 0, l = roomList.length; r < l; ++r) {
-                        if (roomList[r]["room_id"] == KKVS.EnterRoomID) {
-                            roomData = roomList[r];
-                            break;
-                        }
-                    }
-                    break;
-                }
-            }
-            if (!roomData) {
-                cc.log("GamePlayer::onReConnectGameTable roomData is null");
-                return;
-            }
-            COM_NAME = roomData.name;
-            if (typeof (COM_NAME_NODE) != 'undefined' && COM_NAME_NODE) {
-                COM_NAME_NODE.setString(COM_NAME);
-            }
-            KKVS.MinScore = roomData.min_score;
-            KKVS.MaxScore = roomData.max_score;
-            KKVS.GameType = roomData.room_type;
-            KKVS.ServicePay = roomData.service_pay;
-            gameModel.baseScore = roomData.base_score;
+            // var roomData = null;
+            // for (var i = 0, s = KKVS.RoomListInfo.length; i < s; ++i) {
+            //     var field = KKVS.RoomListInfo[i]["field_id"];
+            //     if (field == KKVS.SelectFieldID) {
+            //         var roomList = KKVS.RoomListInfo[i]["roomList"];
+            //         for (var r = 0, l = roomList.length; r < l; ++r) {
+            //             if (roomList[r]["room_id"] == KKVS.EnterRoomID) {
+            //                 roomData = roomList[r];
+            //                 break;
+            //             }
+            //         }
+            //         break;
+            //     }
+            // }
+            // if (!roomData) {
+            //     cc.log("GamePlayer::onReConnectGameTable roomData is null");
+            //     return;
+            // }
+            // COM_NAME = roomData.name;
+            // if (typeof (COM_NAME_NODE) != 'undefined' && COM_NAME_NODE) {
+            //     COM_NAME_NODE.setString(COM_NAME);
+            // }
+            // KKVS.MinScore = roomData.min_score;
+            // KKVS.MaxScore = roomData.max_score;
+            // KKVS.GameType = roomData.room_type;
+            // KKVS.ServicePay = roomData.service_pay;
+            // gameModel.baseScore = roomData.base_score;
         }
         //enter room
-        KKVS.Event.fire("LoginGameSvrSuccess");
+        KKVS.Event.fire("reConnectGameSvrSuccess");
         this.reqReConnectGameTable();
     },
 
@@ -280,7 +280,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
                 pro: null,
                 winType: 1
             };
-            TipsBar.showString("进入游戏桌子失败 原因：" + erorStr);
+            //TipsBar.showString("进入游戏桌子失败 原因：" + erorStr);
             KKVS.Event.fire("createTips", args);
             return;
         }
@@ -523,7 +523,8 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
 
     onHappy_GameEndInfo: function (lobby_id, field_id, room_id, table_id, card_list, scores, times, isspring, difen) {
         cc.log("->onHappy_GameEndInfo====");
-
+        cc.log("=> gameModel.playerData.length" + gameModel.playerData.length);
+        Tool.logObj(scores);
         var data = [];
         for (var i = 0; i < gameModel.playerData.length; ++i) {
             var name = gameModel.playerData[i].name;
@@ -622,8 +623,8 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     onHappy_Again: function () {
         cc.log("->onHappy_Again====");
         var args = arguments;
-        Tool.logObj(args);
-        var reData = {
+        // Tool.logObj(args);
+        var data = {
             lobbyID: args[0],
             FieldID: args[1],
             Room_ID: args[2],
@@ -633,7 +634,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
             User_cards_count: args[6],
             zhuang_beishu: args[7],
             cur_user: args[8],
-            zhuang_ID: args[9],
+            zhuang_ID: args[9], // 地主椅子号
             outCards: args[10],
             mustplay: args[11],
             zhuangBei: args[12],
@@ -642,30 +643,34 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
             diZhuMoreCard: args[15],
             userOutCard: args[16]
         };
-        gameModel.reConnectData = reData;
 
-        // 显示其它玩家剩下的牌 4 = 游戏结束
-        if (args[4] != 5) {
-            for (var i = 0; i < args[6].length; i++) {
-                var chairID = i;
-                var cardData = args[6][i];
-                var data = {
-                    chairID: chairID,
-                    cardData: cardData
-                };
-                KKVS.RRECON_PAICOUNT.push(data);
-            }
-            args[5] = [55, 53];
-            gameModel.cardData = args[5];
-            KKVS.DiZhuPai = args[15];
-        }
-        KKVS.IsReconData = true;
-        KKVS.Event.fire("reconnectionData", reData);
+        KKVS.Event.fire("again", data);
+
+        // gameModel.reConnectData = reData;
+
+        // // 显示其它玩家剩下的牌 4 = 游戏结束
+        // if (args[4] != 5) {
+        //     for (var i = 0; i < args[6].length; i++) {
+        //         var chairID = i;
+        //         var cardData = args[6][i];
+        //         var data = {
+        //             chairID: chairID,
+        //             cardData: cardData
+        //         };
+        //         KKVS.RRECON_PAICOUNT.push(data);
+        //     }
+        //     args[5] = [55, 53];
+        //     gameModel.cardData = args[5];
+        //     KKVS.DiZhuPai = args[15];
+        // }
+        // KKVS.IsReconData = true;
+        // KKVS.Event.fire("reconnectionData", reData);
     },
 
     onHappy_Trusteeship: function (lobbyID, fieldID, roomID, tableID) {
         cc.log("->onHappy_SendCallBanker====");
         // GameManager.inTrusteeship();
+        this.baseCall("reqKent_Trusteeship", lobbyID, fieldID, roomID, tableID, 1);
     },
 
     on_room_msg: function (type, args) {
