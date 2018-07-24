@@ -110,10 +110,10 @@ cc.Class({
             var cardNum = null;
             var cardNumBG = null;
             if (i != 0) {
-                head = headNode.getChildByName("head");
                 cardNumBG = headNode.getChildByName("card");
                 cardNum = cardNumBG.getChildByName("count");
             }
+            head = headNode.getChildByName("head").getComponent(cc.Sprite);
             var name = headNode.getChildByName("name");
             var money = headNode.getChildByName("playerKB").getChildByName("money");
             var diZhuFlag = headNode.getChildByName("DiZhuFlag");
@@ -193,6 +193,7 @@ cc.Class({
     playerEnter: function (args, viewID) {
         var self = this;
         self.m_Chairs[viewID].headNode.active = true;
+        Tool.weChatHeadFile(self.m_Chairs[viewID].head, args.head_url);
         self.m_Chairs[viewID].name.getComponent(cc.Label).string = Tool.InterceptDiyStr(Tool.encryptMoblieNumber(args.name), 4);
         self.m_Chairs[viewID].money.getComponent(cc.Label).string = args.gold;
 
@@ -275,7 +276,11 @@ cc.Class({
     },
 
     onBtnNotPlay: function(event) {
-        this.sendNotPlay();
+        if (!this.mustPlay) {
+            this.sendNotPlay();
+        } else {
+            cc.log("必须出牌点击无效");
+        }
     },
 
     onBtnTips: function(event) {
@@ -851,8 +856,9 @@ cc.Class({
     toPlayCard: function(chairID, time, mustPlay) {
         var self = this;
         var viewID = Tool.getViewChairID(chairID);
-        cc.log("toPlayCard viewID = " + viewID);
+        cc.log("toPlayCard viewID = " + viewID + " mustPlay = " + mustPlay);
         self.visibleCallScore(false);
+        mustPlay = (mustPlay == 1) ? false : true;
 
         for (var i = 0; i < self.outCardList[viewID].length; ++i) {
             if (self.outCardList[viewID][i])
@@ -888,6 +894,12 @@ cc.Class({
         }
 
         self.showTime(viewID, time - 1);
+        if (self.cardList.length == 0 || self.m_Chairs[1].cardNum.getComponent(cc.Label).string == 0 || self.m_Chairs[2].cardNum.getComponent(cc.Label).string == 0) {
+            self.visibleOperation(false);
+            self.m_Chairs[0].clock.active = false;
+            self.m_Chairs[1].clock.active = false;
+            self.m_Chairs[2].clock.active = false;
+        }
     },
     
     // 重新排列自己的牌的位置
@@ -958,9 +970,11 @@ cc.Class({
 
         var cardType = cardTypeUtil.getCardType(cardvalue);
         if (cardType == cardTypeUtil.rocketCard) {
-			cc.log("cardTypeUtil.rocketCard");
+            cc.log("cardTypeUtil.rocketCard");
+            self.updataMultiple();
 		} else if (cardType == cardTypeUtil.bormCard || cardType > 100) {
-			cc.log("cardTypeUtil.bormCard");
+            cc.log("cardTypeUtil.bormCard");
+            self.updataMultiple();
 		} else if (cardType == cardTypeUtil.planeTakeNoneCard || cardType == cardTypeUtil.planeTakeSingleCard || cardType == cardTypeUtil.planeTakeDoubleCard) {
 			cc.log("cardTypeUtil.planeTakeNoneCard");
 		} else if (cardType == cardTypeUtil.sequenceCard) {
@@ -1034,9 +1048,11 @@ cc.Class({
         
         var cardType = cardTypeUtil.getCardType(cardvalue);
 		if (cardType == cardTypeUtil.rocketCard) {
-			cc.log("2332222");
+            cc.log("2332222");
+            self.updataMultiple();
 		} else if (cardType == cardTypeUtil.bormCard || cardType > 100) {
-			cc.log("2332111");
+            cc.log("2332111");
+            self.updataMultiple();
 		} else if (cardType == cardTypeUtil.planeTakeNoneCard || cardType == cardTypeUtil.planeTakeSingleCard || cardType == cardTypeUtil.planeTakeDoubleCard) {
 			cc.log("2332qw");
 		} else if (cardType == cardTypeUtil.sequenceCard) {
@@ -1149,6 +1165,7 @@ cc.Class({
         }
     },
 
+    // 断线回来绘制玩家出牌
     drawCard: function (cardIds, viewID) {
         var self = this;
         cc.log("绘制上家扑克");
@@ -1168,6 +1185,12 @@ cc.Class({
 			self.myCardPanel.addChild(card);
 			self.outCardList[viewID].push(card);
 		}
+    },
+
+    // 设置倍数
+    updataMultiple: function() {
+        var self = this;
+        self.multipleText.string = (parseInt(self.multipleText.string) * 2).toString();
     },
 
     addEvent() {

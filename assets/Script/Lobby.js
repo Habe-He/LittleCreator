@@ -1,5 +1,6 @@
 var KKVS = require("./plugin/KKVS");
 var OnLineManager = require("./tool/OnLineManager");
+var Tool = require('./tool/Tool');
 //var DialogView = require("./widget/DialogView");
 //var TxtDialogComp = require("./widget/TxtDialogComp");
 //var TipDialogComp = require("./widget/TipDialogComp");
@@ -17,16 +18,19 @@ cc.Class({
         var self = this;
         self.addEvent();
         this.btnJinBI.node.on("touchend", self.jinBiBtnTouchEvent, this);
-    },
 
-    setInfomation: function () {
-        this.money.string = "金币：" + KKVS.KGOLD.toString();
-        this.weChatID.string = "ID:" + KKVS.NICKNAME.toString();
-    },
+        var bg = this.node.getChildByName('bg');
+        var nameBG = bg.getChildByName('NameBG');
+        var name = nameBG.getChildByName('name').getComponent(cc.Label);
+        name.string = Tool.InterceptDiyStr(Tool.encryptMoblieNumber(KKVS.NICKNAME), 5);
 
+        var coinbg = bg.getChildByName('coin');
+        var coinCount = coinbg.getChildByName('count').getComponent(cc.Label);
+        coinCount.string = KKVS.KGOLD.toString();
 
-    rankBtnTouchEvent: function (event) {
-        cc.log(" 点击排行榜");
+        var head = bg.getChildByName('Head_0').getComponent(cc.Sprite);
+        Tool.weChatHeadFile(head, KKVS.HEAD_URL);
+
     },
 
     jinBiBtnTouchEvent: function (event) {
@@ -39,11 +43,6 @@ cc.Class({
     shareBtnTouchEvent: function (event) {
         cc.log(" 点击分享");
     },
-
-    //reConnectGameSvrSuccess: function() {
-    //    cc.log("Lobby reConnectGameSvrSuccess");
-    //    // cc.director.loadScene("GameUI");
-    //},
 
     start() {
         

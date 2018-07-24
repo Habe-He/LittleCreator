@@ -1,0 +1,74 @@
+微信斗地主服务器相关
+
+测试服域名testsgame.kkvs.com
+正式服域名sgame.kkvs.com
+
+----------------------------------------------------
+玩家登录成功 
+
+发送 onPlayerData
+
+发送玩家道具 （玩家道具变动时 也会主动下发）
+
+on_item
+	[ 
+		{"prop_id": 1050, "prop_count": 100}, 
+		{"prop_id": 1004, "prop_count": 5000}
+	]
+
+注 道具ID	道具类型		道具描述
+	
+	1000	小红包抽奖次数  消耗次数可抽奖
+	1001	中红包抽奖次数  消耗次数可抽奖
+	1002	大红包抽奖次数	消耗次数可抽奖
+	1004	红包余额			可提现
+	1050  	钻石|房卡		开房，兑换游戏币
+
+
+发送当前赛季信息
+PLAYER_MSG_ID_REQ_COMPETITIVE_RANKING                               = 5  # 排位赛季信息
+
+on_player_msg(
+				PLAYER_MSG_ID_REQ_COMPETITIVE_RANKING, 
+				{'id': 0, 'start': 0, 'end': 0, 'status': 1} //id
+				[{"end": "1533052799", "status": "1", "start": "1530374400", "id": "1"}]
+			)
+
+注: # id: 季赛ID
+    # start: 季赛开始时间戳
+    # end: 季赛结束时间戳
+    # status: 季赛当前状态  0 未开始, 1 进行中, 2 已结束
+
+发送玩家排位积分信息（玩家积分变动时 也会主动下发）
+on_player_msg(GlobalConst.PLAYER_MSG_ID_REQ_PLAYER_COMPETITIVE_RANKING, {'score': 100})
+
+----------------------------------------------------
+
+服务器房间列表信息 
+field_id  =  1  红包场
+field_id  =  2  金币场
+field_id  =  99 排位场
+
+onRoomConfig中 可以收到 game_mode = data.game_mode
+game_mode = 6 为排位场 可以为 KKVS.GAME_MODEL赋值
+
+GamePlayer({
+
+onEnterRoomResult: function (lobbyID, fieldID, roomID, bSuccess, erorStr) 
+{
+ 	if (KKVS.GAME_MODEL == 6) 
+ 	{
+        this.c_enter_game(lobbyID, fieldID, roomID);
+    }
+},
+
+//开始排位 等待匹配成功自动进桌 
+c_enter_game:function(lobbyID, fieldID, roomID) 
+{
+    this.baseCall("c_enter_game", lobbyID, fieldID, roomID);
+},
+
+})
+
+
+

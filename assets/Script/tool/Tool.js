@@ -322,7 +322,7 @@ Tool.toolSortArray = function(m_data) {
     })
 
     return m_data;
-}
+},
 
 Tool.sortListBy2T3 = function(data, operator) {
     if (data == undefined)
@@ -345,6 +345,25 @@ Tool.sortListBy2T3 = function(data, operator) {
             }
         }
     });
-}
+},
+
+Tool.weChatHeadFile = function(img, url) {
+    wx.downloadFile({
+        url: url,
+        header: "image",
+        filePath: "",
+        success: function (res) {
+            var path = res.tempFilePath;
+            cc.loader.load(path, function (err, texture) {
+                var frame = new cc.SpriteFrame(texture);
+                img.spriteFrame = frame;
+            });
+        },
+
+        fail: function (err) {
+            cc.log("下载微信头像失败 = " + err);
+        },
+    });
+},
 
 module.exports = Tool;

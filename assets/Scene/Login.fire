@@ -258,7 +258,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "New Label",
+    "_name": "tip",
     "_objFlags": 0,
     "_parent": {
       "__id__": 2
@@ -408,7 +408,7 @@
     "groupIndex": 0
   },
   {
-    "__type__": "2e18dJKIBNJ0YpYjJEhOG6D",
+    "__type__": "13fe7cS+odGXaQOY1hlFxEj",
     "_name": "",
     "_objFlags": 0,
     "node": {

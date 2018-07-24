@@ -3,6 +3,8 @@ var KKVS = require("./../plugin/KKVS");
 var gameModel = require("./../game/gameModel");
 var GameManager = require("./../game/GameManager");
 var Tool = require("./../tool/Tool");
+var DialogView = require('./../widget/DialogView');
+var TxtDialogComp = require("./../widget/TxtDialogComp");
 
 gameEngine.GamePlayer = gameEngine.Entity.extend({
     __init__: function () {
@@ -273,15 +275,9 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         cc.log("onEnterTableResult");
 
         if (!bSuccess) {
-            KKVS.INFO_MSG("进入游戏桌子失败 原因：" + erorStr);
-            var args = {
-                eventType: 1002,
-                msg: erorStr,
-                pro: null,
-                winType: 1
-            };
-            //TipsBar.showString("进入游戏桌子失败 原因：" + erorStr);
-            KKVS.Event.fire("createTips", args);
+            (new DialogView()).build(TxtDialogComp, {txt : erorStr, type : 1, cb : function () {
+                cc.director.loadScene('Lobby');
+            }}).show();
             return;
         }
 
@@ -403,6 +399,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     },
 
     reqLeaveTable: function () {
+        cc.log("reqLeaveTable");
         var lobbyID = KKVS.EnterLobbyID;
         var fieldID = KKVS.SelectFieldID;
         var roomID = KKVS.EnterRoomID;
@@ -412,7 +409,9 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         KKVS.INFO_MSG("player req leave table!");
         KKVS.INFO_MSG("lobbyID = " + lobbyID + ", fieldID = " + fieldID + ", roomID = " + roomID + ", tableID = " + tableID + ", chairID = " + chairID);
     },
+
     reqLeaveRoom: function (lobbyID, fieldID, roomID) {
+        cc.log("reqLeaveRoom");
         KKVS.INFO_MSG("lobbyID = " + lobbyID + ", fieldID = " + fieldID + ", roomID = " + roomID);
         this.baseCall("reqLeaveRoom", lobbyID, fieldID, roomID);
     },
@@ -527,7 +526,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         cc.log("=> gameModel.playerData.length" + gameModel.playerData.length);
         // Tool.logObj(scores);
         if (scores.length == 0) {
-            cc.log("游戏界面出现错误");
+            console.error("GamePlayer -> onHappy_GameEndInfo 游戏结算分数错误");
             return;
         }
 
@@ -573,14 +572,14 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     onKent_tick: function (lobbyID, fieldID, roomID, tableID, chair_id) {
         cc.log("->onKent_tick====");
         if (chair_id == KKVS.EnterChairID) {
-            cc.log("自己被踢出桌子 -- 注释");
-            // KKVS.Event.fire("leaveGame");
+            // cc.log("自己被踢出桌子 -- 注释");
+            KKVS.Event.fire("leaveGame");
         } else {
             cc.log("别的玩家被踢出桌子");
             var data = {
                 chairID: chair_id
             };
-            // GameManager.onSeverLeaveTable(data);
+            KKVS.Event.fire("otherLeaveGame");
         }
     },
 
@@ -748,6 +747,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         cc.log("req_start_game KKVS.SelectFieldID = " + KKVS.SelectFieldID);
         cc.log("req_start_game KKVS.EnterRoomID = " + KKVS.EnterRoomID);
 
+        // TODO
         this.reqEnterRoom(KKVS.EnterLobbyID, KKVS.SelectFieldID, KKVS.EnterRoomID);
     },
 

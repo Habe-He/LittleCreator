@@ -2857,7 +2857,7 @@ gameEngine.gameEngineApp = function (gameEngineArgs) {
         gameEngine.app.baseappIp = args.readString();
         gameEngine.app.baseappPort = args.readUint16();
         if (WSSTR == "wss://") {
-            gameEngine.app.baseappIp = "testsgame.kkvs.com";
+            gameEngine.app.baseappIp = gameEngine.app.ip;
             gameEngine.app.baseappPort = gameEngine.app.baseappPort - 100;
         }
         gameEngine.app.serverdatas = args.readBlob();

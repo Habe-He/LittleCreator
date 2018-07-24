@@ -63,6 +63,7 @@ cc.Class({
         } else if (this._type == 1) {
             yes_btn.active = true;
             no_btn.active = false;
+            yes_btn.x = 0;
             //close_btn.active = false;
         } else {
             yes_btn.active = true;

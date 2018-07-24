@@ -73,6 +73,7 @@ cc.Class({
             cc.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
             cc.log("=> 强制退出游戏");
             cc.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+            this.exitApp();
         } else {
             this.connect();
         }
@@ -120,6 +121,7 @@ cc.Class({
                     cc.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
                     cc.log("=> 强制退出游戏2");
                     cc.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+                    self.exitApp();
                 }});
             }
         }
@@ -151,6 +153,7 @@ cc.Class({
             cc.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
             cc.log("=> 强制退出游戏3");
             cc.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+            self.exitApp();
         }});
     },
     onDisableConnect : function (args) {
@@ -184,6 +187,7 @@ cc.Class({
                 cc.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
                 cc.log("=> 强制退出游戏4");
                 cc.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+                self.exitApp();
             }});
         } else {
             this.dialog = this.showTxtDialog({title : "系统提示", txt : "游戏正在维护中,请稍后尝试登录.", type : 1, cb : function () {
@@ -191,8 +195,13 @@ cc.Class({
                 cc.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
                 cc.log("=> 强制退出游戏5");
                 cc.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+                self.exitApp();
             }});
         }
+    },
+    exitApp : function () {
+        cc.log("=> 这里应该返回到微信界面");
+        // cc.director.end
     },
     showLoading : function (cb, target, time) {
         if (!this.node) {

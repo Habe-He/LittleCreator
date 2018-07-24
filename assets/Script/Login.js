@@ -36,18 +36,8 @@ cc.Class({
         var self = this;
         cc.log("Login onLoad");
         self._weChatCheckSession();
+        // testsgame.kkvs.com   10200 
     },
-
-
-
-    //login_callback: function (event) {
-    //    var self = this;
-    //    // TODO 暂时使用游客登录
-    //    // KKVS.Login_type = Tool.VISITOR_LOGIN;
-    //    // KKVS.Acc = 'ceshizhanghaoxg1600000101';
-    //    // KKVS.Pwd = '123456';
-    //    // Tool.OxLogin(KKVS.Acc, KKVS.Pwd);
-    //},
 
     _weChatCheckSession: function () {
         var self = this;
@@ -82,29 +72,38 @@ cc.Class({
     },
 
     _serverLogin: function (code) {
-        // var nickName = null;
-        // var avatarUrl = null;
-        // var gender = null;
+        var nickName = null;
+        var avatarUrl = null;
+        var gender = null;
 
-        // try {
-        //     nickName = wx.getStorageSync('nickName');
-        //     avatarUrl = wx.getStorageSync('avatarUrl');
-        //     gender = wx.getStorageSync('gender');
-        //   } catch (e) {
-        //     cc.log("get getStorageSync errr");
-        //   }
+        try {
+            nickName = wx.getStorageSync('nickName');
+            avatarUrl = wx.getStorageSync('avatarUrl');
+            gender = wx.getStorageSync('gender');
+          } catch (e) {
+            cc.log("get getStorageSync errr");
+          }
 
-        // if (nickName == null || avatarUrl == null || gender == null) {
-        //     wx.showToast({
-        //         title: '获取本地保存数据失败',
-        //         icon: 'none',
-        //         duration: 1000
-        //     })
-        //     return;
-        // }
-        // var reqURL = "https://apiwxgame.kkvs.com/MobileApi/GetSgameAccounts?Code=" + code + "?nickname=" + nickName + "?faceurl=" + avatarUrl + "?gender=" + gender;
-        var reqURL = "https://apiwxgame.kkvs.com/MobileApi/GetSgameAccounts?Code=" + code;
-        httpUtils.getInstance().httpGets(reqURL, function (data) {
+        if (nickName == null || avatarUrl == null || gender == null) {
+            wx.showToast({
+                title: '获取本地保存数据失败',
+                icon: 'none',
+                duration: 1000
+            })
+            return;
+        }
+
+        // cc.log("nickName = " + nickName + " avatarUrl = " + avatarUrl + " gender = " + gender);
+        // var reqURL = "https://apiwxgame.kkvs.com/MobileApi/GetSgameAccounts?Code=" + code + "&nickname=" + nickName + "&faceurl=" + avatarUrl + "&gender=" + gender;
+        // cc.log("reqURL = " + reqURL);
+        var datas = {
+            'Code' : code,
+            'nickname' : nickName,
+            'faceurl' : avatarUrl,
+            'gender' : gender
+        };
+        var reqURL = "https://apiwxgame.kkvs.com/MobileApi/GetSgameAccounts";
+        httpUtils.getInstance().httpPost(reqURL, datas, function (data) {
             cc.log("_serverLogin " + data);
             if (data == -1) {
                 cc.log('请检查网络！');
@@ -190,26 +189,6 @@ cc.Class({
 
             fail: function () {
                 cc.log("用户未确认授权");
-            },
-        });
-    },
-
-    _weChatDownloadFile: function (url) {
-        var self = this;
-        wx.downloadFile({
-            url: url,
-            header: "image",
-            filePath: "",
-            success: function (res) {
-                var path = res.tempFilePath;
-                cc.loader.load(path, function (err, texture) {
-                    var frame = new cc.SpriteFrame(texture);
-                    self.wxHead.spriteFrame = frame;
-                });
-            },
-
-            fail: function (err) {
-                cc.log("下载微信头像失败 = " + err);
             },
         });
     },
