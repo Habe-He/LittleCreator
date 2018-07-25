@@ -16,17 +16,23 @@ cc.Class({
         var bg = cc.find('bg', prefab).getComponent(cc.Sprite);
         var line = cc.find('bg/line', prefab).getComponent(cc.Sprite);
 
-        var winNum = cc.find('bg/win', prefab);
-        var lostNum = cc.find('bg/lost', prefab);
+        var win = cc.find('bg/win', prefab);
+        var lost = cc.find('bg/lost', prefab);
+        var winNum = cc.find('bg/win/num', prefab).getComponent(cc.Label);
+        var lostNum = cc.find('bg/lost/num', prefab).getComponent(cc.Label);
 
         var playerNode = [];
         for (var i = 0; i < 3; ++i) {
             var nodeStr = 'bg/node_' + i.toString();
             var name = cc.find(nodeStr + '/name', prefab).getComponent(cc.Label);
+            var flag = cc.find(nodeStr + '/flag', prefab);
+            var nodebg = cc.find(nodeStr + '/bg', prefab);
             var difen = cc.find(nodeStr + '/difen', prefab).getComponent(cc.Label);
             var multiple = cc.find(nodeStr + '/beishu', prefab).getComponent(cc.Label);
             var money = cc.find(nodeStr + '/money', prefab).getComponent(cc.Label);
             var localOp = {
+                'nodebg': nodebg,
+                'flag': flag,
                 'name': name,
                 'difen': difen,
                 'multiple': multiple,
@@ -35,8 +41,8 @@ cc.Class({
             playerNode.push(localOp);
         }
         
-        winNum.active = false;
-        lostNum.active = false;
+        win.active = false;
+        lost.active = false;
 
         var exit = cc.find("exit", prefab);
         var con = cc.find("con", prefab);
@@ -46,8 +52,9 @@ cc.Class({
 
         for (var i in data) {
             if (data[i].chairID == KKVS.myChairID) {
-                if (data[i].score > 0) {
-                    lostNum.active = true;
+                if (data[i].score < 0) {
+                    lost.active = true;
+                    lostNum.string = data[i].score;
                     cc.loader.loadRes("GameEnd/blueL", cc.SpriteFrame, function (err, spriteFrame) {
                         line.getComponent(cc.Sprite).spriteFrame = spriteFrame;
                     });
@@ -56,23 +63,23 @@ cc.Class({
                         bg.getComponent(cc.Sprite).spriteFrame = spriteFrame;
                     });
                 } else {
-                    // 使用默认的资源图片
-                    winNum.active = false;
+                    win.active = true;
+                    winNum.string = data[i].score;
                 }
             }
-            if (i == 0 && data[i].chairID == gameModel.diZhuCharId) {
-                cc.log("test chairID = " + data[i].chairID + " gameModel.diZhuCharId = " + gameModel.diZhuCharId);
+            if (data[i].chairID == gameModel.diZhuCharId) {
                 playerNode[i].name.string = Tool.InterceptDiyStr(Tool.encryptMoblieNumber(data[i].name), 4);
                 playerNode[i].difen.string = data[i].baseScore;
                 playerNode[i].multiple.string = data[i].multiple;
                 playerNode[i].money.string = data[i].score;
+                playerNode[i].nodebg.active = true;
+                playerNode[i].flag.active = true;
             } else {
                 playerNode[i].name.string = Tool.InterceptDiyStr(Tool.encryptMoblieNumber(data[i].name), 4);
                 playerNode[i].difen.string = data[i].baseScore;
                 playerNode[i].multiple.string = data[i].multiple;
                 playerNode[i].money.string = data[i].score;
             }
-
         }
     },
 

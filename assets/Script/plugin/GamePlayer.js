@@ -523,8 +523,6 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
 
     onHappy_GameEndInfo: function (lobby_id, field_id, room_id, table_id, card_list, scores, times, isspring, difen) {
         cc.log("->onHappy_GameEndInfo====");
-        cc.log("=> gameModel.playerData.length" + gameModel.playerData.length);
-        // Tool.logObj(scores);
         if (scores.length == 0) {
             console.error("GamePlayer -> onHappy_GameEndInfo 游戏结算分数错误");
             return;
@@ -576,10 +574,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
             KKVS.Event.fire("leaveGame");
         } else {
             cc.log("别的玩家被踢出桌子");
-            var data = {
-                chairID: chair_id
-            };
-            KKVS.Event.fire("otherLeaveGame");
+            KKVS.Event.fire("otherLeaveGame", chair_id);
         }
     },
 
@@ -618,7 +613,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     onHappy_Trusteeship: function (lobbyID, fieldID, roomID, tableID) {
         cc.log("->onHappy_SendCallBanker====");
         // GameManager.inTrusteeship();
-        this.baseCall("reqKent_Trusteeship", lobbyID, fieldID, roomID, tableID, 1);
+        this.baseCall("reqKent_Trusteeship", lobbyID, fieldID, roomID, tableID, KKVS.myChairID);
     },
 
     on_room_msg: function (type, args) {
