@@ -100,7 +100,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
             KKVS.EnterLobbyID = lobbyID;
             KKVS.Event.fire("onLoginGameSuccess", 1);
             // KKVS.INFO_MSG("------>onEnterLobby game 3, the room id = " + KKVS.EnterRoomID);
-            // this.reqEnterRoom(KKVS.EnterLobbyID, KKVS.SelectFieldID, KKVS.EnterRoomID);
+            //this.reqEnterRoom(KKVS.EnterLobbyID, KKVS.SelectFieldID, KKVS.EnterRoomID);
         }
     },
 
@@ -222,48 +222,17 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
                 return;
             }
             this.bReconnect = false;
+            gameModel.isOnReconnection = true;
             KKVS.Event.fire("onLoginGameSuccess", 2);
-            cc.log("########");
-            cc.log("GamePlayer::onReConnectGameTable info=" + info);
-            cc.log("########");
-            cc.log("->onReConnectGameTable  " + info);
-            cc.log("table: " + tableID + "/chair: " + chairID)
             KKVS.EnterLobbyID = lobbyID;
             KKVS.SelectFieldID = fieldID;
             KKVS.EnterRoomID = roomID;
             KKVS.EnterTableID = tableID;
             KKVS.EnterChairID = chairID;
-            // var roomData = null;
-            // for (var i = 0, s = KKVS.RoomListInfo.length; i < s; ++i) {
-            //     var field = KKVS.RoomListInfo[i]["field_id"];
-            //     if (field == KKVS.SelectFieldID) {
-            //         var roomList = KKVS.RoomListInfo[i]["roomList"];
-            //         for (var r = 0, l = roomList.length; r < l; ++r) {
-            //             if (roomList[r]["room_id"] == KKVS.EnterRoomID) {
-            //                 roomData = roomList[r];
-            //                 break;
-            //             }
-            //         }
-            //         break;
-            //     }
-            // }
-            // if (!roomData) {
-            //     cc.log("GamePlayer::onReConnectGameTable roomData is null");
-            //     return;
-            // }
-            // COM_NAME = roomData.name;
-            // if (typeof (COM_NAME_NODE) != 'undefined' && COM_NAME_NODE) {
-            //     COM_NAME_NODE.setString(COM_NAME);
-            // }
-            // KKVS.MinScore = roomData.min_score;
-            // KKVS.MaxScore = roomData.max_score;
-            // KKVS.GameType = roomData.room_type;
-            // KKVS.ServicePay = roomData.service_pay;
-            // gameModel.baseScore = roomData.base_score;
         }
-        //enter room
-        KKVS.Event.fire("reConnectGameSvrSuccess");
-        this.reqReConnectGameTable();
+        // enter room
+        // KKVS.Event.fire("reConnectGameSvrSuccess");
+        // this.reqReConnectGameTable();
     },
 
     reqReConnectGameTable: function () {
@@ -489,7 +458,6 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
             mustPlay: true
         };
         gameModel.diZhuCharId = chairID;
-        cc.log("地主的椅子号 gameModel.diZhuCharId = " + gameModel.diZhuCharId);
         KKVS.Event.fire("BankerInfo", data);
     },
 

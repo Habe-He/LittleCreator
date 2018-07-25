@@ -102,7 +102,13 @@ cc.Class({
 
     start: function () {
         cc.log("进入到游戏场景中 start");
-        gameEngine.app.player().req_start_game(0);
+        if (gameModel.isOnReconnection) {
+            gameEngine.app.player().reqReConnectGameTable();
+            gameModel.isOnReconnection = true;
+        } else {
+            gameEngine.app.player().req_start_game(0);
+        }
+        
 
         var self = this;
         self.bg = this.node.getChildByName("bg");
@@ -355,7 +361,7 @@ cc.Class({
                 selfCards.push(self.cardList[i].getComponent(cardfabs).getCardValue());
             }
         }
-        
+
         if (self.operationID == 0) {
             self.btnPlay.active = true;
         }
@@ -1109,9 +1115,9 @@ cc.Class({
         for (var i = 0; i < data.length; ++i) {
             var viewID = Tool.getViewChairID(data[i]);
             if (viewID == 1) {
-                self.m_Chairs[1].cardNum.getComponent(cc.Label).string = data.User_cards_count[i].toString();
+                self.m_Chairs[1].cardNum.getComponent(cc.Label).string = data[i].toString();
             } else if (viewID == 2) {
-                self.m_Chairs[2].cardNum.getComponent(cc.Label).string = data.User_cards_count[i].toString();
+                self.m_Chairs[2].cardNum.getComponent(cc.Label).string = data[i].toString();
             }
         }
     },
@@ -1136,10 +1142,10 @@ cc.Class({
             self.drawCard(data.outCards, Tool.getViewChairID(data.userOutCard));
             gameModel.lastCardData = [];
             for (var i in data.outCards) {
-                var data = {
+                var mdata = {
                     "cardValue": cardTypeUtil.GetCardValue(data.outCards[i])
                 };
-                gameModel.lastCardData.push(data);
+                gameModel.lastCardData.push(mdata);
             }
         } else {
             gameModel.lastCardData = null;
@@ -1239,6 +1245,7 @@ cc.Class({
 
     onDestroy() {
         cc.log("GameUI has been destroy");
+        this.necData();
         KKVS.Event.deregister("playerEnter", this);
         KKVS.Event.deregister("showSelfCard", this);
         KKVS.Event.deregister("leaveGame", this);

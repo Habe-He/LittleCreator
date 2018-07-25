@@ -1,10 +1,7 @@
 var KKVS = require("./plugin/KKVS");
 var OnLineManager = require("./tool/OnLineManager");
 var Tool = require('./tool/Tool');
-//var DialogView = require("./widget/DialogView");
-//var TxtDialogComp = require("./widget/TxtDialogComp");
-//var TipDialogComp = require("./widget/TipDialogComp");
-//var AppHelper = require("./AppHelper");
+var gameEngine = require('./plugin/gameEngine');
 
 cc.Class({
     extends: cc.Component,
@@ -36,8 +33,7 @@ cc.Class({
     jinBiBtnTouchEvent: function (event) {
         cc.log("点击金币场次");
         cc.director.loadScene("GameUI");
-        //(new DialogView()).build(TxtDialogComp, {txt : "测试用例", type : 2}).show();
-        //AppHelper.get().showLoading(null, null, 15);
+        // gameEngine.app.player().req_start_game(0);
     },
 
     shareBtnTouchEvent: function (event) {
