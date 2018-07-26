@@ -7,7 +7,7 @@ var cardTypeUtil = require('./../card/cardTypeUtil');
 var cardInfo = require('./../card/cardInfo');
 var endNodePrefab = require('./gameEnd');
 
-var OnLineManager = require('./../tool/OnLineManager')
+var AppHelper = require('./../AppHelper');
 
 cc.Class({
 
@@ -101,14 +101,15 @@ cc.Class({
     },
 
     start: function () {
-        cc.log("进入到游戏场景中 start");
+        cc.log("进入到游戏场景中 start 清空重连的状态");
+        AppHelper.get().hideLoading();
         if (gameModel.isOnReconnection) {
             gameEngine.app.player().reqReConnectGameTable();
-            gameModel.isOnReconnection = true;
         } else {
             gameEngine.app.player().req_start_game(0);
         }
-        
+        gameModel.isOnReconnection = false;
+
 
         var self = this;
         self.bg = this.node.getChildByName("bg");
@@ -207,13 +208,13 @@ cc.Class({
         self.m_Chairs[viewID].name.getComponent(cc.Label).string = Tool.InterceptDiyStr(Tool.encryptMoblieNumber(args.name), 4);
         self.m_Chairs[viewID].money.getComponent(cc.Label).string = args.gold;
 
-        if (viewID == 0 && args.status == 0) {
-            self.m_Chairs[viewID].clock.active = true;
-            self.showTime(0, 15);
-            self.btnReady.active = true;
-        } else {
-            self.m_Chairs[viewID].ready.active = true;
-        }
+        // if (viewID == 0 && args.status == 0) {
+        //     self.m_Chairs[viewID].clock.active = true;
+        //     self.showTime(0, 15);
+        //     self.btnReady.active = true;
+        // } else {
+        //     self.m_Chairs[viewID].ready.active = true;
+        // }
     },
 
     showTime: function (viewID, time) {
@@ -339,7 +340,7 @@ cc.Class({
                 return;
             }
         }
-        cc.log("这里有执行到了？");
+        
         gameEngine.app.player().baseCall("reqKent_outCard", KKVS.EnterLobbyID, KKVS.SelectFieldID,
             KKVS.EnterRoomID, KKVS.EnterTableID, KKVS.EnterChairID, cardIs);
     },
@@ -1140,22 +1141,21 @@ cc.Class({
         // 绘制上家扑克
         if (data.outCards != "" && data.userOutCard != 65535 && Tool.getViewChairID(data.userOutCard) != 0) {
             self.drawCard(data.outCards, Tool.getViewChairID(data.userOutCard));
-            gameModel.lastCardData = [];
+            self.lastCardData = [];
             for (var i in data.outCards) {
-                var mdata = {
-                    "cardValue": cardTypeUtil.GetCardValue(data.outCards[i])
-                };
-                gameModel.lastCardData.push(mdata);
+                var card = cc.instantiate(this.pokerCard);
+                card.getComponent(cardfabs).showPoker(data.outCards[i], i);
+                self.lastCardData.push(card);
             }
         } else {
-            gameModel.lastCardData = null;
+            self.lastCardData = [];
         }
 
         if (data.cur_user == KKVS.myChairID) {
-            if (gameModel.diZhuCharId == 65535) {
+            if (self.diZhuCharId == 65535) {
                 self.visibleCallScore(true);
             } else {
-                if (gameModel.lastCardData == null || data.userOutCard == 0) {
+                if (self.lastCardData == null || data.userOutCard == 0) {
                     if (data.User_cards_count[0] != 0 && data.User_cards_count[1] != 0 && data.User_cards_count[2] != 0) {
                         self.visibleOperation(true);
                     }
@@ -1169,11 +1169,11 @@ cc.Class({
                         selfCards.push(cardList[i].getComponent(cardfabs).getCardValue());
                     }
                     // 有上家的牌
-                    if (gameModel.lastCardData) {
+                    if (self.lastCardData) {
                         objCards = [];
-                        var llen = gameModel.lastCardData.length;
+                        var llen = self.lastCardData.length;
                         for (var i = 0; i < llen; ++i) {
-                            objCards.push(gameModel.lastCardData[i].getComponent(cardfabs).getCardValue());
+                            objCards.push(self.lastCardData[i].getComponent(cardfabs).getCardValue());
                         }
                     }
                 }
@@ -1192,11 +1192,10 @@ cc.Class({
         var starPos = posS[viewID - 1];
         var frlen = len <= 8 ? len : 8;
         var setaValue = viewID == 1 ? frlen : 0;
-        var scale = 0.5;
         for (var i = 0; i < len; ++i) {
             var card = cc.instantiate(this.pokerCard);
-            card.setScale(scale);
-            card.setPosition((i % verCount - setaValue) * 30 + starPos, 500 - Math.floor(i / verCount) * 40);
+            card.setScale(1.2);
+            card.setPosition((i % verCount - setaValue) * self.ghp + starPos, 500 - Math.floor(i / verCount) * 40);
             card.getComponent(cardfabs).showPoker(cardIds[i], i);
             self.myCardPanel.addChild(card);
             self.outCardList[viewID].push(card);

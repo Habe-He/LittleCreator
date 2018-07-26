@@ -1,7 +1,7 @@
 var KKVS = require("./plugin/KKVS");
 var OnLineManager = require("./tool/OnLineManager");
 var Tool = require('./tool/Tool');
-var gameEngine = require('./plugin/gameEngine');
+var AppHelper = require('./AppHelper');
 
 cc.Class({
     extends: cc.Component,
@@ -15,6 +15,12 @@ cc.Class({
         var self = this;
         self.addEvent();
         this.btnJinBI.node.on("touchend", self.jinBiBtnTouchEvent, this);
+
+        var redBagBtn = cc.find('bg/Btn_Red', this.node);
+        var paiWeiBtn = cc.find('bg/Btn_PaiWei', this.node);
+
+        redBagBtn.on('touchend', self.redBtnTouchEvent, this);
+        paiWeiBtn.on('touchend', self.paiBtnTouchEvent, this);
 
         var bg = this.node.getChildByName('bg');
         var nameBG = bg.getChildByName('NameBG');
@@ -32,12 +38,24 @@ cc.Class({
 
     jinBiBtnTouchEvent: function (event) {
         cc.log("点击金币场次");
+        // KKVS.SelectFieldID = 2;
         cc.director.loadScene("GameUI");
+        AppHelper.get().showLoading(null, null, 15);
         // gameEngine.app.player().req_start_game(0);
     },
 
-    shareBtnTouchEvent: function (event) {
-        cc.log(" 点击分享");
+    redBtnTouchEvent: function (event) {
+        cc.log("点击红包场次");
+        // KKVS.SelectFieldID = 1;
+        // cc.director.loadScene("GameUI");
+        // AppHelper.get().showLoading(null, null, 15);
+    },
+
+    paiBtnTouchEvent: function(event) {
+        cc.log("排位");
+        // KKVS.SelectFieldID = 99;
+        // cc.director.loadScene("GameUI");
+        // AppHelper.get().showLoading(null, null, 15);
     },
 
     start() {

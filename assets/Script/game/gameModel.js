@@ -24,6 +24,8 @@ var gameModel = {
 
     // 是否走了断线重现
     isOnReconnection: false,
+
+    isWSS: false,
 };
 
 

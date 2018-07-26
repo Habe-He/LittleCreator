@@ -147,25 +147,9 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     onEnterRoomResult: function (lobbyID, fieldID, roomID, bSuccess, erorStr) {
         KKVS.INFO_MSG("newLand GamePlayer->onEnterRoomResult");
         if (!bSuccess) {
-
-            // var args = {
-            //     eventType: 1001,
-            //     msg: erorStr,
-            //     pro: null,
-            //     winType: 1
-            // };
-            // KKVS.Event.fire("createTips", args);
-
-            // KKVS.Event.fire("createFreeTableFail", args);//请求桌子失败
-            var args = {
-                eventType: 1002,
-                msg: erorStr,
-                pro: null,
-                winType: 1
-            };
-            cc.log("erorStr = " + erorStr);
-            KKVS.Event.fire("createTips", args);
-            KKVS.INFO_MSG("请求房间失败 GamePlayer-> 187 line");
+            (new DialogView()).build(TxtDialogComp, {txt : erorStr, type : 1, cb : function () {
+                cc.director.loadScene('Lobby');
+            }}).show();
             return;
         }
         KKVS.Event.fire("onEnterRoomResult");

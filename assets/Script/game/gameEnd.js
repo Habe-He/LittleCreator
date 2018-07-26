@@ -55,10 +55,12 @@ cc.Class({
                 if (data[i].score < 0) {
                     lost.active = true;
                     lostNum.string = data[i].score;
+                    // line.getComponent(cc.Sprite).spriteFrame = new cc.SpriteFrame(cc.url.raw("GameEnd/blueL"));
                     cc.loader.loadRes("GameEnd/blueL", cc.SpriteFrame, function (err, spriteFrame) {
                         line.getComponent(cc.Sprite).spriteFrame = spriteFrame;
                     });
 
+                    // bg.getComponent(cc.Sprite).spriteFrame = new cc.SpriteFrame(cc.url.raw("GameEnd/conbg"));
                     cc.loader.loadRes("GameEnd/conbg", cc.SpriteFrame, function (err, spriteFrame) {
                         bg.getComponent(cc.Sprite).spriteFrame = spriteFrame;
                     });

@@ -93,9 +93,6 @@ cc.Class({
             return;
         }
 
-        // cc.log("nickName = " + nickName + " avatarUrl = " + avatarUrl + " gender = " + gender);
-        // var reqURL = "https://apiwxgame.kkvs.com/MobileApi/GetSgameAccounts?Code=" + code + "&nickname=" + nickName + "&faceurl=" + avatarUrl + "&gender=" + gender;
-        // cc.log("reqURL = " + reqURL);
         var datas = {
             'Code' : code,
             'nickname' : nickName,
