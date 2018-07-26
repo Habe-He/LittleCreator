@@ -446,7 +446,7 @@ cc.Class({
         self.btnPlay.active = mBool;
         self.btnTips.active = mBool;
         self.btnNotPlay.active = mBool;
-        self.btnYaoBuQi.active = mBool;
+        // self.btnYaoBuQi.active = mBool;
     },
 
     resettingData: function () {
