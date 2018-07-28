@@ -253,7 +253,7 @@
       "__id__": 5
     },
     "_enabled": true,
-    "ip": "testsgame.kkvs.com",
+    "ip": "192.168.1.236",
     "port": "10200"
   },
   {

@@ -1391,6 +1391,9 @@ KKVS.reset = function () {
     KKVS.Kicked = false; //lobby socket kicked tag(true : only go to login scene)
 
     KKVS.RRECON_PAICOUNT = [];
+    KKVS.ROOM_ID = 0;
+    KKVS.GAME_MODEL = 0;
+    KKVS.COM_ROOM_NUMBER = 0;
 };
 
 KKVS.reset();

@@ -102,7 +102,7 @@ cc.Class({
     },
     connect : function () {
         var self = this;
-        //cc.log("connect OnLineManager._autoConnect=" + OnLineManager._autoConnect.toString());
+        cc.log("connect OnLineManager._autoConnect=" + OnLineManager._autoConnect.toString());
         if (!OnLineManager._kicked && OnLineManager._autoConnect && !gameEngine.app.socket) {
             if (OnLineManager.isOnLine()) {
                 OnLineManager.reset();

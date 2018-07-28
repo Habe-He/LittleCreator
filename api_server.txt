@@ -26,7 +26,7 @@ on_item
 
 
 发送当前赛季信息
-PLAYER_MSG_ID_REQ_COMPETITIVE_RANKING                               = 5  # 排位赛季信息
+PLAYER_MSG_ID_REQ_COMPETITIVE_RANKING                               = 15  # 排位赛季信息
 
 on_player_msg(
 				PLAYER_MSG_ID_REQ_COMPETITIVE_RANKING, 
@@ -40,6 +40,7 @@ on_player_msg(
     # status: 季赛当前状态  0 未开始, 1 进行中, 2 已结束
 
 发送玩家排位积分信息（玩家积分变动时 也会主动下发）
+PLAYER_MSG_ID_REQ_PLAYER_COMPETITIVE_RANKING                        = 16  # 玩家排位信息
 on_player_msg(GlobalConst.PLAYER_MSG_ID_REQ_PLAYER_COMPETITIVE_RANKING, {'score': 100})
 
 ----------------------------------------------------
@@ -63,12 +64,35 @@ onEnterRoomResult: function (lobbyID, fieldID, roomID, bSuccess, erorStr)
 },
 
 //开始排位 等待匹配成功自动进桌 
-c_enter_game:function(lobbyID, fieldID, roomID) 
-{
-    this.baseCall("c_enter_game", lobbyID, fieldID, roomID);
-},
+//c_enter_game:function(lobbyID, fieldID, roomID) 
+//{
+//   this.baseCall("c_enter_game", lobbyID, fieldID, roomID);
+}//,
+//
+//})
 
-})
+约战 房卡模式
+game_mode = 2 可以为 KKVS.GAME_MODEL赋值
+LOBBY_MSG_BASE_ACT_CREATE_ROOM                                      = 150     # 创建 房间（玩法）
+LOBBY_MSG_BASE_ACT_JOIN_ROOM                                        = 151     # 加入 房间（玩法）
+LOBBY_MSG_BASE_ACT_DESTORY_ROOM                                     = 152     # 销毁 房间（玩法）
+LOBBY_MSG_BASE_ACT_LEAVE_ROOM                                       = 153     # 离开 房间（玩法）
+
+创建 房间 --------普通
+req_lobby_msg(LOBBY_MSG_BASE_ACT_CREATE_ROOM, json{"game_id": 1, "round": 4, "multiples": 5, "field_type": 0, "roles": 4, "room_type": 0})
+返回 （ID  名称 描述 房卡数 活动房卡数 游戏中的房间数 是否允许会员创建房间）
+on_lobby_msg(LOBBY_MSG_BASE_ACT_CREATE_ROOM, json.dump({'game_id': 1,'room_id': 1}))
+
+
+加入 房间 --------普通
+req_lobby_msg(LOBBY_MSG_BASE_ACT_JOIN_ROOM, json{"room_id": 1, "pwd": "xxxxxx"})
+返回 
+on_lobby_msg(LOBBY_MSG_BASE_ACT_JOIN_ROOM, json.dump({"src": {"room_id": 1, "pwd": "123456"}, "success": true}))
+
+离开 房间 --------普通
+req_lobby_msg(LOBBY_MSG_BASE_ACT_LEAVE_ROOM, json{"room_id": 1})
+返回 
+on_lobby_msg(LOBBY_MSG_BASE_ACT_LEAVE_ROOM, json.dump({"src": {"room_id": 1}, "success": true}))
 
 
 

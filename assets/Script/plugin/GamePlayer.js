@@ -5,6 +5,8 @@ var GameManager = require("./../game/GameManager");
 var Tool = require("./../tool/Tool");
 var DialogView = require('./../widget/DialogView');
 var TxtDialogComp = require("./../widget/TxtDialogComp");
+var StringDef = require('./../tool/StringDef');
+var AppHelper = require('./../AppHelper');
 
 gameEngine.GamePlayer = gameEngine.Entity.extend({
     __init__: function () {
@@ -64,43 +66,33 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         //cc.director.loadScene("Lobby");
     },
 
-    on_item: function () {
-        // [ 
-        // {"prop_id": 1050, "prop_count": 100},  // 钻石
-        // {"prop_id": 1004, "prop_count": 5000}  
-        // ]
-        // 1000    小红包抽奖次数  消耗次数可抽奖
-        // 1001    中红包抽奖次数  消耗次数可抽奖
-        // 1002    大红包抽奖次数 消耗次数可抽奖
-        // 1004    红包余额            可提现
-        // 1050    钻石|房卡       开房，兑换游戏币
+    on_item: function (props) {
+        gameModel.propsMsg = [];
+        gameModel.propsMsg = props;
     },
 
 
     on_player_msg: function (cmd, datas) {
+        cc.log("on_player_msg cmd = " + cmd)
+        if (cmd == StringDef.PLAYER_MSG_ID_REQ_COMPETITIVE_RANKING) {
+            cc.log("datas = " + datas);
+            gameModel.levelMsg = JSON.parse(datas);
 
-        // case PLAYER_MSG_ID_REQ_COMPETITIVE_RANKING:
-        //     // {'id': 0, 'start': 0, 'end': 0, 'status': 1} //id、
-        //     // 注: # id: 季赛ID
-        //     // # start: 季赛开始时间戳
-        //     // # end: 季赛结束时间戳
-        //     // # status: 季赛当前状态  0 未开始, 1 进行中, 2 已结束
-        //     break;
-        // case PLAYER_MSG_ID_REQ_PLAYER_COMPETITIVE_RANKING:
-        //     break;
-
+        } else if (cmd == StringDef.PLAYER_MSG_ID_REQ_PLAYER_COMPETITIVE_RANKING) {
+            cc.log("datas = " + datas);
+            KKVS.Event.fire("updateMyLevel", JSON.parse(datas));
+        }
     },
 
     onEnterLobby: function (lobbyID, bSuccess, ret_code) {
-        cc.log("KKVS.EnterLobbyID = " + KKVS.EnterLobbyID);
-        cc.log("KKVS.SelectFieldID = " + KKVS.SelectFieldID);
+        cc.log("onEnterLobby");
+        // cc.log("KKVS.EnterLobbyID = " + KKVS.EnterLobbyID);
+        // cc.log("KKVS.SelectFieldID = " + KKVS.SelectFieldID);
         KKVS.SelectFieldID = 1;
-        cc.log("KKVS.EnterRoomID = " + KKVS.EnterRoomID);
+        // cc.log("KKVS.EnterRoomID = " + KKVS.EnterRoomID);
         if (bSuccess) {
             KKVS.EnterLobbyID = lobbyID;
             KKVS.Event.fire("onLoginGameSuccess", 1);
-            // KKVS.INFO_MSG("------>onEnterLobby game 3, the room id = " + KKVS.EnterRoomID);
-            //this.reqEnterRoom(KKVS.EnterLobbyID, KKVS.SelectFieldID, KKVS.EnterRoomID);
         }
     },
 
@@ -147,9 +139,13 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     onEnterRoomResult: function (lobbyID, fieldID, roomID, bSuccess, erorStr) {
         KKVS.INFO_MSG("newLand GamePlayer->onEnterRoomResult");
         if (!bSuccess) {
-            (new DialogView()).build(TxtDialogComp, {txt : erorStr, type : 1, cb : function () {
-                cc.director.loadScene('Lobby');
-            }}).show();
+            (new DialogView()).build(TxtDialogComp, {
+                txt: erorStr,
+                type: 1,
+                cb: function () {
+                    cc.director.loadScene('Lobby');
+                }
+            }).show();
             return;
         }
         KKVS.Event.fire("onEnterRoomResult");
@@ -166,18 +162,13 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         gameModel.baseScore = this.room_config.multiples;
         cc.log("gameModel.baseScore = " + gameModel.baseScore);
         KKVS.GAME_MODEL = data.game_mode;
+        cc.log("KKVS.GAME_MODEL = " + KKVS.GAME_MODEL);
+        // 游戏模式
+        // 0：普通模式 - 金币场
+        // 6：排位
+        // 2：房卡
 
         gameModel.Bring = data.bring;
-
-        // ST - 2018年4月19日16:16:12
-
-        // var roomData = {
-        //     delay: data.delay,
-        //     roomTitle: data.extra_config.room_name,
-        //     jushu: data.innings,
-        //     promotion: data.promotion
-        // };
-        // gameModel.ComRoomConfig = roomData;
 
         KKVS.Event.fire("onShowWaitStart", data.delay);
     },
@@ -185,6 +176,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     onTableStatus: function (lobbyID, fieldID, roomID, tableID, tableStatus) {
         KKVS.INFO_MSG("->onTableStatus");
     },
+
     onPlayerEnterRoom: function (lobbyID, fieldID, roomID, player) {
         KKVS.INFO_MSG("->onPlayerEnterRoom");
     },
@@ -202,10 +194,10 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
             KKVS.EnterTableID = tableID;
             KKVS.EnterChairID = chairID;
         } else {
-            if (!this.bReconnect) {
-                return;
-            }
-            this.bReconnect = false;
+            // if (!this.bReconnect) {
+            //     return;
+            // }
+            // this.bReconnect = false;
             gameModel.isOnReconnection = true;
             KKVS.Event.fire("onLoginGameSuccess", 2);
             KKVS.EnterLobbyID = lobbyID;
@@ -228,9 +220,13 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         cc.log("onEnterTableResult");
 
         if (!bSuccess) {
-            (new DialogView()).build(TxtDialogComp, {txt : erorStr, type : 1, cb : function () {
-                cc.director.loadScene('Lobby');
-            }}).show();
+            (new DialogView()).build(TxtDialogComp, {
+                txt: erorStr,
+                type: 1,
+                cb: function () {
+                    cc.director.loadScene('Lobby');
+                }
+            }).show();
             return;
         }
 
@@ -276,8 +272,75 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         cc.log("onHappy_fk_update");
     },
 
-    onRoomConfig: function () {
-        cc.log("onRoomConfig");
+    createGameRoom: function (game_id, round, multiples, field_type, roles, pwd, room_type, bring, base_score) {
+        var data = {
+            pwd: pwd,
+            game_id: game_id,
+            round: round,
+            multiples: multiples,
+            field_type: field_type,
+            roles: roles,
+            room_type: room_type,
+            bring: bring,
+            base_score: base_score
+        };
+        var json_str = JSON.stringify(data);
+        this.baseCall("req_lobby_msg", StringDef.LOBBY_MSG_BASE_ACT_CREATE_ROOM, json_str);
+        cc.log("发送创建房间的消息");
+    },
+
+    joinGameRoom: function (room_id, pwd) {
+        var data = {
+            room_id: room_id,
+            pwd: pwd
+        };
+        var json_str = JSON.stringify(data);
+        this.baseCall("req_lobby_msg", StringDef.LOBBY_MSG_BASE_ACT_JOIN_ROOM, json_str);
+        cc.log("StringDef.LOBBY_MSG_BASE_ACT_JOIN_ROOM = " + StringDef.LOBBY_MSG_BASE_ACT_JOIN_ROOM);
+        cc.log("发送加入房间的消息");
+    },
+
+    on_lobby_msg: function (cmd, msg) {
+        cc.log("Player::on_lobby_msg cmd=" + cmd);
+        var params = JSON.parse(msg);
+        if (cmd == StringDef.LOBBY_MSG_BASE_ACT_CREATE_ROOM) {
+            var success = params.success;
+            cc.log("success = " + success);
+            if (success) {
+                var room_id = params.room_id;
+                // var pwd = params.src.pwd;
+                var data = {
+                    room_id: room_id,
+                    // pwd: pwd
+                }
+                KKVS.Event.fire("create_room_success", data);
+            } else {
+                AppHelper.get().hideLoading();
+                (new DialogView()).build(TxtDialogComp, {
+                    txt: params.error,
+                    type: 2,
+                    cb: function () {
+                        // cc.director.loadScene('Lobby');
+                    }
+                }).show();
+            }
+        } else if (cmd == StringDef.LOBBY_MSG_BASE_ACT_JOIN_ROOM) {
+            // modulelobby.hideLoading();
+            if (params.success) {
+                var data = params.conf;
+                KKVS.EnterRoomID = data.room_id;
+                KKVS.Event.fire("on_player_join_room", data);
+            } else {
+                AppHelper.get().hideLoading();
+                (new DialogView()).build(TxtDialogComp, {
+                    txt: params.error,
+                    type: 2,
+                    cb: function () {
+                        // cc.director.loadScene('Lobby');
+                    }
+                }).show();
+            }
+        }
     },
 
 
@@ -285,9 +348,26 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     // ST 用户进入 
     onEnterGameTable: function () {
         cc.log(">> onEnterGameTable 用户进入桌子");
+        
+        cc.log("KKVS.EnterLobbyID = " + KKVS.EnterLobbyID);
+        cc.log("KKVS.SelectFieldID = " + KKVS.SelectFieldID);
+        cc.log("KKVS.EnterRoomID = " + KKVS.EnterRoomID);
+        cc.log("KKVS.EnterTableID = " + KKVS.EnterTableID);
+        cc.log("KKVS.EnterChairID = " + KKVS.EnterChairID);
+
         var args = arguments;
+
+        
+
         var data = [];
         var chairID = args[4];
+        if (chairID == KKVS.myChairID) {
+            KKVS.EnterLobbyID = args[0];
+            KKVS.SelectFieldID = args[1];
+            KKVS.EnterRoomID = args[2];
+            KKVS.EnterTableID = args[3];
+            KKVS.EnterChairID = chairID;
+        }
         var v = args[5];
         var ip = typeof (v.ip) != 'string' ? "" : v.ip;
         var head_url = typeof (v.head_url) != 'string' ? "" : v.head_url;
@@ -333,11 +413,13 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         //logObj(param);
         KKVS.Event.fire("onHunGameSay", param);
     },
+
     /**
      * 以上服务端回调消息
      * 以下客户端请求消息
      */
     reqEnterLobby: function (lobbyID) {
+        cc.log("reqEnterLobby");
         this.baseCall("reqEnterLobby", lobbyID);
     },
 
@@ -485,7 +567,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
             var name = gameModel.playerData[i].name;
             var baseScore = difen;
             var chairID = gameModel.playerData[i].chairID;
-            var score = Number(scores[i].toString());
+            var score = Number(scores[chairID].toString());
             var multiple = times;
             var sData = {
                 'name': name,
@@ -537,6 +619,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
 
     onHappy_Again: function () {
         cc.log("->onHappy_Again====");
+        // this.baseCall("reqKent_Trusteeship", lobbyID, fieldID, roomID, tableID, KKVS.myChairID);
         var args = arguments;
         Tool.logObj(args);
         var data = {
@@ -558,7 +641,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
             diZhuMoreCard: args[15],
             userOutCard: args[16]
         };
-
+        gameModel.isOnReconnection = false;
         KKVS.Event.fire("again", data);
     },
 
@@ -598,6 +681,12 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         } else if (type == ROOM_MSG_ID_MATCH_ELIMILATE_UPDATE) {
             KKVS.Event.fire("onMatchUpdateLine", datas);
         }
+    },
+
+    // 房卡模式请求加入房间
+    req_join_game: function(roomID) {
+        cc.log("req_join_game");
+        this.baseCall('req_join_game', roomID, JSON.stringify({}));
     },
 
     ////////////
@@ -682,20 +771,21 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     },
 
     on_game_info: function (roomNumber) {
-        // body...
+        cc.log("on_game_info");
+        
         KKVS.COM_ROOM_NUMBER = roomNumber;
-        // cc.log("@@@COM_ROOM_NUMBER = " + COM_ROOM_NUMBER);
-        // this.bReconnect = true;
-        // KKVS.EnterLobbyID = 6;
+        KKVS.GAME_MODEL = 6;
+        cc.director.loadScene('GameUI');
     },
 
-    req_start_game: function (id) {
+    req_start_game: function () {
+        cc.log("req_start_game");
         cc.log("req_start_game KKVS.EnterLobbyID = " + KKVS.EnterLobbyID);
         cc.log("req_start_game KKVS.SelectFieldID = " + KKVS.SelectFieldID);
         cc.log("req_start_game KKVS.EnterRoomID = " + KKVS.EnterRoomID);
 
         // TODO
-        this.reqEnterRoom(KKVS.EnterLobbyID, KKVS.SelectFieldID, KKVS.EnterRoomID);
+        // this.reqEnterRoom(KKVS.EnterLobbyID, KKVS.SelectFieldID, KKVS.EnterRoomID);
     },
 
     onHappy_OffLine: function () {

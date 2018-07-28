@@ -1,7 +1,7 @@
 var KKVS = require("./KKVS")
 var ByteBuffer = require("./ByteBuffer");
 
-var WSSTR = 'wss://';
+var WSSTR = 'ws://';
 
 var gameEngine = gameEngine || {};
 

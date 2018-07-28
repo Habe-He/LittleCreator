@@ -25,7 +25,17 @@ var gameModel = {
     // 是否走了断线重现
     isOnReconnection: false,
 
-    isWSS: false,
+    // 大厅房间配置
+    roomConfig: [],
+
+    // 玩家段位信息
+    levelMsg: [],
+
+    // 玩家道具信息
+    propsMsg: [],
+
+    
+    // 
 };
 
 

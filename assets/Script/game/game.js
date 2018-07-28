@@ -6,7 +6,7 @@ var cardfabs = require('./../card/cardPer');
 var cardTypeUtil = require('./../card/cardTypeUtil');
 var cardInfo = require('./../card/cardInfo');
 var endNodePrefab = require('./gameEnd');
-
+var OnLineManager = require('./../tool/OnLineManager');
 var AppHelper = require('./../AppHelper');
 
 cc.Class({
@@ -101,14 +101,22 @@ cc.Class({
     },
 
     start: function () {
-        cc.log("进入到游戏场景中 start 清空重连的状态");
+        cc.log("进入到游戏场景中 start");
+
+        OnLineManager._autoConnect = true;
         AppHelper.get().hideLoading();
-        if (gameModel.isOnReconnection) {
-            gameEngine.app.player().reqReConnectGameTable();
+        if (KKVS.GAME_MODEL != 6) {
+            if (gameModel.isOnReconnection) {
+                gameEngine.app.player().reqReConnectGameTable();
+            } else {
+                gameEngine.app.player().req_start_game();
+            }
         } else {
-            gameEngine.app.player().req_start_game(0);
+            if (KKVS.COM_ROOM_NUMBER != 0) {
+                gameEngine.app.player().req_join_game(KKVS.COM_ROOM_NUMBER);
+            }
         }
-        gameModel.isOnReconnection = false;
+        
 
 
         var self = this;
@@ -198,6 +206,8 @@ cc.Class({
         }
 
         this.addTouchLister();
+
+        
     },
 
     // 用户进入
@@ -208,18 +218,25 @@ cc.Class({
         self.m_Chairs[viewID].name.getComponent(cc.Label).string = Tool.InterceptDiyStr(Tool.encryptMoblieNumber(args.name), 4);
         self.m_Chairs[viewID].money.getComponent(cc.Label).string = args.gold;
 
-        // if (viewID == 0 && args.status == 0) {
-        //     self.m_Chairs[viewID].clock.active = true;
-        //     self.showTime(0, 15);
-        //     self.btnReady.active = true;
-        // } else {
-        //     self.m_Chairs[viewID].ready.active = true;
-        // }
+        if (viewID == 0 && args.status == 0) {
+            // self.m_Chairs[viewID].clock.active = true;
+            // self.showTime(0, 15);
+            // self.btnReady.active = true;
+            self.onBtnReady(null);
+        } else {
+            // self.m_Chairs[viewID].ready.active = true;
+        }
     },
 
     showTime: function (viewID, time) {
         var self = this;
         this.node.stopAllActions();
+        cc.log("veiwID = " + viewID);
+        if (viewID == 65535 || viewID == -1) {
+			return;
+		}
+        
+        
         self.m_Chairs[viewID].clock.active = true;
         self.m_Chairs[viewID].clockTime.getComponent(cc.Label).string = time.toString();
 
@@ -250,6 +267,12 @@ cc.Class({
 
     onBtnReady: function (event) {
         var self = this;
+        cc.log("onBtnReady");
+        cc.log("KKVS.EnterLobbyID = " + KKVS.EnterLobbyID);
+        cc.log("KKVS.SelectFieldID = " + KKVS.SelectFieldID);
+        cc.log("KKVS.EnterRoomID = " + KKVS.EnterRoomID);
+        cc.log("KKVS.EnterTableID = " + KKVS.EnterTableID);
+        cc.log("KKVS.EnterChairID = " + KKVS.EnterChairID);
         gameEngine.app.player().request_GetReady(KKVS.EnterLobbyID, KKVS.SelectFieldID,
             KKVS.EnterRoomID, KKVS.EnterTableID, KKVS.EnterChairID);
 
@@ -787,7 +810,7 @@ cc.Class({
         }
         if (multiple != -1) {
             for (var i = 0; i < multiple; ++i) {
-                self.scoreBtnList[i].interactable = false;
+                self.scoreBtnList[i].getComponent(cc.Button).interactable = false;
             }
         }
     },
@@ -888,7 +911,7 @@ cc.Class({
         if (viewID == 0) {
             self.btnPlay.active = true;
             self.btnNotPlay.active = true;
-            self.btnNotPlay.interactable = !mustPlay;
+            self.btnNotPlay.getComponent(cc.Button).interactable = !mustPlay;
             self.btnTips.active = true;
 
             var objCards = [];
@@ -908,6 +931,8 @@ cc.Class({
             } else {
                 cc.log("打出自己选的牌");
             }
+        } else {
+            self.visibleOperation(false);
         }
 
         self.showTime(viewID, time - 1);
@@ -1114,7 +1139,8 @@ cc.Class({
     reInitShouPai: function (data) {
         var self = this;
         for (var i = 0; i < data.length; ++i) {
-            var viewID = Tool.getViewChairID(data[i]);
+            var viewID = Tool.getViewChairID(i);
+            cc.log("viewID = " + viewID + " cardNum = " + data[i]);
             if (viewID == 1) {
                 self.m_Chairs[1].cardNum.getComponent(cc.Label).string = data[i].toString();
             } else if (viewID == 2) {
@@ -1194,8 +1220,7 @@ cc.Class({
         var setaValue = viewID == 1 ? frlen : 0;
         for (var i = 0; i < len; ++i) {
             var card = cc.instantiate(this.pokerCard);
-            card.setScale(1.2);
-            card.setPosition((i % verCount - setaValue) * self.ghp + starPos, 500 - Math.floor(i / verCount) * 40);
+            card.setPosition((i % verCount - setaValue) * 40 + starPos, 500 - Math.floor(i / verCount) * 40);
             card.getComponent(cardfabs).showPoker(cardIds[i], i);
             self.myCardPanel.addChild(card);
             self.outCardList[viewID].push(card);
@@ -1213,6 +1238,16 @@ cc.Class({
         var self = this;
         var viewID = Tool.getViewChairID(chairID);
         self.m_Chairs[viewID].headNode.active = false;
+    },
+
+    // 场景切换
+    onLoginGameSuccess: function (args) {
+        cc.log("登录服连接成功 => " + args);
+        if (args == 1) {
+            cc.director.loadScene("Lobby");
+        } else if (args == 2) {
+            cc.director.loadScene("GameUI");
+        }
     },
 
     addEvent() {
@@ -1240,6 +1275,7 @@ cc.Class({
         KKVS.Event.register("EndInfo", this, "endInfo");
         KKVS.Event.register("again", this, "onLine_Again");
         KKVS.Event.register("otherLeaveGame", this, "otherLeaveGame");
+        KKVS.Event.register("onLoginGameSuccess", this, "onLoginGameSuccess");
     },
 
     onDestroy() {
@@ -1257,5 +1293,6 @@ cc.Class({
         KKVS.Event.deregister("EndInfo", this);
         KKVS.Event.deregister("again", this);
         KKVS.Event.deregister("otherLeaveGame", this);
+        KKVS.Event.deregister("onLoginGameSuccess", this);
     },
 });

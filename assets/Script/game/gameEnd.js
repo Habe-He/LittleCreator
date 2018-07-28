@@ -12,6 +12,7 @@ cc.Class({
     start() {},
 
     setData: function (data, prefab) {
+        gameModel.isOnReconnection = false;
         var self = this;
         var bg = cc.find('bg', prefab).getComponent(cc.Sprite);
         var line = cc.find('bg/line', prefab).getComponent(cc.Sprite);
@@ -36,11 +37,11 @@ cc.Class({
                 'name': name,
                 'difen': difen,
                 'multiple': multiple,
-                'money' : money
+                'money': money
             };
             playerNode.push(localOp);
         }
-        
+
         win.active = false;
         lost.active = false;
 
@@ -50,6 +51,7 @@ cc.Class({
         exit.on("touchend", self.onExitClick, this);
         con.on("touchend", self.onContClick, this);
 
+        cc.log("gameModel.diZhuCharId = " + gameModel.diZhuCharId);
         for (var i in data) {
             if (data[i].chairID == KKVS.myChairID) {
                 if (data[i].score < 0) {
@@ -69,18 +71,15 @@ cc.Class({
                     winNum.string = data[i].score;
                 }
             }
+            var viewID = Tool.getViewChairID(data[i].chairID);
+            playerNode[viewID].name.string = Tool.InterceptDiyStr(Tool.encryptMoblieNumber(data[i].name), 4);
+            playerNode[viewID].difen.string = data[i].baseScore;
+            playerNode[viewID].multiple.string = data[i].multiple;
+            playerNode[viewID].money.string = data[i].score;
+
             if (data[i].chairID == gameModel.diZhuCharId) {
-                playerNode[i].name.string = Tool.InterceptDiyStr(Tool.encryptMoblieNumber(data[i].name), 4);
-                playerNode[i].difen.string = data[i].baseScore;
-                playerNode[i].multiple.string = data[i].multiple;
-                playerNode[i].money.string = data[i].score;
-                playerNode[i].nodebg.active = true;
-                playerNode[i].flag.active = true;
-            } else {
-                playerNode[i].name.string = Tool.InterceptDiyStr(Tool.encryptMoblieNumber(data[i].name), 4);
-                playerNode[i].difen.string = data[i].baseScore;
-                playerNode[i].multiple.string = data[i].multiple;
-                playerNode[i].money.string = data[i].score;
+                playerNode[viewID].nodebg.active = true;
+                playerNode[viewID].flag.active = true;
             }
         }
     },
@@ -97,8 +96,6 @@ cc.Class({
 
     addEvent: function () {
         var self = this;
-        // self.exitBtn.node.on("touchend", self.onExitClick, this);
-        // self.contBtn.node.on("touchend", self.onContClick, this);
     },
 
     onDestroy() {
