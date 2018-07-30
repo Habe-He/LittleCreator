@@ -8,6 +8,7 @@ var cardInfo = require('./../card/cardInfo');
 var endNodePrefab = require('./gameEnd');
 var OnLineManager = require('./../tool/OnLineManager');
 var AppHelper = require('./../AppHelper');
+var wxSDK = require('./../tool/wxSDK');
 
 cc.Class({
 
@@ -21,6 +22,8 @@ cc.Class({
         btn1: cc.Button,
         btn2: cc.Button,
         btn3: cc.Button,
+        invite: cc.Button,
+        exit: cc.Button,
         btnScroeNo: cc.Button,
 
         pokerCard: {
@@ -105,10 +108,12 @@ cc.Class({
 
         OnLineManager._autoConnect = true;
         AppHelper.get().hideLoading();
-        if (KKVS.GAME_MODEL != 6) {
+        // 排位  和 金币
+        if (KKVS.GAME_MODEL != 2) {
             if (gameModel.isOnReconnection) {
                 gameEngine.app.player().reqReConnectGameTable();
             } else {
+                /// 普通
                 gameEngine.app.player().req_start_game();
             }
         } else {
@@ -191,8 +196,21 @@ cc.Class({
             var pokers = leftInfo.getChildByName("c_" + i.toString());
             self.backPoker.push(pokers);
         }
+        
+        // 底分、倍数
         self.diText = leftInfo.getChildByName("di_text").getComponent(cc.Label);
         self.multipleText = leftInfo.getChildByName("bei_text").getComponent(cc.Label);
+
+        // 邀请微信好友
+        self.inviteWx = self.bg.getChildByName('inviteWX').getComponent(cc.Button);
+
+        // 退出
+        var exitBtn = self.bg.getChildByName('exit');
+
+        if (KKVS.GAME_MODEL == 2) {
+            self.inviteWx.node.active = true;
+            exitBtn.active = true;
+        }
 
         // 有数据等待初始化
         if (gameModel.isWaiting) {
@@ -277,7 +295,7 @@ cc.Class({
             KKVS.EnterRoomID, KKVS.EnterTableID, KKVS.EnterChairID);
 
         self.btnReady.active = false;
-        self.m_Chairs[0].ready.active = true;
+        // self.m_Chairs[0].ready.active = true;
         self.m_Chairs[0].clock.active = false;
     },
 
@@ -319,6 +337,15 @@ cc.Class({
 
     onBtnTips: function (event) {
         this.toTipsCard();
+    },
+
+    onInviteWx: function(event) {
+        wxSDK.shareAppMessage("开开斗地主OL", './../../static/LoginBG.jpg', KKVS.COM_ROOM_NUMBER);
+    },
+
+    onEx: function(event) {
+        cc.log("onEx = KKVS.COM_ROOM_NUMBER = " + KKVS.COM_ROOM_NUMBER);
+        gameEngine.app.player().req_leave_room(KKVS.COM_ROOM_NUMBER);
     },
 
     sendNotPlay: function () {
@@ -1013,10 +1040,10 @@ cc.Class({
         var cardType = cardTypeUtil.getCardType(cardvalue);
         if (cardType == cardTypeUtil.rocketCard) {
             cc.log("cardTypeUtil.rocketCard");
-            self.updataMultiple();
+            self.updataMultiple(gameModel.multiple * 2);
         } else if (cardType == cardTypeUtil.bormCard || cardType > 100) {
             cc.log("cardTypeUtil.bormCard");
-            self.updataMultiple();
+            self.updataMultiple(gameModel.multiple * 2);
         } else if (cardType == cardTypeUtil.planeTakeNoneCard || cardType == cardTypeUtil.planeTakeSingleCard || cardType == cardTypeUtil.planeTakeDoubleCard) {
             cc.log("cardTypeUtil.planeTakeNoneCard");
         } else if (cardType == cardTypeUtil.sequenceCard) {
@@ -1091,10 +1118,10 @@ cc.Class({
         var cardType = cardTypeUtil.getCardType(cardvalue);
         if (cardType == cardTypeUtil.rocketCard) {
             cc.log("2332222");
-            self.updataMultiple();
+            self.updataMultiple(gameModel.multiple * 2);
         } else if (cardType == cardTypeUtil.bormCard || cardType > 100) {
             cc.log("2332111");
-            self.updataMultiple();
+            self.updataMultiple(gameModel.multiple * 2);
         } else if (cardType == cardTypeUtil.planeTakeNoneCard || cardType == cardTypeUtil.planeTakeSingleCard || cardType == cardTypeUtil.planeTakeDoubleCard) {
             cc.log("2332qw");
         } else if (cardType == cardTypeUtil.sequenceCard) {
@@ -1157,6 +1184,15 @@ cc.Class({
         self.showSelfCard();
         self.reInitShouPai(data.User_cards_count);
         gameModel.diZhuCharId = data.zhuang_ID;
+
+        if (gameModel.diZhuCharId != 65535) {
+            // 设置地主标识
+            var flagViewID = Tool.getViewChairID(gameModel.diZhuCharId);
+            self.m_Chairs[flagViewID].diZhuFlag.active = true;
+        }
+
+        gameModel.multiple = data.zhuangBei * Math.pow(2, data.boomCount) * Math.pow(2, data.rockCount);
+        self.updataMultiple(gameModel.multiple);
 
         if (Tool.getViewChairID(data.cur_user) == 0 && data.User_cards_count[0] != 0 && data.User_cards_count[1] != 0 && data.User_cards_count[2] != 0) {
             self.visibleOperation(true);
@@ -1228,9 +1264,10 @@ cc.Class({
     },
 
     // 设置倍数
-    updataMultiple: function () {
+    updataMultiple: function (data) {
         var self = this;
-        self.multipleText.string = (parseInt(self.multipleText.string) * 2).toString();
+        gameModel.multiple = data;
+        self.multipleText.string = gameModel.multiple.toString();
     },
 
     // 其他玩家离开桌子
@@ -1250,17 +1287,43 @@ cc.Class({
         }
     },
 
+    // 退出房卡模式成功
+    leaveCardRoomSuccess: function() {
+        cc.director.loadScene('Lobby');
+    },
+
+    // 更新自己金币
+    refreshMyScore: function(money) {
+        var self = this;
+        self.m_Chairs[0].money.getComponent(cc.Label).string = money.toString();
+    },
+
+    // 刷新别人金币
+    refreshOtherScoreDDZ: function(playerID, money) {
+        var len = gameModel.playerData.length;
+		console.log("refreshOtherScoreDDZ = " + money);
+		var msn = parseInt(money);
+		for (var i = 0; i < len; i++) {
+			if (gameModel.playerData[i].playerId == playerID) {
+				var viewID = Tool.getViewChairID(gameModel.playerData[i].chairID);
+                self.m_Chairs[viewID].money.getComponent(cc.Label).string = msn.toString();
+			}
+		}
+    },
+
     addEvent() {
         var self = this;
         self.btnReady.node.on("touchend", self.onBtnReady, this);
-        self.btn1.node.on("touchend", self.onBtnOne, this);
-        self.btn2.node.on("touchend", self.onBtnSceond, this);
-        self.btn3.node.on("touchend", self.onBtnThree, this);
+        self.btn1.node.on("click", self.onBtnOne, this);
+        self.btn2.node.on("click", self.onBtnSceond, this);
+        self.btn3.node.on("click", self.onBtnThree, this);
         self.btnScroeNo.node.on("touchend", self.onBtnScroeLess, this);
         self.btnPlay.node.on("touchend", self.onBtnPlay, this);
         self.btnNotPlay.node.on("touchend", self.onBtnNotPlay, this);
         self.btnTips.node.on("touchend", self.onBtnTips, this);
         self.btnYaoBuQi.node.on("touchend", self.onBtnNotPlay, this);
+        self.invite.node.on('touchend', self.onInviteWx, this);
+        self.exit.node.on('touchend', self.onEx, this);
 
         cc.log("GameUI 注册Kbe事件");
         KKVS.Event.register("playerEnter", this, "playerEnter");
@@ -1276,6 +1339,9 @@ cc.Class({
         KKVS.Event.register("again", this, "onLine_Again");
         KKVS.Event.register("otherLeaveGame", this, "otherLeaveGame");
         KKVS.Event.register("onLoginGameSuccess", this, "onLoginGameSuccess");
+        KKVS.Event.register("leaveCardRoomSuccess", this, "leaveCardRoomSuccess");
+        KKVS.Event.register("refreshMyScore", this, "refreshMyScore");
+        KKVS.Event.register("refreshOtherScoreDDZ", this, "refreshOtherScoreDDZ");
     },
 
     onDestroy() {
@@ -1294,5 +1360,8 @@ cc.Class({
         KKVS.Event.deregister("again", this);
         KKVS.Event.deregister("otherLeaveGame", this);
         KKVS.Event.deregister("onLoginGameSuccess", this);
+        KKVS.Event.deregister("leaveCardRoomSuccess", this);
+        KKVS.Event.deregister("refreshMyScore", this);
+        KKVS.Event.deregister("refreshOtherScoreDDZ", this);
     },
 });

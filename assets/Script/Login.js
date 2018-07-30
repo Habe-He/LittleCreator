@@ -111,7 +111,7 @@ cc.Class({
                 cc.log(jsonD[0].PassWord);
 
                 KKVS.Login_type = Tool.VISITOR_LOGIN;
-                // KKVS.Acc = jsonD[0].Accounts + "sssss";
+                // KKVS.Acc = jsonD[0].Accounts + "sssssss";
                 KKVS.Acc = jsonD[0].Accounts;
                 KKVS.Pwd = jsonD[0].PassWord;
 

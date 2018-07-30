@@ -350,7 +350,6 @@ Tool.sortListBy2T3 = function(data, operator) {
 // 下载用户头像
 Tool.weChatHeadFile = function(img, url) {
     var oriSize = img.node.getContentSize();
-    cc.log("ssize 1 = " + oriSize.width);
     wx.downloadFile({
         url: url,
         header: "image",
@@ -360,7 +359,6 @@ Tool.weChatHeadFile = function(img, url) {
             cc.loader.load(path, function (err, texture) {
                 var frame = new cc.SpriteFrame(texture);
                 img.spriteFrame = frame;
-                cc.log("ssize 2 = " + img.node.getContentSize().width);
                 img.node.scale = 132 / img.node.getContentSize().width;
             });
         },

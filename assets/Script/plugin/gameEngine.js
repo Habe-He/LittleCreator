@@ -1,7 +1,7 @@
 var KKVS = require("./KKVS")
 var ByteBuffer = require("./ByteBuffer");
 
-var WSSTR = 'ws://';
+var WSSTR = 'wss://';
 
 var gameEngine = gameEngine || {};
 
@@ -145,19 +145,19 @@ gameEngine.UINT64 = function (lo, hi) {
  debug
  -----------------------------------------------------------------------------------------*/
 gameEngine.INFO_MSG = function (s) {
-    cc.log(s);
+    // cc.log(s);
 }
 
 gameEngine.DEBUG_MSG = function (s) {
-    cc.log(s);
+    // cc.log(s);
 }
 
 gameEngine.ERROR_MSG = function (s) {
-    cc.log(s);
+    // cc.log(s);
 }
 
 gameEngine.WARNING_MSG = function (s) {
-    cc.log(s);
+    // cc.log(s);
 }
 
 /*-----------------------------------------------------------------------------------------

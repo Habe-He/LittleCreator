@@ -5,6 +5,7 @@ var DialogView = require("./widget/DialogView");
 var TxtDialogComp = require("./widget/TxtDialogComp");
 var TipDialogComp = require("./widget/TipDialogComp");
 var LoadingComp = require("./widget/LoadingComp");
+var wxSDK = require('./tool/wxSDK');
 
 var m_sErr = [
     "成功",
@@ -60,9 +61,11 @@ cc.Class({
             cc.log("=> 监听到微信小游戏  切换后台");
             self.onEventHide();
         });
-        wx.onShow(function() {
+        wx.onShow(function(res) {
             cc.log("=> 监听到微信小游戏  切换前台");
             self.onEventShow();
+            wxSDK.getLaunchOptionsSync();
+            // console.log("你大爷的微信 = " + res.query);
         });
         //主动退出按钮侦听(无)
         gameEngine.Event.register("onLoginFailed", this, "onLoginFailed");
@@ -201,7 +204,7 @@ cc.Class({
     },
     exitApp : function () {
         cc.log("=> 这里应该返回到微信界面");
-        // cc.director.end
+        wxSDK.exitMiniProgram();
     },
     showLoading : function (cb, target, time) {
         if (!this.node) {

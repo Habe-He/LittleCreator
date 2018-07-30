@@ -1,5 +1,6 @@
 var gameEngine = require('./../plugin/gameEngine');
 var AppHelper = require('./../AppHelper');
+var KKVS = require('./../plugin/KKVS');
 
 var CreateRoom = CreateRoom || {};
 
@@ -37,9 +38,10 @@ CreateRoom.Show = function () {
 
     self.createClick = function(event) {
         cc.log('点击创建房间');
-        AppHelper.get().showLoading(null, null, 15);
-        // game_id, round, multiples, field_type, roles, pwd , room_type , bring, base_score
-        gameEngine.app.player().createGameRoom(2, 3, 1, 0, 3, "123456", 0, 0, 1);
+        // AppHelper.get().showLoading(null, null, 15);
+        // KKVS.GAME_MODEL = 2;
+        // // game_id, round, multiples, field_type, roles, pwd , room_type , bring, base_score
+        // gameEngine.app.player().createGameRoom(2, 3, 1, 0, 3, "123456", 0, 0, 1);
     },
 
     self.closeClick = function (event) {

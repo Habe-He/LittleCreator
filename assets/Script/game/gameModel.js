@@ -34,8 +34,8 @@ var gameModel = {
     // 玩家道具信息
     propsMsg: [],
 
-    
-    // 
+    // 倍数
+    multiple: 0,
 };
 
 

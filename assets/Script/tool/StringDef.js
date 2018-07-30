@@ -12,6 +12,9 @@ StringDef.LOBBY_MSG_BASE_ACT_CREATE_ROOM = 150;
 // 加入房间
 StringDef.LOBBY_MSG_BASE_ACT_JOIN_ROOM = 151;
 
+// 离开房间
+StringDef.LOBBY_MSG_BASE_ACT_LEAVE_ROOM = 153;
+
 // 钻石 | 房卡 数字ID
 StringDef.Diamond = 1050;
 

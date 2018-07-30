@@ -8,11 +8,10 @@ var KKVS = KKVS || {};
  * MIT Licensed.
  */
 var PLAYER_MSG_ID_REQ_COMPETITIVE_RANKING = 5; // 排位赛季信息
-var PLAYER_MSG_ID_REQ_PLAYER_COMPETITIVE_RANKING = 16 ;//发送玩家排位积分信息
+var PLAYER_MSG_ID_REQ_PLAYER_COMPETITIVE_RANKING = 16; //发送玩家排位积分信息
 
 
-KKVS.Class = function () {
-};
+KKVS.Class = function () {};
 KKVS.Class.extend = function (prop) {
     var _super = this.prototype;
 
@@ -29,7 +28,7 @@ KKVS.Class.extend = function (prop) {
     for (var name in prop) {
         // Check if we're overwriting an existing function
         prototype[name] = typeof prop[name] == "function" &&
-        typeof _super[name] == "function" && fnTest.test(prop[name]) ?
+            typeof _super[name] == "function" && fnTest.test(prop[name]) ?
             (function (name, fn) {
                 return function () {
                     var tmp = this._super;
@@ -56,8 +55,7 @@ KKVS.Class.extend = function (prop) {
             if (!this.ctor) {
                 if (this.__nativeObj)
                     KKVS.INFO_MSG("No ctor function found!");
-            }
-            else {
+            } else {
                 this.ctor.apply(this, arguments);
             }
         }
@@ -102,8 +100,7 @@ KKVS.INT64 = function (lo, hi) {
         if (this.lo > 0) {
             this.lo = (4294967296 - this.lo) & 0xffffffff;
             this.hi = 4294967295 - this.hi;
-        }
-        else {
+        } else {
             this.lo = (4294967296 - this.lo) & 0xffffffff;
             this.hi = 4294967296 - this.hi;
         }
@@ -225,8 +222,7 @@ KKVS.stringToUTF8Bytes = function (str) {
         else if (charcode < 0x800) {
             utf8.push(0xc0 | (charcode >> 6),
                 0x80 | (charcode & 0x3f));
-        }
-        else if (charcode < 0xd800 || charcode >= 0xe000) {
+        } else if (charcode < 0xd800 || charcode >= 0xe000) {
             utf8.push(0xe0 | (charcode >> 12),
                 0x80 | ((charcode >> 6) & 0x3f),
                 0x80 | (charcode & 0x3f));
@@ -237,8 +233,8 @@ KKVS.stringToUTF8Bytes = function (str) {
             // UTF-16 encodes 0x10000-0x10FFFF by
             // subtracting 0x10000 and splitting the
             // 20 bits of 0x0-0xFFFFF into two halves
-            charcode = 0x10000 + (((charcode & 0x3ff) << 10)
-                | (str.charCodeAt(i) & 0x3ff))
+            charcode = 0x10000 + (((charcode & 0x3ff) << 10) |
+                (str.charCodeAt(i) & 0x3ff))
             utf8.push(0xf0 | (charcode >> 18),
                 0x80 | ((charcode >> 12) & 0x3f),
                 0x80 | ((charcode >> 6) & 0x3f),
@@ -329,8 +325,7 @@ KKVS.Event = function () {
             var info = evtlst[i];
             if (arguments.length < 1) {
                 info.callbackfn.apply(info.classinst);
-            }
-            else {
+            } else {
                 info.callbackfn.apply(info.classinst, ars);
             }
         }
@@ -345,8 +340,7 @@ KKVS.Event = new KKVS.Event();
 KKVS.MemoryStream = function (size_or_buffer) {
     if (size_or_buffer instanceof ArrayBuffer) {
         this.buffer = size_or_buffer;
-    }
-    else {
+    } else {
         this.buffer = new ArrayBuffer(size_or_buffer);
     }
 
@@ -434,8 +428,7 @@ KKVS.MemoryStream = function (size_or_buffer) {
     this.readFloat = function () {
         try {
             var buf = new Float32Array(this.buffer, this.rpos, 1);
-        }
-        catch (e) {
+        } catch (e) {
             var buf = new Float32Array(this.buffer.slice(this.rpos, this.rpos + 4));
         }
 
@@ -446,8 +439,7 @@ KKVS.MemoryStream = function (size_or_buffer) {
     this.readDouble = function () {
         try {
             var buf = new Float64Array(this.buffer, this.rpos, 1);
-        }
-        catch (e) {
+        } catch (e) {
             var buf = new Float64Array(this.buffer.slice(this.rpos, this.rpos + 8), 0, 1);
         }
 
@@ -463,8 +455,7 @@ KKVS.MemoryStream = function (size_or_buffer) {
         while (true) {
             if (buf[i] != 0) {
                 s += String.fromCharCode(buf[i]);
-            }
-            else {
+            } else {
                 i++;
                 break;
             }
@@ -472,7 +463,7 @@ KKVS.MemoryStream = function (size_or_buffer) {
             i++;
 
             if (this.rpos + i >= this.buffer.byteLength)
-                throw(new Error("KKVS.MemoryStream::readString: rpos(" + (this.rpos + i) + ")>=" +
+                throw (new Error("KKVS.MemoryStream::readString: rpos(" + (this.rpos + i) + ")>=" +
                     this.buffer.byteLength + " overflow!"));
         }
 
@@ -579,8 +570,7 @@ KKVS.MemoryStream = function (size_or_buffer) {
         try {
             var buf = new Float32Array(this.buffer, this.wpos, 1);
             buf[0] = v;
-        }
-        catch (e) {
+        } catch (e) {
             var buf = new Float32Array(1);
             buf[0] = v;
             var buf1 = new Uint8Array(this.buffer);
@@ -595,8 +585,7 @@ KKVS.MemoryStream = function (size_or_buffer) {
         try {
             var buf = new Float64Array(this.buffer, this.wpos, 1);
             buf[0] = v;
-        }
-        catch (e) {
+        } catch (e) {
             var buf = new Float64Array(1);
             buf[0] = v;
             var buf1 = new Uint8Array(this.buffer);
@@ -617,12 +606,11 @@ KKVS.MemoryStream = function (size_or_buffer) {
         this.writeUint32(size);
         var buf = new Uint8Array(this.buffer, this.wpos, size);
 
-        if (typeof(v) == "string") {
+        if (typeof (v) == "string") {
             for (i = 0; i < size; i++) {
                 buf[i] = v.charCodeAt(i);
             }
-        }
-        else {
+        } else {
             for (i = 0; i < size; i++) {
                 buf[i] = v[i];
             }
@@ -685,8 +673,7 @@ KKVS.moduledefs = {};
 KKVS.datatypes = {};
 
 KKVS.DATATYPE_UINT8 = function () {
-    this.bind = function () {
-    }
+    this.bind = function () {}
 
     this.createFromStream = function (stream) {
         return KKVS.reader.readUint8.call(stream);
@@ -701,7 +688,7 @@ KKVS.DATATYPE_UINT8 = function () {
     }
 
     this.isSameType = function (v) {
-        if (typeof(v) != "number") {
+        if (typeof (v) != "number") {
             return false;
         }
 
@@ -714,8 +701,7 @@ KKVS.DATATYPE_UINT8 = function () {
 }
 
 KKVS.DATATYPE_UINT16 = function () {
-    this.bind = function () {
-    }
+    this.bind = function () {}
 
     this.createFromStream = function (stream) {
         return KKVS.reader.readUint16.call(stream);
@@ -730,7 +716,7 @@ KKVS.DATATYPE_UINT16 = function () {
     }
 
     this.isSameType = function (v) {
-        if (typeof(v) != "number") {
+        if (typeof (v) != "number") {
             return false;
         }
 
@@ -743,8 +729,7 @@ KKVS.DATATYPE_UINT16 = function () {
 }
 
 KKVS.DATATYPE_UINT32 = function () {
-    this.bind = function () {
-    }
+    this.bind = function () {}
 
     this.createFromStream = function (stream) {
         return KKVS.reader.readUint32.call(stream);
@@ -759,7 +744,7 @@ KKVS.DATATYPE_UINT32 = function () {
     }
 
     this.isSameType = function (v) {
-        if (typeof(v) != "number") {
+        if (typeof (v) != "number") {
             return false;
         }
 
@@ -772,8 +757,7 @@ KKVS.DATATYPE_UINT32 = function () {
 }
 
 KKVS.DATATYPE_UINT64 = function () {
-    this.bind = function () {
-    }
+    this.bind = function () {}
 
     this.createFromStream = function (stream) {
         return KKVS.reader.readUint64.call(stream);
@@ -793,8 +777,7 @@ KKVS.DATATYPE_UINT64 = function () {
 }
 
 KKVS.DATATYPE_INT8 = function () {
-    this.bind = function () {
-    }
+    this.bind = function () {}
 
     this.createFromStream = function (stream) {
         return KKVS.reader.readInt8.call(stream);
@@ -809,7 +792,7 @@ KKVS.DATATYPE_INT8 = function () {
     }
 
     this.isSameType = function (v) {
-        if (typeof(v) != "number") {
+        if (typeof (v) != "number") {
             return false;
         }
 
@@ -822,8 +805,7 @@ KKVS.DATATYPE_INT8 = function () {
 }
 
 KKVS.DATATYPE_INT16 = function () {
-    this.bind = function () {
-    }
+    this.bind = function () {}
 
     this.createFromStream = function (stream) {
         return KKVS.reader.readInt16.call(stream);
@@ -838,7 +820,7 @@ KKVS.DATATYPE_INT16 = function () {
     }
 
     this.isSameType = function (v) {
-        if (typeof(v) != "number") {
+        if (typeof (v) != "number") {
             return false;
         }
 
@@ -851,8 +833,7 @@ KKVS.DATATYPE_INT16 = function () {
 }
 
 KKVS.DATATYPE_INT32 = function () {
-    this.bind = function () {
-    }
+    this.bind = function () {}
 
     this.createFromStream = function (stream) {
         return KKVS.reader.readInt32.call(stream);
@@ -867,7 +848,7 @@ KKVS.DATATYPE_INT32 = function () {
     }
 
     this.isSameType = function (v) {
-        if (typeof(v) != "number") {
+        if (typeof (v) != "number") {
             return false;
         }
 
@@ -880,8 +861,7 @@ KKVS.DATATYPE_INT32 = function () {
 }
 
 KKVS.DATATYPE_INT64 = function () {
-    this.bind = function () {
-    }
+    this.bind = function () {}
 
     this.createFromStream = function (stream) {
         return KKVS.reader.readInt64.call(stream);
@@ -901,8 +881,7 @@ KKVS.DATATYPE_INT64 = function () {
 }
 
 KKVS.DATATYPE_FLOAT = function () {
-    this.bind = function () {
-    }
+    this.bind = function () {}
 
     this.createFromStream = function (stream) {
         return KKVS.reader.readFloat.call(stream);
@@ -917,13 +896,12 @@ KKVS.DATATYPE_FLOAT = function () {
     }
 
     this.isSameType = function (v) {
-        return typeof(v) == "number";
+        return typeof (v) == "number";
     }
 }
 
 KKVS.DATATYPE_DOUBLE = function () {
-    this.bind = function () {
-    }
+    this.bind = function () {}
 
     this.createFromStream = function (stream) {
         return KKVS.reader.readDouble.call(stream);
@@ -938,13 +916,12 @@ KKVS.DATATYPE_DOUBLE = function () {
     }
 
     this.isSameType = function (v) {
-        return typeof(v) == "number";
+        return typeof (v) == "number";
     }
 }
 
 KKVS.DATATYPE_STRING = function () {
-    this.bind = function () {
-    }
+    this.bind = function () {}
 
     this.createFromStream = function (stream) {
         return KKVS.reader.readString.call(stream);
@@ -959,15 +936,14 @@ KKVS.DATATYPE_STRING = function () {
     }
 
     this.isSameType = function (v) {
-        return typeof(v) == "string";
+        return typeof (v) == "string";
     }
 }
 
 KKVS.DATATYPE_VECTOR = function (size) {
     this.itemsize = size;
 
-    this.bind = function () {
-    }
+    this.bind = function () {}
 
     this.createFromStream = function (stream) {
 
@@ -981,28 +957,23 @@ KKVS.DATATYPE_VECTOR = function (size) {
             if (KKVS.CLIENT_NO_FLOAT) {
                 return new KKVS.Vector3(KKVS.reader.readInt32.call(stream),
                     KKVS.reader.readInt32.call(stream), KKVS.reader.readInt32.call(stream));
-            }
-            else {
+            } else {
                 return new KKVS.Vector3(KKVS.reader.readFloat.call(stream),
                     KKVS.reader.readFloat.call(stream), KKVS.reader.readFloat.call(stream));
             }
-        }
-        else if (this.itemsize == 4) {
+        } else if (this.itemsize == 4) {
             if (KKVS.CLIENT_NO_FLOAT) {
                 return new KKVS.Vector4(KKVS.reader.readInt32.call(stream),
                     KKVS.reader.readInt32.call(stream), KKVS.reader.readInt32.call(stream));
-            }
-            else {
+            } else {
                 return new KKVS.Vector4(KKVS.reader.readFloat.call(stream),
                     KKVS.reader.readFloat.call(stream), KKVS.reader.readFloat.call(stream));
             }
-        }
-        else if (this.itemsize == 2) {
+        } else if (this.itemsize == 2) {
             if (KKVS.CLIENT_NO_FLOAT) {
                 return new KKVS.Vector2(KKVS.reader.readInt32.call(stream),
                     KKVS.reader.readInt32.call(stream), KKVS.reader.readInt32.call(stream));
-            }
-            else {
+            } else {
                 return new KKVS.Vector2(KKVS.reader.readFloat.call(stream),
                     KKVS.reader.readFloat.call(stream), KKVS.reader.readFloat.call(stream));
             }
@@ -1017,8 +988,7 @@ KKVS.DATATYPE_VECTOR = function (size) {
         if (KKVS.CLIENT_NO_FLOAT) {
             stream.writeInt32(v.x);
             stream.writeInt32(v.y);
-        }
-        else {
+        } else {
             stream.writeFloat(v.x);
             stream.writeFloat(v.y);
         }
@@ -1026,17 +996,14 @@ KKVS.DATATYPE_VECTOR = function (size) {
         if (this.itemsize == 3) {
             if (KKVS.CLIENT_NO_FLOAT) {
                 stream.writeInt32(v.z);
-            }
-            else {
+            } else {
                 stream.writeFloat(v.z);
             }
-        }
-        else if (this.itemsize == 4) {
+        } else if (this.itemsize == 4) {
             if (KKVS.CLIENT_NO_FLOAT) {
                 stream.writeInt32(v.z);
                 stream.writeInt32(v.w);
-            }
-            else {
+            } else {
                 stream.writeFloat(v.z);
                 stream.writeFloat(v.w);
             }
@@ -1052,13 +1019,11 @@ KKVS.DATATYPE_VECTOR = function (size) {
             if (!v instanceof KKVS.Vector2) {
                 return false;
             }
-        }
-        else if (this.itemsize == 3) {
+        } else if (this.itemsize == 3) {
             if (!v instanceof KKVS.Vector3) {
                 return false;
             }
-        }
-        else if (this.itemsize == 4) {
+        } else if (this.itemsize == 4) {
             if (!v instanceof KKVS.Vector4) {
                 return false;
             }
@@ -1069,14 +1034,11 @@ KKVS.DATATYPE_VECTOR = function (size) {
 }
 
 KKVS.DATATYPE_PYTHON = function () {
-    this.bind = function () {
-    }
+    this.bind = function () {}
 
-    this.createFromStream = function (stream) {
-    }
+    this.createFromStream = function (stream) {}
 
-    this.addToStream = function (stream, v) {
-    }
+    this.addToStream = function (stream, v) {}
 
     this.parseDefaultValStr = function (v) {
         return eval(v);
@@ -1088,8 +1050,7 @@ KKVS.DATATYPE_PYTHON = function () {
 }
 
 KKVS.DATATYPE_UNICODE = function () {
-    this.bind = function () {
-    }
+    this.bind = function () {}
 
     this.createFromStream = function (stream) {
         return KKVS.utf8ArrayToString(KKVS.reader.readBlob.call(stream));
@@ -1100,26 +1061,23 @@ KKVS.DATATYPE_UNICODE = function () {
     }
 
     this.parseDefaultValStr = function (v) {
-        if (typeof(v) == "string")
+        if (typeof (v) == "string")
             return v;
 
         return "";
     }
 
     this.isSameType = function (v) {
-        return typeof(v) == "string";
+        return typeof (v) == "string";
     }
 }
 
 KKVS.DATATYPE_MAILBOX = function () {
-    this.bind = function () {
-    }
+    this.bind = function () {}
 
-    this.createFromStream = function (stream) {
-    }
+    this.createFromStream = function (stream) {}
 
-    this.addToStream = function (stream, v) {
-    }
+    this.addToStream = function (stream, v) {}
 
     this.parseDefaultValStr = function (v) {
         return eval(v);
@@ -1131,8 +1089,7 @@ KKVS.DATATYPE_MAILBOX = function () {
 }
 
 KKVS.DATATYPE_BLOB = function () {
-    this.bind = function () {
-    }
+    this.bind = function () {}
 
     this.createFromStream = function (stream) {
         var size = KKVS.reader.readUint32.call(stream);
@@ -1158,7 +1115,7 @@ KKVS.DATATYPE_ARRAY = function () {
     this.type = KKVS.datatypes["UINT8"];
 
     this.bind = function () {
-        if (typeof(this.type) == "object")
+        if (typeof (this.type) == "object")
             this.type = KKVS.datatypes[this.type];
     }
 
@@ -1169,8 +1126,7 @@ KKVS.DATATYPE_ARRAY = function () {
         while (size > 0) {
             size--;
             datas.push(this.type.createFromStream(stream));
-        }
-        ;
+        };
 
         return datas;
     }
@@ -1205,7 +1161,7 @@ KKVS.DATATYPE_FIXED_DICT = function () {
         for (itemkey in this.dicttype) {
             var utype = this.dicttype[itemkey];
 
-            if (typeof(this.dicttype[itemkey]) == "number")
+            if (typeof (this.dicttype[itemkey]) == "number")
                 this.dicttype[itemkey] = KKVS.datatypes[utype];
         }
     }
@@ -1319,17 +1275,17 @@ KKVS.datatypes["ARRAY"] = new KKVS.DATATYPE_ARRAY();
 //KKVS.GENDER = 0;
 
 KKVS.reset = function () {
-    KKVS.GUID = 0;          //uint64
-    KKVS.UID = 0;           //int32
+    KKVS.GUID = 0; //uint64
+    KKVS.UID = 0; //int32
     KKVS.UPWD = "";
-    KKVS.myChairID = -1;    //uint16
-    KKVS.KGOLD = 0;         //int64
-    KKVS.KGOLD_BANK = 0;    //int64
-    KKVS.NICKNAME = "";     //blob
-    KKVS.EXP = 0;           //int32
-    KKVS.VIP = 0;           //uint8
-    KKVS.FACEID = 0;        //uint8
-    KKVS.KBAO = 0;          //uint32
+    KKVS.myChairID = -1; //uint16
+    KKVS.KGOLD = 0; //int64
+    KKVS.KGOLD_BANK = 0; //int64
+    KKVS.NICKNAME = ""; //blob
+    KKVS.EXP = 0; //int32
+    KKVS.VIP = 0; //uint8
+    KKVS.FACEID = 0; //uint8
+    KKVS.KBAO = 0; //uint32
     KKVS.EnterLobbyID = 0;
     KKVS.RoomListInfo = {};
     KKVS.RoomPlayerCount = {};
@@ -1366,7 +1322,7 @@ KKVS.reset = function () {
     KKVS.RankList = [];
     KKVS.OnRankList = [];
     KKVS.RedList = [];
-    KKVS.UBMOB = "";    //bind mobile
+    KKVS.UBMOB = ""; //bind mobile
     KKVS.PropList = null;
 
     KKVS.bShowHorn = false;
@@ -1384,7 +1340,7 @@ KKVS.reset = function () {
     KKVS.GAME_STATUS = 0;
     KKVS.UPBANKER_INFO = [];
 
-    KKVS.MatchData = {};    //match data
+    KKVS.MatchData = {}; //match data
     KKVS.CurMatchData = null; //current operate match data
     KKVS.ReRoomData = null; //reconnect room data
     KKVS.CurScene = 0; //current scene 0=login, 1=lobby
@@ -1392,6 +1348,9 @@ KKVS.reset = function () {
 
     KKVS.RRECON_PAICOUNT = [];
     KKVS.ROOM_ID = 0;
+    // 0：普通模式 - 金币场 - 随机
+    // 6：排位
+    // 2：房卡
     KKVS.GAME_MODEL = 0;
     KKVS.COM_ROOM_NUMBER = 0;
 };

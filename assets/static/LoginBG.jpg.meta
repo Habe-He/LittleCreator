@@ -1,14 +1,14 @@
 {
   "ver": "1.0.0",
-  "uuid": "84bafbb2-aac6-462f-9ae3-b91b9c44e8c9",
+  "uuid": "e345ca6b-a783-4eda-a60c-ee9cc1044476",
   "type": "sprite",
   "wrapMode": "clamp",
   "filterMode": "bilinear",
   "subMetas": {
-    "bg_temp": {
+    "LoginBG": {
       "ver": "1.0.3",
-      "uuid": "bfbf7445-1233-46e9-84ac-42cd3d68e33d",
-      "rawTextureUuid": "84bafbb2-aac6-462f-9ae3-b91b9c44e8c9",
+      "uuid": "d6f5cc71-43ff-4545-b378-9ccbfa699d3c",
+      "rawTextureUuid": "e345ca6b-a783-4eda-a60c-ee9cc1044476",
       "trimType": "auto",
       "trimThreshold": 1,
       "rotated": false,

@@ -101,7 +101,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         //     KKVS.KGOLD = money;
         // }
         cc.log("GamePlayer->>>>on_player_game_money_update money = " + money);
-        KKVS.Event.fire("refreshMyScoreDDZ", money);
+        KKVS.Event.fire("refreshMyScore", money);
     },
 
     on_game_money_update: function (lobbyID, fieldID, roomID, playerID, money) {
@@ -110,10 +110,10 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     },
 
     on_player_money_update: function (kbao) {
-        KKVS.INFO_MSG("GamePlayer->>>>on_player_money_update");
-        KKVS.KBAO = kbao;
-        KKVS.INFO_MSG("kbao = " + kbao);
-        KKVS.Event.fire("refreshKbao");
+        // KKVS.INFO_MSG("GamePlayer->>>>on_player_money_update");
+        // KKVS.KBAO = kbao;
+        // KKVS.INFO_MSG("kbao = " + kbao);
+        // KKVS.Event.fire("refreshKbao");
     },
 
     /**
@@ -313,6 +313,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
                     room_id: room_id,
                     // pwd: pwd
                 }
+                KKVS.COM_ROOM_NUMBER = room_id;
                 KKVS.Event.fire("create_room_success", data);
             } else {
                 AppHelper.get().hideLoading();
@@ -339,6 +340,10 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
                         // cc.director.loadScene('Lobby');
                     }
                 }).show();
+            }
+        } else if (cmd == StringDef.LOBBY_MSG_BASE_ACT_LEAVE_ROOM) {
+            if(params.success){
+                KKVS.Event.fire("leaveCardRoomSuccess");
             }
         }
     },
@@ -689,6 +694,16 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         this.baseCall('req_join_game', roomID, JSON.stringify({}));
     },
 
+    // 离开房间
+    req_leave_room: function (roomid) {
+        cc.log('req_leave_room');
+        var data = {
+            room_id: roomid
+        }
+        var json_str = JSON.stringify(data);
+        this.baseCall('req_lobby_msg', StringDef.LOBBY_MSG_BASE_ACT_LEAVE_ROOM, json_str);
+    },
+
     ////////////
     // 新增红包消息
     ////////////
@@ -774,7 +789,8 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         cc.log("on_game_info");
         
         KKVS.COM_ROOM_NUMBER = roomNumber;
-        KKVS.GAME_MODEL = 6;
+        cc.log("on_game_info = KKVS.COM_ROOM_NUMBER = " + KKVS.COM_ROOM_NUMBER);
+        KKVS.GAME_MODEL = 2;
         cc.director.loadScene('GameUI');
     },
 
@@ -784,8 +800,9 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         cc.log("req_start_game KKVS.SelectFieldID = " + KKVS.SelectFieldID);
         cc.log("req_start_game KKVS.EnterRoomID = " + KKVS.EnterRoomID);
 
-        // TODO
-        // this.reqEnterRoom(KKVS.EnterLobbyID, KKVS.SelectFieldID, KKVS.EnterRoomID);
+        if (KKVS.GAME_MODEL != 2) {
+            this.reqEnterRoom(KKVS.EnterLobbyID, KKVS.SelectFieldID, KKVS.EnterRoomID);
+        }
     },
 
     onHappy_OffLine: function () {
