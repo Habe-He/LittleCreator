@@ -57,15 +57,11 @@ cc.Class({
                 if (data[i].score < 0) {
                     lost.active = true;
                     lostNum.string = data[i].score;
-                    // line.getComponent(cc.Sprite).spriteFrame = new cc.SpriteFrame(cc.url.raw("GameEnd/blueL"));
-                    cc.loader.loadRes("GameEnd/blueL", cc.SpriteFrame, function (err, spriteFrame) {
-                        line.getComponent(cc.Sprite).spriteFrame = spriteFrame;
-                    });
+                    var realUrl = cc.url.raw("resources/GameEnd/blueL.png");
+                    line.getComponent(cc.Sprite).spriteFrame = new cc.SpriteFrame(realUrl);
 
-                    // bg.getComponent(cc.Sprite).spriteFrame = new cc.SpriteFrame(cc.url.raw("GameEnd/conbg"));
-                    cc.loader.loadRes("GameEnd/conbg", cc.SpriteFrame, function (err, spriteFrame) {
-                        bg.getComponent(cc.Sprite).spriteFrame = spriteFrame;
-                    });
+                    var bgUrl = cc.url.raw("resources/GameEnd/conbg.png");
+                    bg.getComponent(cc.Sprite).spriteFrame = new cc.SpriteFrame(bgUrl);
                 } else {
                     win.active = true;
                     winNum.string = data[i].score;
@@ -86,11 +82,14 @@ cc.Class({
 
     onExitClick: function (event) {
         cc.log("退出游戏");
-        cc.director.loadScene('Lobby');
+        // cc.director.loadScene('Lobby');
+        gameModel.isWaiting = false;
+        KKVS.Event.fire("onExitClick");
     },
 
     onContClick: function (event) {
         cc.log("继续游戏");
+        gameModel.isWaiting = false;
         cc.director.loadScene('GameUI');
     },
 

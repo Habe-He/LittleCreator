@@ -345,11 +345,12 @@ Tool.sortListBy2T3 = function(data, operator) {
             }
         }
     });
+    return data;
 },
 
 // 下载用户头像
-Tool.weChatHeadFile = function(img, url) {
-    var oriSize = img.node.getContentSize();
+Tool.weChatHeadFile = function(img, url, temNode) {
+    // var oriSize = img.node.getContentSize();
     wx.downloadFile({
         url: url,
         header: "image",
@@ -360,11 +361,13 @@ Tool.weChatHeadFile = function(img, url) {
                 var frame = new cc.SpriteFrame(texture);
                 img.spriteFrame = frame;
                 img.node.scale = 132 / img.node.getContentSize().width;
+                // temNode.active = true;
             });
         },
 
         fail: function (err) {
             cc.log("下载微信头像失败 = " + err);
+            // temNode.active = true;
         },
     });
 },
@@ -377,6 +380,24 @@ Tool.getByTime = function (_time) {
     var D = date.getDate() + ' ';
 
     return (Y + M + D);
+},
+
+// 金币 -> 万
+Tool.goldSplit = function(money) {
+    var str = "";
+    if (money <= 10000) {
+        return money.toString();
+    } else {
+        if (money % 10000 == 0) {
+            str = money / 10000 + "万"
+            return str.toString();
+        } else {
+            var wan = parseInt(money / 10000);
+            var don = parseInt((money - wan * 10000) / 1000);
+            str = wan + "." + don + "万"
+            return str.toString();
+        }
+    }
 },
 
 module.exports = Tool;

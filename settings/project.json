@@ -20,7 +20,6 @@
     "ProgressBar",
     "ScrollBar",
     "ScrollView",
-    "Toggle",
     "PageView",
     "PageViewIndicator",
     "Slider",
@@ -28,12 +27,14 @@
     "VideoPlayer",
     "WebView",
     "RichText",
+    "MotionStreak",
     "Collider",
     "Graphics",
     "DragonBones",
     "Physics",
     "StudioComponent",
-    "Chipmunk"
+    "Chipmunk",
+    "Intersection"
   ],
   "fit-height": true,
   "fit-width": false,

@@ -35,7 +35,7 @@ var gameModel = {
     propsMsg: [],
 
     // 倍数
-    multiple: 0,
+    multiple: 1,
 };
 
 

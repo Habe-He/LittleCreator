@@ -21,7 +21,10 @@ cc.Class({
         cardValue: 0,
 
         // 牌的原始值
-        cardId: 0
+        cardId: 0,
+
+        // 是否为现有牌中显示在最上层的牌
+        isTop: false,
     },
 
     onLoad: function () {},
@@ -102,9 +105,8 @@ cc.Class({
         if (self.isSelect) {
             this.node.runAction(cc.moveBy(0.1, 0, -30));
         }
-        
-        self.isSelect = false;
         self.isReadyToSelect = false;
+        self.isSelect = false;
     },
 
     // 显示地主牌标

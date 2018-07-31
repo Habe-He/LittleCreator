@@ -39,7 +39,7 @@ cc.Class({
 
         var coinbg = bg.getChildByName('coin');
         self.coinCount = coinbg.getChildByName('count').getComponent(cc.Label);
-        self.coinCount.string = KKVS.KGOLD.toString();
+        self.coinCount.string = Tool.goldSplit(KKVS.KGOLD);
 
         var diamond = bg.getChildByName('ZuanShi');
         var diamondCount = diamond.getChildByName('count').getComponent(cc.Label);
@@ -51,7 +51,7 @@ cc.Class({
         
         var mSprite = bg.getChildByName("msak");
         var head = mSprite.getChildByName('Head_0').getComponent(cc.Sprite);
-        Tool.weChatHeadFile(head, KKVS.HEAD_URL);
+        Tool.weChatHeadFile(head, KKVS.HEAD_URL, mSprite);
 
         self.lv = paiBtn.getChildByName("Lv").getComponent(cc.Sprite);
         

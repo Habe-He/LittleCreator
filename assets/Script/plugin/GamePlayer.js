@@ -100,6 +100,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         // if (KKVS.GAME_MODEL == 0) {
         //     KKVS.KGOLD = money;
         // }
+        KKVS.KGOLD = money;
         cc.log("GamePlayer->>>>on_player_game_money_update money = " + money);
         KKVS.Event.fire("refreshMyScore", money);
     },
@@ -543,21 +544,22 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
             KKVS.Event.fire("playerPlayCard", cardlist, chairID);
         }
 
-        KKVS.Event.fire("toPlayCard", nowplayID, 15, mustplay);
+        KKVS.Event.fire("toPlayCard", nowplayID, 16, mustplay);
     },
 
     onHappy_openCard: function (lobbyID, fieldID, roomID, tableID, cardlist, isSpring) {
         cc.log("->onHappy_openCard====");
         // Tool.logObj(cardlist);
-        // for (var i = 0; i < cardlist.length; i++) {
-        //     if (i != KKVS.myChairID) {
-        //         var data = {
-        //             chairID: i,
-        //             cardData: cardlist[i]
-        //         };
-        //         GameManager.onSurplusCard(data, isSpring);
-        //     }
-        // }
+        for (var i = 0; i < cardlist.length; i++) {
+            if (i != KKVS.myChairID) {
+                var data = {
+                    chairID: i,
+                    cardData: cardlist[i]
+                };
+                KKVS.Event.fire("openCard", data, isSpring);
+                // GameManager.onSurplusCard(data, isSpring);
+            }
+        }
     },
 
     onHappy_GameEndInfo: function (lobby_id, field_id, room_id, table_id, card_list, scores, times, isspring, difen) {
@@ -588,10 +590,8 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     },
 
     onHappy_GameErrInfo: function (lobbyID, fieldID, roomID, tableID, msginfo) {
-        cc.log("->onHappy_GameErrInfo==== msginfo = " + msginfo);
-        if (gameModel.nowplayID == KKVS.myChairID) {
-            GameManager.onCardError(msginfo);
-        }
+        cc.log("onHappy_GameErrInfo==== msginfo = " + msginfo);
+        KKVS.Event.fire("GameErrInfo");
     },
 
     send_LeaveTable: function (lobbyID, fieldID, roomID, tableID, chair_id) {

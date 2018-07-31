@@ -495,8 +495,8 @@
     "_N$spriteFrame": {
       "__uuid__": "4f20c934-0d51-417d-b100-a9a4187b0a02"
     },
-    "_N$alphaThreshold": 0,
-    "_N$inverted": true
+    "_N$alphaThreshold": 1,
+    "_N$inverted": false
   },
   {
     "__type__": "cc.Node",
@@ -884,7 +884,7 @@
       "__id__": 15
     },
     "_enabled": true,
-    "transition": 2,
+    "transition": 3,
     "pressedColor": {
       "__type__": "cc.Color",
       "r": 255,
@@ -900,7 +900,7 @@
       "a": 255
     },
     "duration": 0.1,
-    "zoomScale": 1.2,
+    "zoomScale": 1.1,
     "clickEvents": [],
     "_N$interactable": true,
     "_N$enableAutoGrayEffect": false,

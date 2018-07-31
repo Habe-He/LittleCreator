@@ -111,7 +111,6 @@ cc.Class({
                 cc.log(jsonD[0].PassWord);
 
                 KKVS.Login_type = Tool.VISITOR_LOGIN;
-                // KKVS.Acc = jsonD[0].Accounts + "sssssss";
                 KKVS.Acc = jsonD[0].Accounts;
                 KKVS.Pwd = jsonD[0].PassWord;
 
@@ -159,9 +158,9 @@ cc.Class({
                 // 2 ：女
                 var gender = res.userInfo.gender;
                 var nickName = res.userInfo.nickName;
-                // cc.log("city = " + city);
-                // cc.log("gender = " + gender);
-                // cc.log("nickName = " + nickName);
+                cc.log("avatarUrl = " + avatarUrl);
+                cc.log("gender = " + gender);
+                cc.log("nickName = " + nickName);
 
                 // this.nickName = nickName;
                 // this.avatarUrl = avatarUrl;
@@ -184,8 +183,10 @@ cc.Class({
                 self._serverLogin(data.code);
             },
 
-            fail: function () {
-                cc.log("用户未确认授权");
+            // 061nxiVf1vWfkA0mynXf1yH1Vf1nxiVo
+            fail: function (res) {
+                cc.log("用户未确认授权 " + data.code);
+                self._serverLogin(data.code);
             },
         });
     },
