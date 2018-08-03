@@ -7,6 +7,7 @@ var DialogView = require('./../widget/DialogView');
 var TxtDialogComp = require("./../widget/TxtDialogComp");
 var StringDef = require('./../tool/StringDef');
 var AppHelper = require('./../AppHelper');
+var OnLineManager = require('./../tool/OnLineManager');
 
 gameEngine.GamePlayer = gameEngine.Entity.extend({
     __init__: function () {
@@ -140,6 +141,9 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     onEnterRoomResult: function (lobbyID, fieldID, roomID, bSuccess, erorStr) {
         KKVS.INFO_MSG("newLand GamePlayer->onEnterRoomResult");
         if (!bSuccess) {
+            if (KKVS.GAME_MODEL == 6) {
+                erorStr = "竞技排位即将开启";
+            }
             (new DialogView()).build(TxtDialogComp, {
                 txt: erorStr,
                 type: 1,
@@ -195,10 +199,6 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
             KKVS.EnterTableID = tableID;
             KKVS.EnterChairID = chairID;
         } else {
-            // if (!this.bReconnect) {
-            //     return;
-            // }
-            // this.bReconnect = false;
             gameModel.isOnReconnection = true;
             KKVS.Event.fire("onLoginGameSuccess", 2);
             KKVS.EnterLobbyID = lobbyID;
@@ -207,9 +207,6 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
             KKVS.EnterTableID = tableID;
             KKVS.EnterChairID = chairID;
         }
-        // enter room
-        // KKVS.Event.fire("reConnectGameSvrSuccess");
-        // this.reqReConnectGameTable();
     },
 
     reqReConnectGameTable: function () {
@@ -238,7 +235,6 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         KKVS.EnterLobbyID = lobbyID;
         KKVS.SelectFieldID = fieldID;
         KKVS.EnterRoomID = roomID;
-        KKVS.Event.fire("onEnterTableResult");
     },
 
     request_GetReady: function (lobby_id, field_id, room_id, table_id, chair_id) {
@@ -265,7 +261,6 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
             gameModel.isInGameStart = false;
         else
             gameModel.isInGameStart = true;
-        cc.log("303 gameModel.isInGameStart = " + gameModel.isInGameStart);
         KKVS.Event.fire("onEnterTableResult");
     },
 
@@ -320,10 +315,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
                 AppHelper.get().hideLoading();
                 (new DialogView()).build(TxtDialogComp, {
                     txt: params.error,
-                    type: 2,
-                    cb: function () {
-                        // cc.director.loadScene('Lobby');
-                    }
+                    type: 1
                 }).show();
             }
         } else if (cmd == StringDef.LOBBY_MSG_BASE_ACT_JOIN_ROOM) {
@@ -336,10 +328,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
                 AppHelper.get().hideLoading();
                 (new DialogView()).build(TxtDialogComp, {
                     txt: params.error,
-                    type: 2,
-                    cb: function () {
-                        // cc.director.loadScene('Lobby');
-                    }
+                    type: 1
                 }).show();
             }
         } else if (cmd == StringDef.LOBBY_MSG_BASE_ACT_LEAVE_ROOM) {
@@ -404,7 +393,12 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
             chairID: chairID,
             playerID: playerID
         };
-        // GameManager.onSeverLeaveTable(data);
+        if (chairID == KKVS.EnterChairID) {
+            KKVS.Event.fire("leaveGame");
+        } else {
+            cc.log("别的玩家被踢出桌子");
+            KKVS.Event.fire("otherLeaveGame", chairID);
+        }
     },
 
     onKent_GameSay: function () { //手机版本与pc版本不同
@@ -536,6 +530,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     onHappy_OutCardInfo: function (lobbyID, fieldID, roomID, tableID, chairID, cardlist, type, nowplayID, mustplay, cardNum) {
         cc.log("onHappy_OutCardInfo");
         var cardlist = cardlist;
+        gameModel.nowplayID = nowplayID;
         if (type == 0)
             cardlist = [];
         if (chairID == KKVS.myChairID) {
@@ -556,10 +551,11 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
                     chairID: i,
                     cardData: cardlist[i]
                 };
-                KKVS.Event.fire("openCard", data, isSpring);
-                // GameManager.onSurplusCard(data, isSpring);
+                KKVS.Event.fire("openCard", data);
             }
         }
+
+        KKVS.Event.fire("openCardSpring", isSpring);
     },
 
     onHappy_GameEndInfo: function (lobby_id, field_id, room_id, table_id, card_list, scores, times, isspring, difen) {
@@ -569,6 +565,21 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
             return;
         }
 
+        // 春天 -- 反春天
+        // 地主输赢
+        var masterWin = true;
+        if (Number(scores[gameModel.diZhuCharId]) > 0) {
+            masterWin = true;
+        } else {
+            masterWin = false;
+        }
+        // 是否是春天
+        var springType = true;
+        if (isspring == 2) {
+            springType = true;
+        } else {
+            springType = false;
+        }
         var data = [];
         for (var i = 0; i < gameModel.playerData.length; ++i) {
             var name = gameModel.playerData[i].name;
@@ -581,7 +592,10 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
                 'baseScore': baseScore,
                 'chairID': chairID,
                 'score': score,
-                'multiple': multiple
+                'multiple': multiple,
+                'masterWin': masterWin,
+                'springType': springType
+
             };
             data.push(sData);
         }
@@ -590,8 +604,10 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     },
 
     onHappy_GameErrInfo: function (lobbyID, fieldID, roomID, tableID, msginfo) {
-        cc.log("onHappy_GameErrInfo==== msginfo = " + msginfo);
-        KKVS.Event.fire("GameErrInfo");
+        if (gameModel.nowplayID == KKVS.myChairID) {
+            cc.log("自己 onHappy_GameErrInfo==== msginfo = " + msginfo);
+            KKVS.Event.fire("GameErrInfo");
+        }
     },
 
     send_LeaveTable: function (lobbyID, fieldID, roomID, tableID, chair_id) {
@@ -609,7 +625,6 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     onKent_tick: function (lobbyID, fieldID, roomID, tableID, chair_id) {
         cc.log("->onKent_tick====");
         if (chair_id == KKVS.EnterChairID) {
-            // cc.log("自己被踢出桌子 -- 注释");
             KKVS.Event.fire("leaveGame");
         } else {
             cc.log("别的玩家被踢出桌子");
@@ -747,14 +762,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     // 房卡模式新增 消息
     // room_id 房间号
     onHappy_fk_update: function (lobbyID, fieldID, roomID, tableID, scores, zongJuShu, curJuShu, difen, beishu, room_id) {
-        cc.log("newLand GamePlayer->onHappy_fk_update");
-        var args = arguments;
-        // logObj(args);
-
-        for (var i = 0; i < scores.length; ++i) {
-            cc.log(i + " jinbi = " + scores[i]);
-        }
-
+        cc.log("GamePlayer->onHappy_fk_update");
         var data = {
             scores: scores,
             zongJuShu: zongJuShu,
@@ -763,7 +771,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
             beishu: beishu,
             room_id: room_id
         };
-        KKVS.Event.fire("onHappyFuckUpdate", data);
+        KKVS.Event.fire("fuckUpdate", data);
     },
 
     onHappy_fk_finish: function (lobbyID, fieldID, roomID, tableID, rocks, booms, springs, fanSprings, scores, fangzhu, fanghao, time, names) {
@@ -796,9 +804,6 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
 
     req_start_game: function () {
         cc.log("req_start_game");
-        cc.log("req_start_game KKVS.EnterLobbyID = " + KKVS.EnterLobbyID);
-        cc.log("req_start_game KKVS.SelectFieldID = " + KKVS.SelectFieldID);
-        cc.log("req_start_game KKVS.EnterRoomID = " + KKVS.EnterRoomID);
 
         if (KKVS.GAME_MODEL != 2) {
             this.reqEnterRoom(KKVS.EnterLobbyID, KKVS.SelectFieldID, KKVS.EnterRoomID);

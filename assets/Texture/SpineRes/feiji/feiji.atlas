@@ -1,0 +1,34 @@
+
+feiji.png
+size: 2048,1024
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1
+  rotate: false
+  xy: 1690, 632
+  size: 288, 153
+  orig: 288, 153
+  offset: 0, 0
+  index: -1
+2
+  rotate: false
+  xy: 2, 204
+  size: 781, 581
+  orig: 781, 581
+  offset: 0, 0
+  index: -1
+3
+  rotate: false
+  xy: 785, 345
+  size: 903, 440
+  orig: 903, 440
+  offset: 0, 0
+  index: -1
+lizi/lizi0001
+  rotate: false
+  xy: 2, 2
+  size: 400, 200
+  orig: 400, 200
+  offset: 0, 0
+  index: -1

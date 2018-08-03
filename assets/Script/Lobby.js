@@ -18,6 +18,7 @@ cc.Class({
     onLoad: function () {
         cc.log("=> Lobby::onLoad()");
         OnLineManager._autoConnect = true;
+        gameModel.isWaiting = false;
         var self = this;
         self.addEvent();
         self._serversRoomConfig();
@@ -57,7 +58,8 @@ cc.Class({
         
         self._updateLobbyLevel();
 
-        wxSDK.getLaunchOptionsSync();
+        wxSDK.getLaunchOptionsSync(false, null);
+        wxSDK.onNetworkStatusChange();
     },
 
     suiTouchEvent: function (event) {
@@ -80,6 +82,7 @@ cc.Class({
 
     haoTouchEvent: function(event) {
         cc.log("好友对战");
+        AppHelper.get().showLoading(null, null, 150);
         CreateRoom.Show();
     },
 
@@ -144,6 +147,7 @@ cc.Class({
     },
 
     refreshMyScore: function (money) {
+        var self = this;
         self.coinCount.string = money.toString();
     },
 

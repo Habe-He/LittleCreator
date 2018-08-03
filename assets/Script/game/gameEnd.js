@@ -1,6 +1,7 @@
 var KKVS = require('./../plugin/KKVS');
 var gameModel = require('./gameModel');
 var Tool = require('./../tool/Tool');
+var gameEngine = require('./../plugin/gameEngine');
 
 cc.Class({
     extends: cc.Component,
@@ -14,6 +15,7 @@ cc.Class({
     setData: function (data, prefab) {
         gameModel.isOnReconnection = false;
         var self = this;
+        self._endNodePB = prefab;
         var bg = cc.find('bg', prefab).getComponent(cc.Sprite);
         var line = cc.find('bg/line', prefab).getComponent(cc.Sprite);
 
@@ -48,10 +50,14 @@ cc.Class({
         var exit = cc.find("exit", prefab);
         var con = cc.find("con", prefab);
 
+        if (KKVS.GAME_MODEL == 2) {
+            exit.active = false;
+            con.active = false;
+        }
+
         exit.on("touchend", self.onExitClick, this);
         con.on("touchend", self.onContClick, this);
 
-        cc.log("gameModel.diZhuCharId = " + gameModel.diZhuCharId);
         for (var i in data) {
             if (data[i].chairID == KKVS.myChairID) {
                 if (data[i].score < 0) {
@@ -78,23 +84,26 @@ cc.Class({
                 playerNode[viewID].flag.active = true;
             }
         }
+
+        this.node.runAction(cc.sequence(cc.delayTime(3.0), cc.callFunc(function() {
+            if (KKVS.GAME_MODEL == 2) {
+                self._endNodePB.destroy();
+            }
+        })));
     },
 
     onExitClick: function (event) {
         cc.log("退出游戏");
-        // cc.director.loadScene('Lobby');
         gameModel.isWaiting = false;
         KKVS.Event.fire("onExitClick");
     },
 
     onContClick: function (event) {
+        var self = this;
         cc.log("继续游戏");
         gameModel.isWaiting = false;
-        cc.director.loadScene('GameUI');
-    },
-
-    addEvent: function () {
-        var self = this;
+        KKVS.Event.fire("onContClick");
+        self._endNodePB.destroy();
     },
 
     onDestroy() {

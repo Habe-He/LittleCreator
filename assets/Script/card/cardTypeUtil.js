@@ -209,7 +209,8 @@ cardTypeUtil.isSequenceCard = function (cardValues) {
     if (cardTypeUtil.max(cardValues) - cardTypeUtil.min(cardValues) == cardValues.length - 1) return cardTypeUtil.sequenceCard;
     return false;
 };
-//双顺 ,连对（三对或以上连着的对子）
+
+// 双顺 ,连对（三对或以上连着的对子）
 cardTypeUtil.isLinkDoubleCard = function (cardValues) {
     if (cardValues == null || cardValues.length < 6 || cardValues.length % 2 != 0) return false;
     if (cardTypeUtil.min(cardValues) < 3 || cardTypeUtil.max(cardValues) > 14) return false;
@@ -220,7 +221,8 @@ cardTypeUtil.isLinkDoubleCard = function (cardValues) {
     if (cardTypeUtil.max(cardValues) - cardTypeUtil.min(cardValues) == cardValues.length / 2 - 1) return cardTypeUtil.linkDoubleCard;
     return false;
 };
-//三顺,飞机不带
+
+// 三顺,飞机不带
 cardTypeUtil.isPlaneTakeNoneCard = function (cardValues) {
     if (cardValues == null || cardValues.length < 6 || cardValues.length % 3 != 0) return false;
     if (cardTypeUtil.min(cardValues) < 3 || cardTypeUtil.max(cardValues) > 14) return false;
@@ -231,7 +233,8 @@ cardTypeUtil.isPlaneTakeNoneCard = function (cardValues) {
     if (cardTypeUtil.max(cardValues) - cardTypeUtil.min(cardValues) == cardValues.length / 3 - 1) return cardTypeUtil.planeTakeNoneCard;
     return false;
 };
-//三带X
+
+// 三带X
 cardTypeUtil.isThreeTakeCard = function (cardValues) {
     if (cardValues == null || (cardValues.length != 4 && cardValues.length != 5)) return false;
     var list = cardTypeUtil.setCount(cardValues);
@@ -247,7 +250,8 @@ cardTypeUtil.isThreeTakeCard = function (cardValues) {
         }
     }
 };
-//四带x
+
+// 四带x
 cardTypeUtil.isFourTakeCard = function (cardValues) {
     if (cardValues == null || (cardValues.length != 6 && cardValues.length != 8)) return false;
     var list = cardTypeUtil.setCount(cardValues);
@@ -265,8 +269,7 @@ cardTypeUtil.isFourTakeCard = function (cardValues) {
     return false;
 };
 
-
-//飞机带翅膀
+// 飞机带翅膀
 cardTypeUtil.isPlaneCard = function (cardValues) {
     if (cardValues == null || (cardValues.length < 8)) return false;
     var newList = [];
@@ -283,8 +286,9 @@ cardTypeUtil.isPlaneCard = function (cardValues) {
         }
     }
     return false;
-}
-//获取一组卡牌中有多少个癞子
+};
+
+// 获取一组卡牌中有多少个癞子
 cardTypeUtil.getLaiZiNum = function (cardIds) {
     var num = 0;
     var len = cardIds;
@@ -294,7 +298,8 @@ cardTypeUtil.getLaiZiNum = function (cardIds) {
         }
     }
     return num;
-}
+};
+
 /**
  * 牌形比较
  *  selfCards：自己的牌卡牌ID
@@ -385,12 +390,13 @@ cardTypeUtil.compare = function (selfCardIds, objCardIds) {
             return false;
         }
     }
-}
+};
+
 /**
 *
 癞子牌形判断
  */
-//单张
+// 单张
 cardTypeUtil.isLaiZiOne = function (cardValues) {
     if (cardValues == null || cardValues.length != 1) return false;
     if (cardValues[0] == gameModel.laiZiCardValue) {
@@ -398,7 +404,8 @@ cardTypeUtil.isLaiZiOne = function (cardValues) {
     };
     return 0;
 };
-//对子 三张
+
+// 对子 三张
 cardTypeUtil.isLaiZiDoubleToThree = function (cardValues) {
     if (cardValues == null || cardValues.length > 4) return false;
     if (cardTypeUtil.isHasKing(cardValues)) return false;
@@ -410,7 +417,8 @@ cardTypeUtil.isLaiZiDoubleToThree = function (cardValues) {
     }
     return 0;
 };
-//四炸到8炸
+
+// 四炸到8炸
 cardTypeUtil.isLaiZiFiveToEight = function (cardValues) {
     if (cardValues == null || cardValues.length < 4 || cardValues.length > 8) return false;
     if (cardTypeUtil.isHasKing(cardValues)) return false;
@@ -425,7 +433,7 @@ cardTypeUtil.isLaiZiFiveToEight = function (cardValues) {
     return 0;
 };
 
-//三带X
+// 三带X
 cardTypeUtil.isLaiZiThreeTakeX = function (cardValues) {
     if (cardValues == null || cardValues.length < 4 || cardValues.length > 5) return 0;
     //if( cardTypeUtil.isHasKing( cardValues ) ) return 0;
@@ -441,7 +449,8 @@ cardTypeUtil.isLaiZiThreeTakeX = function (cardValues) {
     }
     return 0;
 };
-//四带X
+
+// 四带X
 cardTypeUtil.isLaiZiFourTakeX = function (cardValues) {
     if (cardValues == null || (cardValues.length != 6 && cardValues.length != 8)) return 0;
     //if( cardTypeUtil.isHasKing( cardValues ) ) return 0;
@@ -468,7 +477,8 @@ cardTypeUtil.isLaiZiFourTakeX = function (cardValues) {
     }
     return 0;
 };
-//顺子
+
+// 顺子
 cardTypeUtil.isLaiZiShunZi = function (cardValues) {
     if (cardValues == null || cardValues.length < 5) return 0;
     if (cardTypeUtil.isHasKing(cardValues)) return 0; //顺子中不能有大小王
@@ -545,8 +555,9 @@ cardTypeUtil.isLaiZiShunZi = function (cardValues) {
     } else if (laiZiNum == 4) {
         return 0;
     }
-}
-//连对
+};
+
+// 连对
 cardTypeUtil.isLaiZiDoubleLink = function (cardValues) {
     if (cardValues == null || cardValues.length < 6 || cardValues.length % 2 != 0) return 0;
     if (cardTypeUtil.isHasKing(cardValues)) return 0;
@@ -604,8 +615,9 @@ cardTypeUtil.isLaiZiDoubleLink = function (cardValues) {
         //
         //}
     }
-}
-//飞机不带
+};
+
+// 飞机不带
 cardTypeUtil.isLaiZiPlaneTakeNone = function (cardValues) {
     if (cardValues == null || cardValues.length < 6 || cardValues.length % 3 != 0) return 0;
     if (cardTypeUtil.isHasKing(cardValues)) return 0;
@@ -650,8 +662,9 @@ cardTypeUtil.isLaiZiPlaneTakeNone = function (cardValues) {
     } else if (laiZiNum == 4) {
         return 0;
     }
-}
-//飞机带翅膀
+};
+
+// 飞机带翅膀
 cardTypeUtil.isLaiZiPlane = function (cardValues) {
     if (cardValues == null || cardValues.length < 8 || (cardValues.length % 4 != 0 && cardValues.length % 5 != 0)) return 0;
     var laiZiNum = cardTypeUtil.count(cardValues, gameModel.laiZiCardValue);
@@ -777,9 +790,10 @@ cardTypeUtil.isLaiZiPlane = function (cardValues) {
     } else if (laiZiNum == 3) {
 
     }
-}
-//removeLiaziValues:除去癞子的数组，
-//chaValue：差值>=chaValue的不连续点
+};
+
+// removeLiaziValues:除去癞子的数组，
+// chaValue：差值>=chaValue的不连续点
 cardTypeUtil.getBreakPointByValue = function (removeLiaziValues, chaValue) {
     var breakPointNum = 0;
     var rlen = removeLiaziValues.length;
@@ -789,8 +803,9 @@ cardTypeUtil.getBreakPointByValue = function (removeLiaziValues, chaValue) {
         }
     }
     return breakPointNum;
-}
-//升序排列目标数组
+};
+
+// 升序排列目标数组
 cardTypeUtil.sortArray = function (array) {
     //升序排列
     array.sort(function (a, b) {
@@ -802,9 +817,9 @@ cardTypeUtil.sortArray = function (array) {
             return 0;
         }
     });
-}
+};
 
-//将目标数组中的癞子除去，并返回该数组
+// 将目标数组中的癞子除去，并返回该数组
 cardTypeUtil.removeLaiZi = function (cardValues) {
     var len = cardValues.length;
     var arr = [];
@@ -814,8 +829,9 @@ cardTypeUtil.removeLaiZi = function (cardValues) {
         }
     }
     return arr;
-}
-//找出目标牌objCards中所有的num张的相同的牌的牌值，
+};
+
+// 找出目标牌objCards中所有的num张的相同的牌的牌值，
 cardTypeUtil.takeSameCardValue = function (objCards, num) {
     var objNumList = [];
     var objLen = objCards.length;
@@ -827,32 +843,39 @@ cardTypeUtil.takeSameCardValue = function (objCards, num) {
     //升序排列
     cardTypeUtil.sortArray(objNumList);
     return objNumList;
-}
-//自动提取出目标牌中含有的牌形并返还长度最长的一种牌形(少于5张牌的不判断)
+};
+
+// 自动提取出目标牌中含有的牌形并返还长度最长的一种牌形(少于5张牌的不判断)
 cardTypeUtil.autoTakeOutCardType = function (cardValues) {
     if (cardValues.length == 0 || cardValues == null) {
         cc.log("参数有误 你没有选牌");
         return null;
     }
+
     var len = cardValues.length;
     if (len < 5) {
-        return false
+        return false;
     };
-    //升序排列
+    // 升序排列
     cardValues.sort(function (a, b) {
-        if (a.cardValue > b.cardValue) {
+        if (a > b) {
             return 1;
-        } else if (a.cardValue < b.cardValue) {
+        } else if (a < b) {
             return -1;
         } else {
             return 0;
         }
     });
-    //检测顺序，检测可能多张的牌形，顺子，双顺，飞机，四带一，四带二然后做比较，张数多的为拉起
+
+    // for (var i = 0; i < cardValues.length; ++i) {
+    //     cc.log("cardTypeUtil cardValues = " + cardValues[i]);
+    // }
+
+    // 检测顺序，检测可能多张的牌形，顺子，双顺，飞机，四带一，四带二然后做比较，张数多的为拉起
     var shunzi = cardTypeUtil.findShunZi(cardValues);
-    //牌型信息
+    // 牌型信息
     var cardInfo = cardTypeUtil.getCardInfo(cardValues);
-    //去重后的所有牌组
+    // 去重后的所有牌组
     var objarr = [];
     cardTypeUtil.setCountOver(cardValues, objarr);
     var liandui = [];
@@ -959,8 +982,9 @@ cardTypeUtil.autoTakeOutCardType = function (cardValues) {
     }
     return [];
 };
-//找出目标牌中所有的顺子,并返回长度最长的一组顺子
-//counts可不传参数，如果传了就默认这个长度为顺子找出并返回，
+
+// 找出目标牌中所有的顺子,并返回长度最长的一组顺子
+// counts可不传参数，如果传了就默认这个长度为顺子找出并返回，
 cardTypeUtil.findShunZi = function (objcardValue, counts) {
     if (objcardValue.length == 0 || objcardValue == null) {
         cc.log("参数有误00000000000000");
@@ -1005,7 +1029,7 @@ cardTypeUtil.findShunZi = function (objcardValue, counts) {
     return shunzi[0];
 };
 
-//在selfCardValue中找出所有的比objcardShunZi顺子大的顺子
+// 在selfCardValue中找出所有的比objcardShunZi顺子大的顺子
 cardTypeUtil.findAllBigShunZi = function (selfCardValue, objcardShunZi) {
     if (objcardShunZi.length == 0 || objcardShunZi == null) {
         cc.log("目标顺子数组有误00000000000000");
@@ -1071,7 +1095,7 @@ cardTypeUtil.findAllBigShunZi = function (selfCardValue, objcardShunZi) {
     return shunZi;
 };
 
-//在selfCardValue中找出所有的比objcardShunZi顺子大的顺子
+// 在selfCardValue中找出所有的比objcardShunZi顺子大的顺子
 cardTypeUtil.findAllBigLaiZiShunZi = function (selfCardValue, objcardShunZi) {
     if (objcardShunZi.length == 0 || objcardShunZi == null) {
         cc.log("目标顺子数组有误");
@@ -1211,7 +1235,8 @@ cardTypeUtil.findAllBigLaiZiShunZi = function (selfCardValue, objcardShunZi) {
     });
     return shunZi;
 };
-//在selfCardValue中找出所有的比objcardShunZi顺子大的顺子
+
+// 在selfCardValue中找出所有的比objcardShunZi顺子大的顺子
 cardTypeUtil.findAllBigLaiZiShuangShunZi = function (cardValues, selfSetValue, objcardShunZi, olen) {
 
     var allShunZi = cardTypeUtil.findAllBigLaiZiShunZi(selfSetValue, objcardShunZi);
@@ -1259,12 +1284,13 @@ cardTypeUtil.findAllBigLaiZiShuangShunZi = function (cardValues, selfSetValue, o
         });
         return allShunZi;
     }
-}
-//目标牌去重以后的牌
+};
+
+// 目标牌去重以后的牌
 cardTypeUtil.setCount = function (cardValues) {
-    //复制一份数据，不能改变原来的数组
+    // 复制一份数据，不能改变原来的数组
     var copyValues = cardValues.slice(0);
-    //升序排列
+    // 升序排列
     copyValues.sort(function (a, b) {
         if (a > b) {
             return 1;
@@ -1274,7 +1300,7 @@ cardTypeUtil.setCount = function (cardValues) {
             return 0;
         }
     });
-    //去重以后的牌
+    // 去重以后的牌
     var arr = [copyValues[0]];
     var len = copyValues.length;
     for (var i = 1; i < len; i++) {
@@ -1284,7 +1310,8 @@ cardTypeUtil.setCount = function (cardValues) {
     }
     return arr;
 };
-//将目标牌分割为去重的牌，和重复的牌值，返回这两个数组
+
+// 将目标牌分割为去重的牌，和重复的牌值，返回这两个数组
 cardTypeUtil.setCountAndDouble = function (cardValues) {
     //升序排列
     cardTypeUtil.sortArray(cardValues);
@@ -1305,7 +1332,8 @@ cardTypeUtil.setCountAndDouble = function (cardValues) {
     objarr.push(brr);
     return objarr;
 };
-//将目牌层层去重直到没有重复的牌为止
+
+// 将目牌层层去重直到没有重复的牌为止
 cardTypeUtil.setCountOver = function (arr, objArr) {
         var aa = cardTypeUtil.setCountAndDouble(arr);
         objArr.push(aa[0]);
@@ -1314,65 +1342,67 @@ cardTypeUtil.setCountOver = function (arr, objArr) {
         } else {
             objArr.push(aa[1]);
         }
-    },
-    //分析目标牌得到牌的信息
-    //一共返回四个数组 里面第一个数组将存入所有的单牌，第二个数组将存入所有的对子，依次类推 每个数组里面的值都为去重的值，
-    cardTypeUtil.getCardInfo = function (cardValues) {
-        if (cardValues == null || cardValues.length == 0) {
-            cc.log("参数无效111111");
-            return;
-        }
-        //要返回的数组，里面第一个数组将存入所有的单牌，第二个数组将存入所有的对子，依次类推
-        var returnArray = [];
-        var objarray = [];
-        //将cardValues分割为所有不重复的牌组并把分割后的所有数组加入到objarray
-        cardTypeUtil.setCountOver(cardValues, objarray);
-        var singleArr = [];
-        if (objarray.length > 1 && objarray[1].length > 0) {
-            var len = objarray[0].length;
-            for (var i = 0; i < len; i++) {
-                if (objarray[1].indexOf(objarray[0][i]) == -1) {
-                    singleArr.push(objarray[0][i]);
-                }
+};
+
+// 分析目标牌得到牌的信息
+// 一共返回四个数组 里面第一个数组将存入所有的单牌，第二个数组将存入所有的对子，依次类推 每个数组里面的值都为去重的值，
+cardTypeUtil.getCardInfo = function (cardValues) {
+    if (cardValues == null || cardValues.length == 0) {
+        cc.log("参数无效111111");
+        return;
+    }
+    //要返回的数组，里面第一个数组将存入所有的单牌，第二个数组将存入所有的对子，依次类推
+    var returnArray = [];
+    var objarray = [];
+    //将cardValues分割为所有不重复的牌组并把分割后的所有数组加入到objarray
+    cardTypeUtil.setCountOver(cardValues, objarray);
+    var singleArr = [];
+    if (objarray.length > 1 && objarray[1].length > 0) {
+        var len = objarray[0].length;
+        for (var i = 0; i < len; i++) {
+            if (objarray[1].indexOf(objarray[0][i]) == -1) {
+                singleArr.push(objarray[0][i]);
             }
-        } else {
-            singleArr = objarray[0];
         }
-        var doubleArr = [];
-        if (objarray.length > 2 && objarray[2].length > 0) {
-            var len = objarray[1].length;
-            for (var i = 0; i < len; i++) {
-                if (objarray[2].indexOf(objarray[1][i]) == -1) {
-                    doubleArr.push(objarray[1][i]);
-                }
+    } else {
+        singleArr = objarray[0];
+    }
+    var doubleArr = [];
+    if (objarray.length > 2 && objarray[2].length > 0) {
+        var len = objarray[1].length;
+        for (var i = 0; i < len; i++) {
+            if (objarray[2].indexOf(objarray[1][i]) == -1) {
+                doubleArr.push(objarray[1][i]);
             }
-        } else {
-            if (objarray.length >= 2) {
-                doubleArr = objarray[1];
-            };
         }
-        var threeArr = [];
-        var boomArr = [];
-        if (objarray.length > 3 && objarray[3].length > 0) {
-            boomArr = objarray[3];
-            var len = objarray[2].length;
-            for (var i = 0; i < len; i++) {
-                if (objarray[3].indexOf(objarray[2][i]) == -1) {
-                    threeArr.push(objarray[2][i]);
-                }
+    } else {
+        if (objarray.length >= 2) {
+            doubleArr = objarray[1];
+        };
+    }
+    var threeArr = [];
+    var boomArr = [];
+    if (objarray.length > 3 && objarray[3].length > 0) {
+        boomArr = objarray[3];
+        var len = objarray[2].length;
+        for (var i = 0; i < len; i++) {
+            if (objarray[3].indexOf(objarray[2][i]) == -1) {
+                threeArr.push(objarray[2][i]);
             }
-        } else {
-            if (objarray.length >= 3) {
-                threeArr = objarray[2];
-            };
         }
-        returnArray[0] = singleArr;
-        returnArray[1] = doubleArr;
-        returnArray[2] = threeArr;
-        returnArray[3] = boomArr;
-        return returnArray;
-    };
-//在cardValues中找出最小的一个比objValue大的值
+    } else {
+        if (objarray.length >= 3) {
+            threeArr = objarray[2];
+        };
+    }
+    returnArray[0] = singleArr;
+    returnArray[1] = doubleArr;
+    returnArray[2] = threeArr;
+    returnArray[3] = boomArr;
+    return returnArray;
+};
+
+// 在cardValues中找出最小的一个比objValue大的值
 cardTypeUtil.findBig = function (objValue, cardValues) {
     //升序排列
     cardTypeUtil.sortArray(cardValues);
@@ -1383,8 +1413,9 @@ cardTypeUtil.findBig = function (objValue, cardValues) {
         }
     }
     return -1;
-}
-//在cardValues中找出所有比objValue大的值
+};
+
+// 在cardValues中找出所有比objValue大的值
 cardTypeUtil.findAllBig = function (objValue, cardValues) {
     //升序排列
     cardTypeUtil.sortArray(cardValues);
@@ -1397,8 +1428,9 @@ cardTypeUtil.findAllBig = function (objValue, cardValues) {
         }
     }
     return arr;
-}
-//在info牌形信息中找出所有比objValue大的值 从info的第objLen个数组找起
+};
+
+// 在info牌形信息中找出所有比objValue大的值 从info的第objLen个数组找起
 cardTypeUtil.findAllBigs = function (objValue, info, objLen, fNum) {
     var infoLen = info.length;
     var arr = [];
@@ -1412,10 +1444,11 @@ cardTypeUtil.findAllBigs = function (objValue, info, objLen, fNum) {
         }
     }
     return arr;
-}
-//在arrs数组中找出所有比objValue大的值
-//fNum 寻找范围，不传默认小于大小王，可以传值包括大小王
-//igonreLaizi是否忽略癞子值
+};
+
+// 在arrs数组中找出所有比objValue大的值
+// fNum 寻找范围，不传默认小于大小王，可以传值包括大小王
+// igonreLaizi是否忽略癞子值
 cardTypeUtil.findBigs = function (objValue, arrs, fNum, igonreLaizi) {
     var arr = [];
     var len = arrs.length;
@@ -1433,18 +1466,20 @@ cardTypeUtil.findBigs = function (objValue, arrs, fNum, igonreLaizi) {
         }
     }
     return arr;
-}
-//将count个value元素加入到数组arr
+};
+
+// 将count个value元素加入到数组arr
 cardTypeUtil.getArray = function (arr, value, count) {
     for (var i = 0; i < count; i++) {
         arr.push(value);
     }
     return arr;
-}
-//提示功能，
-//1：自已首出牌  依次从小到大弹出该牌值的所有牌，不拆牌  (腾讯欢乐斗地主规则：先从单张开始出，依次从小到大弹出，)
-//2：管上家牌  依次从小到在能管住的牌形，拆牌    (腾讯欢乐斗地主规则：依次从小到在能管住的牌形，拆牌 )
-//备注:当三带一对，或是飞机带一对，或者四带二对中的对子寻找，需要优化算法。带的对子当中应该也可以带laizi
+};
+
+// 提示功能，
+// 1：自已首出牌  依次从小到大弹出该牌值的所有牌，不拆牌  (腾讯欢乐斗地主规则：先从单张开始出，依次从小到大弹出，)
+// 2：管上家牌  依次从小到在能管住的牌形，拆牌    (腾讯欢乐斗地主规则：依次从小到在能管住的牌形，拆牌 )
+// 备注:当三带一对，或是飞机带一对，或者四带二对中的对子寻找，需要优化算法。带的对子当中应该也可以带laizi
 cardTypeUtil.tipsCard = function (cardValues, objCards, objLaiZiNum) {
     if (cardValues == null) {
 		console.log("参数为NULL***************");
@@ -1899,8 +1934,9 @@ cardTypeUtil.tipsCard = function (cardValues, objCards, objLaiZiNum) {
 		}
 	}
 };
-//找来自的数量，
-//objCardIds卡牌的ID而不是卡牌值
+
+// 找来自的数量，
+// objCardIds卡牌的ID而不是卡牌值
 cardTypeUtil.findLaiZiCount = function (objCardIds) {
     var laiziNum = 0;
     objCardIds.forEach(function (v) {
@@ -1910,8 +1946,9 @@ cardTypeUtil.findLaiZiCount = function (objCardIds) {
         }
     });
     return laiziNum;
-}
-//排列目标二维数组，癞子多的数组往后排 火箭永远往后排
+};
+
+// 排列目标二维数组，癞子多的数组往后排 火箭永远往后排
 cardTypeUtil.sortLaiziDoubleArray = function (array) {
     if (!gameModel.laiZiCardValue) return;
     array.sort(function (a, b) {
@@ -1931,8 +1968,9 @@ cardTypeUtil.sortLaiziDoubleArray = function (array) {
             return 0;
         }
     });
-}
-//排列目标数组，癞子往后排
+};
+
+// 排列目标数组，癞子往后排
 cardTypeUtil.sortLaiziArray = function (arr) {
     if (!gameModel.laiZiCardValue) return;
     arr.sort(function (a, b) {
@@ -1944,8 +1982,9 @@ cardTypeUtil.sortLaiziArray = function (arr) {
             return 0;
         }
     });
-}
-//找出通过组合赖子牌而比目标牌更大的牌
+};
+
+// 找出通过组合赖子牌而比目标牌更大的牌
 cardTypeUtil.laiziTips = function (selfcards, objcards, objcardType, info) {
     var objLen = objcards.length;
     var backArr = [];
@@ -2106,8 +2145,9 @@ cardTypeUtil.laiziTips = function (selfcards, objcards, objcardType, info) {
             return backArr;
         }
     }
-}
-//在info数组中找炸弹
+};
+
+// 在info数组中找炸弹
 cardTypeUtil.findBoom = function (cardValues, info, len, backArr, findBackArr) {
     //如果有癞子先找软炸
     if (gameModel.laiZiCardValue && gameModel.laiZiCardNum > 0) {
@@ -2241,8 +2281,9 @@ cardTypeUtil.findBoom = function (cardValues, info, len, backArr, findBackArr) {
             }
         }
     }
-}
-//找火箭
+};
+
+// 找火箭
 cardTypeUtil.findRock = function (cardValues) {
     var isSking = false;
     var isBking = false;
@@ -2259,9 +2300,10 @@ cardTypeUtil.findRock = function (cardValues) {
     } else {
         return false;
     }
-}
-//从info的第index个数组开始合并为一个数组 从0开始
-//ignoreValue为忽略值数组，里面值的值全部忽略，
+};
+
+// 从info的第index个数组开始合并为一个数组 从0开始
+// ignoreValue为忽略值数组，里面值的值全部忽略，
 cardTypeUtil.mergeInfo = function (info, index, ignoreValues) {
     var infoLen = info.length;
     var arr = [];
@@ -2283,10 +2325,11 @@ cardTypeUtil.mergeInfo = function (info, index, ignoreValues) {
         }
     }
     return arr;
-}
-//在解析后的数组中找到一张最小的牌，规则，先从单张数组中找，如果单张数组没有，从对子数组中拆最小的，对子也没有找三张里面的，再没有，说明整副牌只有炸弹了。返回空。
-//ignoreValue为忽略值数组，里值的值全部忽略，
-//如果有癞子值，癞子值往后徘
+};
+
+// 在解析后的数组中找到一张最小的牌，规则，先从单张数组中找，如果单张数组没有，从对子数组中拆最小的，对子也没有找三张里面的，再没有，说明整副牌只有炸弹了。返回空。
+// ignoreValue为忽略值数组，里值的值全部忽略，
+// 如果有癞子值，癞子值往后徘
 cardTypeUtil.findOneCard = function (info, ignoreValues) {
     var arr = cardTypeUtil.mergeInfo(info, 0);
     arr.sort(function (a, b) {
@@ -2318,10 +2361,11 @@ cardTypeUtil.findOneCard = function (info, ignoreValues) {
         }
     }
     return 0;
-}
-//在解析后的数组中找到一对最小的牌，规则，从对子数组中找最小的，对子也没有找三张里面的，再没有，说明整副牌只有炸弹了。返回空。
-//ignoreValue为忽略值，
-//如果有癞子值，癞子值往后徘
+};
+
+// 在解析后的数组中找到一对最小的牌，规则，从对子数组中找最小的，对子也没有找三张里面的，再没有，说明整副牌只有炸弹了。返回空。
+// ignoreValue为忽略值，
+// 如果有癞子值，癞子值往后徘
 cardTypeUtil.findTwoCard = function (info, ignoreValues) {
     var arr = cardTypeUtil.mergeInfo(info, 1);
     arr.sort(function (a, b) {
@@ -2353,6 +2397,6 @@ cardTypeUtil.findTwoCard = function (info, ignoreValues) {
         }
     }
     return 0;
-}
+};
 
 module.exports = cardTypeUtil;

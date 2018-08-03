@@ -20,6 +20,7 @@ var gameModel = {
     // 本局地主的椅子号ID
     diZhuCharId: 65535,
 
+    // 游戏是否开始了
     isInGameStart: false,
 
     // 是否走了断线重现
@@ -35,7 +36,10 @@ var gameModel = {
     propsMsg: [],
 
     // 倍数
-    multiple: 1,
+    multiple: 0,
+
+    // 当前出牌玩家
+    nowplayID: 0,
 };
 
 

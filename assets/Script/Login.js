@@ -13,6 +13,7 @@ var Tool = require("./tool/Tool")
 var gameEngine = require("./plugin/gameEngine")
 var httpUtils = require('./plugin/httpUtils')
 var OnLineManager = require("./tool/OnLineManager");
+var wxSDK = require('./tool/wxSDK');
 
 cc.Class({
     extends: cc.Component,
@@ -28,6 +29,8 @@ cc.Class({
         cc.log("Login start");
         this.nickName = null;
         this.avatarUrl = null;
+
+        wxSDK.setKeepScreenOn();
     },
 
     // LIFE-CYCLE CALLBACKS:
@@ -93,22 +96,31 @@ cc.Class({
             return;
         }
 
+        cc.log("nickName = " + nickName);
+        cc.log("avatarUrl = " + avatarUrl);
+        cc.log("nickName = " + nickName);
+        // avatarUrl = "http://wx.qlogo.cn/mmopen/vi_32/DYAIOgq83erjeyqibRRqMhkrIERB27SvG5UIv1w2455FwJXUIyqaxBGW81lB3Xic1I00JMVQvog74gxdg94r3LMg/132";
         var datas = {
             'Code' : code,
             'nickname' : nickName,
             'faceurl' : avatarUrl,
             'gender' : gender
         };
+        //https://apiwxgame.kkvs.com/MobileApi/GetSgameAccounts?Code=061Alg7V09sPpV1PGF3V0IZB7V0Alg7K?
         var reqURL = "https://apiwxgame.kkvs.com/MobileApi/GetSgameAccounts";
-        httpUtils.getInstance().httpPost(reqURL, datas, function (data) {
+        // demoQuest = http://clientweb.kkvs.com/MobileApi/GetAccountInfoByWeChatJZ?Code=1111
+        var newUrl = reqURL + "?Code=" + datas.Code.toString() + "&nickname=" + datas.nickname.toString()
+        + "&faceurl=" + datas.faceurl.toString() + "&gender=" + datas.gender.toString();
+        cc.log('newUrl = ' + newUrl);
+        httpUtils.getInstance().httpGets(newUrl, function (data) {
             cc.log("_serverLogin " + data);
             if (data == -1) {
                 cc.log('请检查网络！');
             } else {
                 var jsonD = JSON.parse(data);
-                cc.log(jsonD);
-                cc.log(jsonD[0].Accounts);
-                cc.log(jsonD[0].PassWord);
+                cc.log("jsonD = " + jsonD);
+                cc.log("Accounts =" + jsonD[0].Accounts);
+                cc.log("pwd = " + jsonD[0].PassWord);
 
                 KKVS.Login_type = Tool.VISITOR_LOGIN;
                 KKVS.Acc = jsonD[0].Accounts;
@@ -161,25 +173,9 @@ cc.Class({
                 cc.log("avatarUrl = " + avatarUrl);
                 cc.log("gender = " + gender);
                 cc.log("nickName = " + nickName);
-
-                // this.nickName = nickName;
-                // this.avatarUrl = avatarUrl;
-
-                wx.setStorage({
-                    key: "nickName",
-                    data: nickName
-                });
-
-                wx.setStorage({
-                    key: "avatarUrl",
-                    data: avatarUrl
-                });
-
-                wx.setStorage({
-                    key: "gender",
-                    data: gender
-                });
-
+                wx.setStorageSync("nickName", nickName);
+                wx.setStorageSync("avatarUrl", avatarUrl);
+                wx.setStorageSync("gender", gender);
                 self._serverLogin(data.code);
             },
 

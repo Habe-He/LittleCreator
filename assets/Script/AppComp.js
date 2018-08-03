@@ -6,6 +6,7 @@ var TxtDialogComp = require("./widget/TxtDialogComp");
 var TipDialogComp = require("./widget/TipDialogComp");
 var LoadingComp = require("./widget/LoadingComp");
 var wxSDK = require('./tool/wxSDK');
+var Tool = require('./tool/Tool');
 
 var m_sErr = [
     "成功",
@@ -50,6 +51,7 @@ cc.Class({
         this.tipDialog = null;
         //this.exitDialog = null;
     },
+    
     onLoad : function () {
         cc.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
         cc.log("=> AppComp::onLoad()");
@@ -64,8 +66,8 @@ cc.Class({
         wx.onShow(function(res) {
             cc.log("=> 监听到微信小游戏  切换前台");
             self.onEventShow();
-            wxSDK.getLaunchOptionsSync();
-            // console.log("你大爷的微信 = " + res.query);
+
+            wxSDK.getLaunchOptionsSync(true, res);
         });
         //主动退出按钮侦听(无)
         gameEngine.Event.register("onLoginFailed", this, "onLoginFailed");
@@ -81,6 +83,7 @@ cc.Class({
             this.connect();
         }
     },
+    
     onDestroy : function () {
         cc.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
         cc.log("=> AppComp::onDestroy()");
@@ -91,30 +94,34 @@ cc.Class({
         gameEngine.Event.deregister("onDisableConnect", this);
         gameEngine.Event.deregister("onKicked", this);
     },
+    
     onEventHide : function (event) {
         this.foreground = false;
         this.shutdown();
     },
+    
     onEventShow : function (event) {
         this.foreground = true;
         this.hideLoading();
         this.connect();
     },
+    
     shutdown : function () {
         OnLineManager.offLine();
     },
+    
     connect : function () {
         var self = this;
         cc.log("connect OnLineManager._autoConnect=" + OnLineManager._autoConnect.toString());
         if (!OnLineManager._kicked && OnLineManager._autoConnect && !gameEngine.app.socket) {
+            if (this.dialog) {
+                this.dialog.close();
+                this.dialog = null;
+            }
             if (OnLineManager.isOnLine()) {
                 OnLineManager.reset();
                 OnLineManager.onLine();
             } else {
-                if (this.dialog) {
-                    this.dialog.close();
-                    this.dialog = null;
-                }
                 this.dialog = this.showTxtDialog({title : "系统提示", txt : "与服务器断开连接,确认重新连接?", type : 2, cb : function () {
                     self.dialog = null;
                     OnLineManager.reset();
@@ -129,6 +136,7 @@ cc.Class({
             }
         }
     },
+    
     onLoginFailed : function (args) {
         //cc.log("->onLoginFailed");
         var self = this;
@@ -159,6 +167,7 @@ cc.Class({
             self.exitApp();
         }});
     },
+    
     onDisableConnect : function (args) {
         //cc.log("->onDisableConnect, args.disable_type=" + args.disable_type);
         //cc.log("onDisableConnect OnLineManager._autoConnect =" + OnLineManager._autoConnect.toString());
@@ -202,10 +211,12 @@ cc.Class({
             }});
         }
     },
+    
     exitApp : function () {
         cc.log("=> 这里应该返回到微信界面");
         wxSDK.exitMiniProgram();
     },
+    
     showLoading : function (cb, target, time) {
         if (!this.node) {
             return;
@@ -217,23 +228,27 @@ cc.Class({
         }
         this._runningLoading.showLoading(cb, target, time);
     },
+    
     hideLoading : function () {
         if (!this.node || !this._runningLoading) {
             return;
         }
         this._runningLoading.hideLoading();
     },
+    
     showDialog : function (dialogview, action) {
         if (!this.node || !dialogview) {
             return;
         }
         dialogview.show(this.node, 900, action);
     },
+    
     showTxtDialog : function (data, action) {
         var dialog = (new DialogView()).build(TxtDialogComp, data);
         this.showDialog(dialog, action);
         return dialog;
     },
+    
     showTheTxtDialog : function (data, action) {
         if (this.dialog) {
             this.dialog.close();
@@ -243,11 +258,13 @@ cc.Class({
         this.showDialog(this.dialog, action);
         return this.dialog;
     },
+    
     showTipDialog : function (data, action) {
         var dialog = (new DialogView()).build(TipDialogComp, data);
         this.showDialog(dialog, action);
         return dialog;
     },
+    
     showTheTipDialog : function (data, action) {
         if (this.tipDialog) {
             this.tipDialog.close();
@@ -257,9 +274,11 @@ cc.Class({
         this.showDialog(this.tipDialog, action);
         return this.tipDialog;
     },
+    
     isScreenLocked : function () {
         return this._runningSceneLock;
     },
+    
     lockScreen : function (locktime) {
         this._runningSceneLock = true;
         if (this.node) {
@@ -270,6 +289,7 @@ cc.Class({
             })));
         }
     },
+    
     unlockScreen : function () {
         this._runningSceneLock = false;
         if (this.node) {

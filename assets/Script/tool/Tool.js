@@ -348,6 +348,18 @@ Tool.sortListBy2T3 = function(data, operator) {
     return data;
 },
 
+Tool.gradeDownSort = function(data) {
+    data.sort(function(x, y) {
+        if (x < y) 
+            return 1;
+        else if (x > y)
+            return -1;
+        else
+            return 0
+    });
+    return data;
+},
+
 // 下载用户头像
 Tool.weChatHeadFile = function(img, url, temNode) {
     // var oriSize = img.node.getContentSize();
@@ -360,7 +372,7 @@ Tool.weChatHeadFile = function(img, url, temNode) {
             cc.loader.load(path, function (err, texture) {
                 var frame = new cc.SpriteFrame(texture);
                 img.spriteFrame = frame;
-                img.node.scale = 132 / img.node.getContentSize().width;
+                img.node.scale = 119 / img.node.getContentSize().width;
                 // temNode.active = true;
             });
         },

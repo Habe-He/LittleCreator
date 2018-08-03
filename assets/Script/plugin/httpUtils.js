@@ -32,6 +32,7 @@ var httpUtils = cc.Class({
         };
         xhr.open("GET", url, true);
         if (cc.sys.isNative) {
+            cc.log("aaaaaaaaaaaaaa");
             xhr.setRequestHeader("Accept-Encoding", "gzip,deflate");
         }
  
@@ -41,7 +42,6 @@ var httpUtils = cc.Class({
  
         xhr.send();
     },
- 
     httpPost: function (url, params, callback) {
         var xhr = cc.loader.getXMLHttpRequest();
         xhr.onreadystatechange = function () {
@@ -57,12 +57,19 @@ var httpUtils = cc.Class({
         if (cc.sys.isNative) {
             xhr.setRequestHeader("Accept-Encoding", "gzip,deflate");
         }
- 
         // note: In Internet Explorer, the timeout property may be set only after calling the open()
         // method and before calling the send() method.
-        xhr.timeout = 5000;// 5 seconds for timeout
- 
+        xhr.timeout = 10000;// 5 seconds for timeout
+        cc.log("params.Code = " + params.Code);
+        params.nickname = "1";
+        params.faceurl = "1a";
+        params.gender = 1;
+
+        cc.log("params.nickname = " + params.nickname);
+        cc.log("params.faceurl = " + params.faceurl);
+        cc.log("params.gender = " + params.gender);
         xhr.send(params);
+
     }
 });
  

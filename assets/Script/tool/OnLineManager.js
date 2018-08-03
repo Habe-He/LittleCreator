@@ -15,6 +15,7 @@ OnLineManager.init = function () {
     KKVS.Event.deregister("onLoginGameSuccess", OnLineManager);
     KKVS.Event.register("onLoginGameSuccess", OnLineManager, "_onLineCallback");
 }
+
 OnLineManager.reset = function () {
     OnLineManager._forceOffLine = false;
     OnLineManager._onlineTime = 0;
@@ -48,6 +49,7 @@ OnLineManager.onLine = function () {
     gameEngine.Event.fire("login", acc, pwd, datas);
     OnLineManager._onlineTime = (OnLineManager._onlineTime + 1 < OnLineManager._onlineMaxTime) ? (OnLineManager._onlineTime + 1) : OnLineManager._onlineMaxTime;
 }
+
 OnLineManager.offLine = function () {
     OnLineManager.reset();
     OnLineManager._onLine = false;
@@ -55,6 +57,7 @@ OnLineManager.offLine = function () {
         gameEngine.app.reset();
     }
 };
+
 OnLineManager._onLineCallback = function () {
     cc.log("->OnLineManager._onLineCallback");
     //刷新变动的信息
@@ -62,13 +65,37 @@ OnLineManager._onLineCallback = function () {
     OnLineManager._onLine = true;
     KKVS.Event.fire("updateAppUI"); //用于更新断线重连后所有数据
     AppHelper.get().hideLoading();
+    cc.log("->OnLineManager._onLineCallback 2222");
 }
+
 OnLineManager.isForceOffLine = function () {
     return OnLineManager._forceOffLine;
 }
+
 OnLineManager.isOnLine = function () {
     return OnLineManager._forceOffLine == false && OnLineManager._onlineTime < OnLineManager._onlineMaxTime;
-}
+};
+
+OnLineManager.sendData = function () {
+    if (!gameEngine || !gameEngine.app) {
+        cc.log("=> gameEngine or gameEngine.app is null @ sendData");
+        return;
+    }
+    var evtName = arguments[0];
+    if (!evtName) {
+        cc.log("=> evtName is null @ sendData");
+        return;
+    }
+    var args = [];
+    for (var i = 1, l = arguments.length; i < l; ++i) {
+        args.push(arguments[i]);
+    }
+    if (gameEngine.app.player() && gameEngine.app.socket) {
+        gameEngine.app.player()[evtName].apply(gameEngine.app.player(), args);
+    } else {
+        cc.log("=> socket is shutdown @ sendData");
+    }
+};
 
 OnLineManager.init();
 
