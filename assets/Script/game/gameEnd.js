@@ -77,7 +77,12 @@ cc.Class({
             playerNode[viewID].name.string = Tool.InterceptDiyStr(Tool.encryptMoblieNumber(data[i].name), 4);
             playerNode[viewID].difen.string = data[i].baseScore;
             playerNode[viewID].multiple.string = data[i].multiple;
-            playerNode[viewID].money.string = data[i].score;
+            if (data[i].score < 0) {
+                playerNode[viewID].money.string = data[i].score;
+            } else {
+                playerNode[viewID].money.string = "+" + data[i].score;
+            }
+            
 
             if (data[i].chairID == gameModel.diZhuCharId) {
                 playerNode[viewID].nodebg.active = true;

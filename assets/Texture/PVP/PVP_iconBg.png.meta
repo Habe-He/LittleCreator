@@ -1,14 +1,14 @@
 {
   "ver": "1.0.0",
-  "uuid": "9c65ff71-6d26-43da-888c-3423c05b4225",
+  "uuid": "55954cc2-744a-4e17-aa35-1ce7ae34f443",
   "type": "sprite",
   "wrapMode": "clamp",
   "filterMode": "bilinear",
   "subMetas": {
-    "coinbg": {
+    "PVP_iconBg": {
       "ver": "1.0.3",
-      "uuid": "fa7ccf0c-18ec-473f-9561-6151c348b576",
-      "rawTextureUuid": "9c65ff71-6d26-43da-888c-3423c05b4225",
+      "uuid": "5c6c9f23-afaa-459c-97d8-0351f36682dc",
+      "rawTextureUuid": "55954cc2-744a-4e17-aa35-1ce7ae34f443",
       "trimType": "auto",
       "trimThreshold": 1,
       "rotated": false,
@@ -16,10 +16,10 @@
       "offsetY": 0,
       "trimX": 0,
       "trimY": 0,
-      "width": 297,
-      "height": 67,
-      "rawWidth": 297,
-      "rawHeight": 67,
+      "width": 107,
+      "height": 107,
+      "rawWidth": 107,
+      "rawHeight": 107,
       "borderTop": 0,
       "borderBottom": 0,
       "borderLeft": 0,

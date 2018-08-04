@@ -1,4 +1,4 @@
-微信斗地主服务器相关
+﻿微信斗地主服务器相关
 
 测试服域名testsgame.kkvs.com
 正式服域名sgame.kkvs.com
@@ -8,7 +8,26 @@
 
 发送 onPlayerData
 
-发送玩家道具 （玩家道具变动时 也会主动下发）
+head_frame: 标示 玩家佩戴的当前头像框
+
+更新
+发送玩家自己的排位积分信息 GamePlayer function
+onPlayerData: function (params) 
+{
+        cc.log("GamePlayer->>>>onPlayerData 玩家排位积分: " + params.score_master);
+        cc.log("GamePlayer->>>>onPlayerData 玩家当前选中的头像框: " + params.head_frame);
+},
+
+更新（玩家自己的排位积分变动时） GamePlayer function
+on_score_master_update:function(score_master) {
+ cc.log("GamePlayer->>>>on_score_master_update 玩家排位积分发送改变 当前最新积分: " + score_master);
+}
+//已废弃
+//PLAYER_MSG_ID_REQ_PLAYER_COMPETITIVE_RANKING                        = 16  # 玩家排位信息
+//on_player_msg(GlobalConst.PLAYER_MSG_ID_REQ_PLAYER_COMPETITIVE_RANKING, {'score': 100})
+
+
+发送玩家自己的道具 （玩家道具变动时 也会主动下发）
 
 on_item
 	[ 
@@ -23,6 +42,11 @@ on_item
 	1002	大红包抽奖次数	消耗次数可抽奖
 	1004	红包余额			可提现
 	1050  	钻石|房卡		开房，兑换游戏币
+
+	PROP_ID_HEAD_FRAME_1 = 2000  # 头像框1
+	PROP_ID_HEAD_FRAME_2 = 2001  # 头像框2
+	PROP_ID_HEAD_FRAME_3 = 2003  # 头像框3
+	PROP_ID_HEAD_FRAME_MAX = 2004  # 头像框MAX
 
 
 发送当前赛季信息
@@ -39,9 +63,8 @@ on_player_msg(
     # end: 季赛结束时间戳
     # status: 季赛当前状态  0 未开始, 1 进行中, 2 已结束
 
-发送玩家排位积分信息（玩家积分变动时 也会主动下发）
-PLAYER_MSG_ID_REQ_PLAYER_COMPETITIVE_RANKING                        = 16  # 玩家排位信息
-on_player_msg(GlobalConst.PLAYER_MSG_ID_REQ_PLAYER_COMPETITIVE_RANKING, {'score': 100})
+
+
 
 ----------------------------------------------------
 
@@ -63,13 +86,13 @@ onEnterRoomResult: function (lobbyID, fieldID, roomID, bSuccess, erorStr)
     }
 },
 
-//开始排位 等待匹配成功自动进桌 
-//c_enter_game:function(lobbyID, fieldID, roomID) 
-//{
-//   this.baseCall("c_enter_game", lobbyID, fieldID, roomID);
-}//,
-//
-//})
+
+
+
+on_score_master_update:function(score_master) {
+ cc.log("GamePlayer->>>>on_score_master_update 玩家排位积分发送改变 当前最新积分: " + score_master);
+}
+
 
 约战 房卡模式
 game_mode = 2 可以为 KKVS.GAME_MODEL赋值
@@ -95,4 +118,70 @@ req_lobby_msg(LOBBY_MSG_BASE_ACT_LEAVE_ROOM, json{"room_id": 1})
 on_lobby_msg(LOBBY_MSG_BASE_ACT_LEAVE_ROOM, json.dump({"src": {"room_id": 1}, "success": true}))
 
 
+
+---------------------兑换 
+  cmd定义
+  CMD_DIAMOND_EXCHANGE_GM                                        = 5  # 命令码 5:钻石 兑换 游戏币
+ 
+
+req_exc(cmd, num)
+//cmd 命令码 int
+//要兑换的具体个数 int
+
+//目前兑换比例
+钻石    游戏币
+[300] = 30000
+[500] = 55000
+[1000] = 110000
+[5000] = 600000
+如 请求
+req_exc(CMD_DIAMOND_EXCHANGE_GM, 300)
+即请求消耗300钻石来换游戏币
+
+兑换结果通过
+opt_ret返回 客户端自己更新当前钻石数量
+<opt_ret>
+
+	<!-- cmd -->
+	<Arg>		UINT8	 </Arg>
+
+	<!-- 对应cmd 成功或失败提示 长度>0失败 否则成功 -->
+	<Arg>		UNICODE	 </Arg>
+
+</opt_ret>
+
+
+------------改名
+
+req_rename("想要要修改成的昵称")
+
+返回
+<!-- 改名结果 -->
+<on_rename>
+
+    <!-- 改名结果 0失败 其他成功 -->
+	<Arg>	UINT8		</Arg>
+
+	 <!--  字符串 > 0为 错误码 -->
+    <Arg>	UNICODE		</Arg>
+    
+</on_rename>
+
+
+-----------------修改头像框
+
+
+
+PLAYER_MSG_ID_CHANGE_HEAD_FRAME                                     = 30    # 玩家请求修改头像框
+	
+req_player_msg(PLAYER_MSG_ID_CHANGE_HEAD_FRAME, json{"id": PROP_ID_HEAD_FRAME_1})
+
+返回 修改成功后的头像框ID  如果 ID =0 则是修改失败
+on_player_msg(PLAYER_MSG_ID_CHANGE_HEAD_FRAME, {'id': PROP_ID_HEAD_FRAME_1})
+
+
+
+-----------------排位赛  赛季结束 自动更新机制赛季信息 待更新 
+ 赛季奖励发放 待更新 
+ 客户端有一个固定遮挡全屏的提示框 不领取无法进行游戏 必须领取完上个赛季的奖励才可以进行游戏
 

@@ -64,7 +64,8 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         cc.log("KKVS.HEAD_URL=" + KKVS.HEAD_URL);
         cc.log("KKVS.NICKNAME=" + KKVS.NICKNAME);
         KKVS.GAME_ACC = params.account;
-        //cc.director.loadScene("Lobby");
+        KKVS.PVPSCORES = params.score_master;
+        KKVS.HEAD_FRAME = params.head_frame;
     },
 
     on_item: function (props) {
@@ -74,14 +75,10 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
 
 
     on_player_msg: function (cmd, datas) {
-        cc.log("on_player_msg cmd = " + cmd)
+        cc.log("on_player_msg cmd = " + cmd);
         if (cmd == StringDef.PLAYER_MSG_ID_REQ_COMPETITIVE_RANKING) {
             cc.log("datas = " + datas);
             gameModel.levelMsg = JSON.parse(datas);
-
-        } else if (cmd == StringDef.PLAYER_MSG_ID_REQ_PLAYER_COMPETITIVE_RANKING) {
-            cc.log("datas = " + datas);
-            KKVS.Event.fire("updateMyLevel", JSON.parse(datas));
         }
     },
 
@@ -116,6 +113,12 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         // KKVS.KBAO = kbao;
         // KKVS.INFO_MSG("kbao = " + kbao);
         // KKVS.Event.fire("refreshKbao");
+    },
+
+    // 玩家排位积分变动
+    on_score_master_update: function (score_master) {
+        KKVS.PVPSCORES = score_master;
+        
     },
 
     /**
@@ -297,17 +300,14 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     },
 
     on_lobby_msg: function (cmd, msg) {
-        cc.log("Player::on_lobby_msg cmd=" + cmd);
+        cc.log("Player::on_lobby_msg cmd = " + cmd);
         var params = JSON.parse(msg);
         if (cmd == StringDef.LOBBY_MSG_BASE_ACT_CREATE_ROOM) {
             var success = params.success;
-            cc.log("success = " + success);
             if (success) {
                 var room_id = params.room_id;
-                // var pwd = params.src.pwd;
                 var data = {
                     room_id: room_id,
-                    // pwd: pwd
                 }
                 KKVS.COM_ROOM_NUMBER = room_id;
                 KKVS.Event.fire("create_room_success", data);
@@ -394,14 +394,16 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
             playerID: playerID
         };
         if (chairID == KKVS.EnterChairID) {
-            KKVS.Event.fire("leaveGame");
+            // cc.log("自己离开桌子")
+            // KKVS.Event.fire("leaveGame");
         } else {
             cc.log("别的玩家被踢出桌子");
             KKVS.Event.fire("otherLeaveGame", chairID);
         }
     },
 
-    onKent_GameSay: function () { //手机版本与pc版本不同
+    onKent_GameSay: function () { 
+        //手机版本与pc版本不同
         var args = arguments;
         var nik = decodeUTF8(args[4]);
         var txt = decodeUTF8(args[5]);
@@ -605,7 +607,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
 
     onHappy_GameErrInfo: function (lobbyID, fieldID, roomID, tableID, msginfo) {
         if (gameModel.nowplayID == KKVS.myChairID) {
-            cc.log("自己 onHappy_GameErrInfo==== msginfo = " + msginfo);
+            // cc.log("自己 onHappy_GameErrInfo==== msginfo = " + msginfo);
             KKVS.Event.fire("GameErrInfo");
         }
     },
@@ -623,13 +625,13 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     },
 
     onKent_tick: function (lobbyID, fieldID, roomID, tableID, chair_id) {
-        cc.log("->onKent_tick====");
-        if (chair_id == KKVS.EnterChairID) {
-            KKVS.Event.fire("leaveGame");
-        } else {
-            cc.log("别的玩家被踢出桌子");
-            KKVS.Event.fire("otherLeaveGame", chair_id);
-        }
+        // cc.log("->onKent_tick====");
+        // if (chair_id == KKVS.EnterChairID) {
+        //     KKVS.Event.fire("leaveGame");
+        // } else {
+        //     cc.log("别的玩家被踢出桌子");
+        //     KKVS.Event.fire("otherLeaveGame", chair_id);
+        // }
     },
 
     req_room_msg: function (type, datas) {
@@ -795,9 +797,9 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
 
     on_game_info: function (roomNumber) {
         cc.log("on_game_info");
+        cc.log("on_game_info = KKVS.COM_ROOM_NUMBER = " + KKVS.COM_ROOM_NUMBER);
         
         KKVS.COM_ROOM_NUMBER = roomNumber;
-        cc.log("on_game_info = KKVS.COM_ROOM_NUMBER = " + KKVS.COM_ROOM_NUMBER);
         KKVS.GAME_MODEL = 2;
         cc.director.loadScene('GameUI');
     },

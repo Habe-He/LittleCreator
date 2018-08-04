@@ -54,6 +54,10 @@ cc.Class({
         }
         // cc.log("path = " + path);
         cc.loader.loadRes(path, cc.SpriteFrame, function (err, spriteFrame) {
+            if (err) {
+                cc.log("加载牌面资源出错 err = " + path);
+                return;
+            }
             self.pokerSprite.getComponent(cc.Sprite).spriteFrame = spriteFrame;
         });
         this.flagSprite.node.active = false;

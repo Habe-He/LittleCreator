@@ -5,6 +5,7 @@ var AppHelper = require('./AppHelper');
 var httpUtils = require('./plugin/httpUtils');
 var gameModel = require('./game/gameModel');
 var CreateRoom = require('./game/createRoom');
+var PvpInfo = require('./game/PvpInfo');
 
 var DialogView = require('./widget/DialogView');
 var TxtDialogComp = require('./widget/TxtDialogComp');
@@ -14,7 +15,7 @@ var wxSDK = require('./tool/wxSDK');
 
 cc.Class({
     extends: cc.Component,
-
+    
     onLoad: function () {
         cc.log("=> Lobby::onLoad()");
         OnLineManager._autoConnect = true;
@@ -54,12 +55,20 @@ cc.Class({
         var head = mSprite.getChildByName('Head_0').getComponent(cc.Sprite);
         Tool.weChatHeadFile(head, KKVS.HEAD_URL, mSprite);
 
-        self.lv = paiBtn.getChildByName("Lv").getComponent(cc.Sprite);
-        
+
+
+        self.lv = cc.find('bg/Lv', this.node);
+        self.lv.on('touchend', self.ShowPvPInfo, this);
+        self.paiweiDesc = cc.find('bg/saiJiInfoBg', this.node);
         self._updateLobbyLevel();
 
         wxSDK.getLaunchOptionsSync(false, null);
         wxSDK.onNetworkStatusChange();
+    },
+
+    ShowPvPInfo:function(event){
+        cc.log("点击排位界面");
+        PvpInfo.Show();
     },
 
     suiTouchEvent: function (event) {
@@ -101,9 +110,7 @@ cc.Class({
     _updateLobbyLevel: function() {
         var self = this;
         
-        // TODO 不使用loadRes方式加载替换资源
-        // self.updateMyLevel(gameModel.levelMsg[0].score);
-        var realUrl = cc.url.raw(self._getLevel(gameModel.levelMsg[0].score));
+        var realUrl = cc.url.raw(self._getLevel(KKVS.PVPSCORES));
         self.lv.spriteFrame = new cc.SpriteFrame(realUrl);
     },
 
@@ -127,11 +134,6 @@ cc.Class({
             lvStr = 'Lv_0';
         }
         return "resources/Lobby/" + lvStr + ".png";
-    },
-
-    updateMyLevel: function(args) {
-        // var realUrl = cc.url.raw(self._getLevel(args.score));
-        // self.lv.spriteFrame = new cc.SpriteFrame(realUrl);
     },
 
     create_room_success: function(args) {

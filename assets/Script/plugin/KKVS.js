@@ -1352,7 +1352,15 @@ KKVS.reset = function () {
     // 6：排位
     // 2：房卡
     KKVS.GAME_MODEL = 0;
+
+    // 房间号
     KKVS.COM_ROOM_NUMBER = 0;
+
+    // 排位积分
+    KKVS.PVPSCORES = 0;
+
+    // 玩家头像框
+    KKVS.HEAD_FRAME = 0;
 };
 
 KKVS.reset();

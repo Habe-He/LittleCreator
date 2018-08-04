@@ -372,7 +372,7 @@ Tool.weChatHeadFile = function(img, url, temNode) {
             cc.loader.load(path, function (err, texture) {
                 var frame = new cc.SpriteFrame(texture);
                 img.spriteFrame = frame;
-                img.node.scale = 119 / img.node.getContentSize().width;
+                img.node.scale = 117 / img.node.getContentSize().width;
                 // temNode.active = true;
             });
         },

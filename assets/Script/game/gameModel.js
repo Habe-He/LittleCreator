@@ -1,7 +1,4 @@
 var gameModel = {
-    // 是否在游戏场景中
-    isInGameScene: false,
-
     // 游戏中玩家信息
     playerData: [],
 

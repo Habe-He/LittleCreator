@@ -26,7 +26,7 @@ OnLineManager.onLine = function () {
         cc.log("=> gameEngine or gameEngine.app is null");
         return;
     }
-    AppHelper.get().showLoading(null, null, 15);
+    AppHelper.get().showLoading(null, null, 150);
     cc.log("->OnLineManager.onLine");
     cc.log("->OnLineManager._onlineTime = " + OnLineManager._onlineTime.toString());
     OnLineManager._forceOffLine = false;
@@ -66,11 +66,11 @@ OnLineManager._onLineCallback = function () {
     KKVS.Event.fire("updateAppUI"); //用于更新断线重连后所有数据
     AppHelper.get().hideLoading();
     cc.log("->OnLineManager._onLineCallback 2222");
-}
+};
 
 OnLineManager.isForceOffLine = function () {
     return OnLineManager._forceOffLine;
-}
+};
 
 OnLineManager.isOnLine = function () {
     return OnLineManager._forceOffLine == false && OnLineManager._onlineTime < OnLineManager._onlineMaxTime;

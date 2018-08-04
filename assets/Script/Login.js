@@ -14,6 +14,9 @@ var gameEngine = require("./plugin/gameEngine")
 var httpUtils = require('./plugin/httpUtils')
 var OnLineManager = require("./tool/OnLineManager");
 var wxSDK = require('./tool/wxSDK');
+var AniMnger = require('./game/AniMnger');
+
+var StringDef = require('./tool/StringDef');
 
 cc.Class({
     extends: cc.Component,
@@ -22,6 +25,7 @@ cc.Class({
         // 在这里执行自动登录
         // 获取用户微信昵称
         // 显示用户剩余挑战次数
+        loadTxt: cc.Label,
     },
 
     start() {
@@ -40,6 +44,8 @@ cc.Class({
         cc.log("Login onLoad");
         self._weChatCheckSession();
         // testsgame.kkvs.com   10200 
+
+        // AniMnger.Show(StringDef.ZHADAN);
     },
 
     _weChatCheckSession: function () {
@@ -111,7 +117,7 @@ cc.Class({
         // demoQuest = http://clientweb.kkvs.com/MobileApi/GetAccountInfoByWeChatJZ?Code=1111
         var newUrl = reqURL + "?Code=" + datas.Code.toString() + "&nickname=" + datas.nickname.toString()
         + "&faceurl=" + datas.faceurl.toString() + "&gender=" + datas.gender.toString();
-        cc.log('newUrl = ' + newUrl);
+        // cc.log('newUrl = ' + newUrl);
         httpUtils.getInstance().httpGets(newUrl, function (data) {
             cc.log("_serverLogin " + data);
             if (data == -1) {
@@ -191,10 +197,36 @@ cc.Class({
     onLoginGameSuccess: function (args) {
         cc.log("登录服连接成功 => " + args);
         if (args == 1) {
-            cc.director.loadScene("Lobby");
+            this.loadTxt.string = "登录成功";
+            this.loadResForWx();
+            // cc.director.loadScene("Lobby");
         } else if (args == 2) {
             cc.director.loadScene("GameUI");
         }
+    },
+
+    // 加载resource资源
+    loadResForWx: function() {
+        cc.log("正在加载resource资源");
+
+        var progressCb = function(currentNum, maxNum, item) {
+            // cc.log("当前加载到 " + currentNum);
+            // cc.log("总资源数 " + maxNum);
+            // cc.log("item = " + item.url);
+            this.loadTxt.string = "正在加载资源......";
+        }.bind(this);
+
+        var completeCb = function(err, res, url) {
+            if (err) {
+                cc.log("login loadResForWx err = " + err);
+                return;
+            }
+            cc.log("resourc 资源加载完成");
+            this.loadTxt.string = "资源加载完成";
+            cc.director.loadScene("Lobby");
+        }.bind(this);
+
+        cc.loader.loadResDir("", cc.SpriteFrame, progressCb, completeCb);
     },
 
     addEvent() {
