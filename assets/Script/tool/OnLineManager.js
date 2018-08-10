@@ -26,7 +26,7 @@ OnLineManager.onLine = function () {
         cc.log("=> gameEngine or gameEngine.app is null");
         return;
     }
-    AppHelper.get().showLoading(null, null, 150);
+   
     cc.log("->OnLineManager.onLine");
     cc.log("->OnLineManager._onlineTime = " + OnLineManager._onlineTime.toString());
     OnLineManager._forceOffLine = false;
@@ -37,7 +37,8 @@ OnLineManager.onLine = function () {
     cc.log("pwd = " + pwd);
     gameEngine.app.reset();
     if(!acc || acc == "") {
-        AppHelper.get().showTheTxtDialog({title : "系统提示", txt : "登录失败,帐号不能为空"});
+        AppHelper.get().hideLoading();
+        AppHelper.get().showTheTxtDialog({title : "系统提示", txt : "获取信息失败"});
         return;
     }
     var login_extraDatas = {
@@ -45,6 +46,7 @@ OnLineManager.onLine = function () {
         plaza_id: "0",
         server_id: "1"
     };
+    AppHelper.get().showLoading(null, null, 150);
     var datas = JSON.stringify(login_extraDatas);
     gameEngine.Event.fire("login", acc, pwd, datas);
     OnLineManager._onlineTime = (OnLineManager._onlineTime + 1 < OnLineManager._onlineMaxTime) ? (OnLineManager._onlineTime + 1) : OnLineManager._onlineMaxTime;

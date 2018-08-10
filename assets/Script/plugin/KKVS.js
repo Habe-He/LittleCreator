@@ -1361,6 +1361,10 @@ KKVS.reset = function () {
 
     // 玩家头像框
     KKVS.HEAD_FRAME = 0;
+    // 玩家段位信息
+    KKVS.levelMsg = [];
+
+    KKVS.RoomOutData = null; //jie shan fang jian shu ju
 };
 
 KKVS.reset();

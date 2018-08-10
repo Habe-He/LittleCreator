@@ -26,9 +26,6 @@ var gameModel = {
     // 大厅房间配置
     roomConfig: [],
 
-    // 玩家段位信息
-    levelMsg: [],
-
     // 玩家道具信息
     propsMsg: [],
 
@@ -37,6 +34,26 @@ var gameModel = {
 
     // 当前出牌玩家
     nowplayID: 0,
+
+    // 背景音乐开关
+    BGM_OPEN: true,
+
+    // 音效开关
+    EFFECT_OPEN: true,
+
+    // 排位赛积分
+    PVPSCORES: [],
+
+    // 房卡模式用户积分
+    FKSCORES: [],
+
+    // 当前局数
+    curRun: 0,
+    
+    // 总局数
+    maxRun: 0,
+    lastJu:false,
+    totalResultData:{}
 };
 
 

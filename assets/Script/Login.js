@@ -15,17 +15,23 @@ var httpUtils = require('./plugin/httpUtils')
 var OnLineManager = require("./tool/OnLineManager");
 var wxSDK = require('./tool/wxSDK');
 var AniMnger = require('./game/AniMnger');
-
 var StringDef = require('./tool/StringDef');
+
+// var serversType = cc.Enum({
+//     Formal_Server: 0,
+//     Test_Server: 1,
+//     Local_Server: 2
+// });
 
 cc.Class({
     extends: cc.Component,
 
     properties: {
-        // 在这里执行自动登录
-        // 获取用户微信昵称
-        // 显示用户剩余挑战次数
         loadTxt: cc.Label,
+        // selectServer: {
+        //     default: serversType.Formal_Server,
+        //     type: cc.Enum(serversType)
+        // }
     },
 
     start() {
@@ -35,6 +41,11 @@ cc.Class({
         this.avatarUrl = null;
 
         wxSDK.setKeepScreenOn();
+        // window.serverNum = this.selectServer;
+        // cc.warn('选择服务器 = ' + window.serverNum);
+
+        // sjddz-tbj.phonecoolgame.com/10200
+        // 443
     },
 
     // LIFE-CYCLE CALLBACKS:
@@ -42,10 +53,10 @@ cc.Class({
         cc.log("=> onLoad Login");
         var self = this;
         cc.log("Login onLoad");
-        self._weChatCheckSession();
+        if (!wxSDK.updateManager()) {
+            self._weChatCheckSession();
+        }
         // testsgame.kkvs.com   10200 
-
-        // AniMnger.Show(StringDef.ZHADAN);
     },
 
     _weChatCheckSession: function () {
@@ -89,9 +100,9 @@ cc.Class({
             nickName = wx.getStorageSync('nickName');
             avatarUrl = wx.getStorageSync('avatarUrl');
             gender = wx.getStorageSync('gender');
-          } catch (e) {
+        } catch (e) {
             cc.log("get getStorageSync errr");
-          }
+        }
 
         if (nickName == null || avatarUrl == null || gender == null) {
             wx.showToast({
@@ -107,31 +118,28 @@ cc.Class({
         cc.log("nickName = " + nickName);
         // avatarUrl = "http://wx.qlogo.cn/mmopen/vi_32/DYAIOgq83erjeyqibRRqMhkrIERB27SvG5UIv1w2455FwJXUIyqaxBGW81lB3Xic1I00JMVQvog74gxdg94r3LMg/132";
         var datas = {
-            'Code' : code,
-            'nickname' : nickName,
-            'faceurl' : avatarUrl,
-            'gender' : gender
+            'Code': code,
+            'nickname': nickName,
+            'faceurl': avatarUrl,
+            'gender': gender
         };
         //https://apiwxgame.kkvs.com/MobileApi/GetSgameAccounts?Code=061Alg7V09sPpV1PGF3V0IZB7V0Alg7K?
-        var reqURL = "https://apiwxgame.kkvs.com/MobileApi/GetSgameAccounts";
+        // var reqURL = "https://apiwxgame.kkvs.com/MobileApi/GetSgameAccounts";
+        var reqURL = "https://sjddz-yxjh.17fengyou.com/public/login";
         // demoQuest = http://clientweb.kkvs.com/MobileApi/GetAccountInfoByWeChatJZ?Code=1111
-        var newUrl = reqURL + "?Code=" + datas.Code.toString() + "&nickname=" + datas.nickname.toString()
-        + "&faceurl=" + datas.faceurl.toString() + "&gender=" + datas.gender.toString();
-        // cc.log('newUrl = ' + newUrl);
+        var newUrl = reqURL + "?Code=" + datas.Code.toString() + "&nickname=" + datas.nickname.toString() +
+            "&faceurl=" + datas.faceurl.toString() + "&gender=" + datas.gender.toString();
+        cc.log('newUrl = ' + newUrl);
         httpUtils.getInstance().httpGets(newUrl, function (data) {
             cc.log("_serverLogin " + data);
             if (data == -1) {
                 cc.log('请检查网络！');
             } else {
                 var jsonD = JSON.parse(data);
-                cc.log("jsonD = " + jsonD);
-                cc.log("Accounts =" + jsonD[0].Accounts);
-                cc.log("pwd = " + jsonD[0].PassWord);
-
+                cc.log("jsonD.data = " + jsonD.data[0].Accounts);
                 KKVS.Login_type = Tool.VISITOR_LOGIN;
-                KKVS.Acc = jsonD[0].Accounts;
-                KKVS.Pwd = jsonD[0].PassWord;
-
+                KKVS.Acc = jsonD.data[0].Accounts;
+                KKVS.Pwd = jsonD.data[0].PassWord;
                 OnLineManager.onLine();
             }
         });
@@ -175,6 +183,11 @@ cc.Class({
                 // 1 ：男
                 // 2 ：女
                 var gender = res.userInfo.gender;
+                if (gender == 1) {
+                    gender = 0;
+                } else if (gender == 2) {
+                    gender = 1;
+                }
                 var nickName = res.userInfo.nickName;
                 cc.log("avatarUrl = " + avatarUrl);
                 cc.log("gender = " + gender);
@@ -196,37 +209,39 @@ cc.Class({
     // 场景切换
     onLoginGameSuccess: function (args) {
         cc.log("登录服连接成功 => " + args);
-        if (args == 1) {
-            this.loadTxt.string = "登录成功";
-            this.loadResForWx();
-            // cc.director.loadScene("Lobby");
-        } else if (args == 2) {
-            cc.director.loadScene("GameUI");
-        }
+        this.loadTxt.string = "登录成功";
+        this.loadResForWx(args);
     },
 
     // 加载resource资源
-    loadResForWx: function() {
+    loadResForWx: function (args) {
         cc.log("正在加载resource资源");
+        // TODO 分开加载 
+        // Png
+        // prefab
+        // 音乐音效
 
-        var progressCb = function(currentNum, maxNum, item) {
-            // cc.log("当前加载到 " + currentNum);
-            // cc.log("总资源数 " + maxNum);
-            // cc.log("item = " + item.url);
-            this.loadTxt.string = "正在加载资源......";
+        var progressCb = function (currentNum, maxNum, item) {
+            var pre = (currentNum / maxNum) * 100;
+            this.loadTxt.string = "正在加载资源......" + parseInt(pre) + "%";
         }.bind(this);
 
-        var completeCb = function(err, res, url) {
+        var completeCb = function (err, res, url) {
             if (err) {
                 cc.log("login loadResForWx err = " + err);
                 return;
             }
-            cc.log("resourc 资源加载完成");
+            cc.log("加载一下资源 " + url);
             this.loadTxt.string = "资源加载完成";
-            cc.director.loadScene("Lobby");
+            if (args == 1) {
+                cc.director.loadScene("Lobby");
+            } else {
+                cc.director.loadScene("GameUI");
+            }
+
         }.bind(this);
 
-        cc.loader.loadResDir("", cc.SpriteFrame, progressCb, completeCb);
+        cc.loader.loadResDir("", progressCb, completeCb);
     },
 
     addEvent() {

@@ -18,6 +18,7 @@ var GameManager = {
     // ST
     onSeverUserEnter: function (args) {
         KKVS.INFO_MSG("onSeverUserEnter = 用户进入 name = " + args.nickname);
+        KKVS.INFO_MSG("onSeverUserEnter = 用户进入 url = " + args.head_url);
         var chairID = args.chairID;
         var playerID = args.playerId;
         var userName = args.nickname;
@@ -48,6 +49,9 @@ var GameManager = {
 
         // creator 刷新玩家进入
         KKVS.Event.fire("playerEnter", data, viewID);
+
+        // 断线重连的时候通知 解散界面 用户进入的消息
+        KKVS.Event.fire("updateUserDismiss", data);
     },
 
     // 用户准备

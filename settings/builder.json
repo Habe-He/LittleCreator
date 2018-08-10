@@ -31,7 +31,7 @@
   "webOrientation": "auto",
   "wechatgame": {
     "REMOTE_SERVER_ROOT": "https://apiwxgame.kkvs.com/game",
-    "appid": "wxd625893dc3b79035",
+    "appid": "wx55e5d6e62ac6c8ed",
     "isSubdomain": false,
     "orientation": "landscape",
     "subContext": ""

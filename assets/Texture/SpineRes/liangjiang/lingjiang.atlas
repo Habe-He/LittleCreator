@@ -1,0 +1,34 @@
+
+lingjiang.png
+size: 512,512
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+CSASDG
+  rotate: false
+  xy: 2, 116
+  size: 353, 353
+  orig: 353, 353
+  offset: 0, 0
+  index: -1
+baoshi
+  rotate: false
+  xy: 2, 2
+  size: 137, 112
+  orig: 137, 112
+  offset: 0, 0
+  index: -1
+lingj 
+  rotate: false
+  xy: 357, 432
+  size: 142, 37
+  orig: 142, 37
+  offset: 0, 0
+  index: -1
+xcvdf
+  rotate: false
+  xy: 141, 56
+  size: 54, 58
+  orig: 54, 58
+  offset: 0, 0
+  index: -1

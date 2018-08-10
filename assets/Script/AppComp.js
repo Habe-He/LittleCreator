@@ -7,6 +7,7 @@ var TipDialogComp = require("./widget/TipDialogComp");
 var LoadingComp = require("./widget/LoadingComp");
 var wxSDK = require('./tool/wxSDK');
 var Tool = require('./tool/Tool');
+var AudioMnger = require('./game/AudioMnger');
 
 var m_sErr = [
     "成功",
@@ -62,11 +63,14 @@ cc.Class({
         wx.onHide(function() {
             cc.log("=> 监听到微信小游戏  切换后台");
             self.onEventHide();
+            AudioMnger.pauseMusic();
+            AudioMnger.pauseAllEffects();
         });
         wx.onShow(function(res) {
             cc.log("=> 监听到微信小游戏  切换前台");
             self.onEventShow();
-
+            AudioMnger.resumeMusic();
+            AudioMnger.resumeAllEffects();
             wxSDK.getLaunchOptionsSync(true, res);
         });
         //主动退出按钮侦听(无)

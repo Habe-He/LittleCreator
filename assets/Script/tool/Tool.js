@@ -4,6 +4,8 @@ var gameEngine = require("./../plugin/gameEngine");
 var cardTypeUtil = require('./../card/cardTypeUtil');
 var cardInfo = require('./../card/cardInfo');
 var cardfabs = require('./../card/cardPer');
+var StringDef = require('./StringDef');
+var LevelConfig = require("./config.js");
 
 var Tool = Tool || {};
 
@@ -68,7 +70,7 @@ Tool.OxLogin = function (acc, pwd) {
     //cc.log("KKVS.Acc = " + KKVS.Acc);
     //cc.log("KKVS.Pwd = " + KKVS.Pwd);
     KKVS.Event.fire("goLogin");
-}
+};
 
 Tool.goLogin = function (args) {
     cc.log("->goLogin");
@@ -77,7 +79,7 @@ Tool.goLogin = function (args) {
     var pwd = KKVS.utf8ArrayToString(s.readBlob());
     var game_id = KKVS.utf8ArrayToString(s.readBlob());
     OxLogin(acc, pwd);
-}
+};
 
 Tool.toolSortArrayForSelf = function (m_data) {
     m_data.sort(function (a, b) {
@@ -132,7 +134,7 @@ Tool.toolSortArrayForSelf = function (m_data) {
     });
 
     return m_data;
-}
+};
 
 Tool.getViewChairID = function (nChairID) {
     var PlayerCount = 3;
@@ -140,7 +142,7 @@ Tool.getViewChairID = function (nChairID) {
         return (nChairID - KKVS.myChairID + PlayerCount) % PlayerCount;
     }
     return -1;
-},
+};
 
 Tool.InterceptDiyStr = function(sName, nShowCount) {
     if (sName == "") {
@@ -175,14 +177,14 @@ Tool.isMoblieNumber = function (str) {
         return false;
     }
     return /^1[34578]\d{9}$/.test(str);
- }
+};
 
 Tool.encryptMoblieNumber = function (str) {
     if (!Tool.isMoblieNumber(str)) {
         return str;
     }
     return str.substring(0, 3) + "****" + str.substring(7);
- }
+};
 
 // 排列打出去的牌
 Tool.sortOutCardList = function (objarr) {
@@ -225,7 +227,7 @@ Tool.sortOutCardList = function (objarr) {
             }
         }
     });
-},
+};
 
 // 排列自己手上的牌
 Tool.sortCardList = function(objarr) {
@@ -276,7 +278,7 @@ Tool.sortCardList = function(objarr) {
             }
         }
     });
-},
+};
 
 Tool.toolSortArray = function(m_data) {
     m_data.sort(function(a, b) {
@@ -322,7 +324,7 @@ Tool.toolSortArray = function(m_data) {
     })
 
     return m_data;
-},
+};
 
 Tool.sortListBy2T3 = function(data, operator) {
     if (data == undefined)
@@ -346,7 +348,7 @@ Tool.sortListBy2T3 = function(data, operator) {
         }
     });
     return data;
-},
+};
 
 Tool.gradeDownSort = function(data) {
     data.sort(function(x, y) {
@@ -358,11 +360,10 @@ Tool.gradeDownSort = function(data) {
             return 0
     });
     return data;
-},
+};
 
 // 下载用户头像
 Tool.weChatHeadFile = function(img, url, temNode) {
-    // var oriSize = img.node.getContentSize();
     wx.downloadFile({
         url: url,
         header: "image",
@@ -371,28 +372,52 @@ Tool.weChatHeadFile = function(img, url, temNode) {
             var path = res.tempFilePath;
             cc.loader.load(path, function (err, texture) {
                 var frame = new cc.SpriteFrame(texture);
+                if (!img.isValid) return
                 img.spriteFrame = frame;
-                img.node.scale = 117 / img.node.getContentSize().width;
-                // temNode.active = true;
+                img.node.scale = 110 / img.node.getContentSize().width;
             });
         },
 
         fail: function (err) {
             cc.log("下载微信头像失败 = " + err);
-            // temNode.active = true;
         },
     });
-},
+};
+
+// 获取详细日期 带小时分钟秒
+Tool.getByTimeDetail = function(sec) {
+    var d = new Date(sec * 1000);
+    var date = d.getDate();
+    var month = d.getMonth() + 1;
+    var year = d.getFullYear();
+    var h = d.getHours();
+    var m = d.getMinutes();
+    var s = d.getSeconds();
+    return year + "-" + (month > 9 ? month : "0" + month ) + "-" + (date > 9 ? date : "0" + date ) + " " 
+    + (h > 9 ? h : "0" + h ) + ":" + (m > 9 ? m : "0" + m ) + ":" + (s > 9 ? s : "0" + s );
+};
+
+
+
+Tool.getHourAndMin = function(sec) {
+    var d = new Date(sec * 1000);
+    var h = d.getHours();
+    var m = d.getMinutes();
+    var s = d.getSeconds();
+    return(h > 9 ? h : "0" + h ) + ":" + (m > 9 ? m : "0" + m ) + ":" + (s > 9 ? s : "0" + s );
+};
+
+
 
 // 获取日期
-Tool.getByTime = function (_time) {
-    var date = new Date(_time * 1000);
-    var Y = date.getFullYear() + '-';
-    var M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '-';
-    var D = date.getDate() + ' ';
+Tool.getByTime = function (sec) {
+    var d = new Date(sec * 1000);
+    var date = d.getDate();
+    var month = d.getMonth() + 1;
+    var year = d.getFullYear();
+    return year + "-" + (month > 9 ? month : "0" + month ) + "-" + (date > 9 ? date : "0" + date ) + ""
+};
 
-    return (Y + M + D);
-},
 
 // 金币 -> 万
 Tool.goldSplit = function(money) {
@@ -410,6 +435,120 @@ Tool.goldSplit = function(money) {
             return str.toString();
         }
     }
-},
+};
+
+// 获取音效的名字
+Tool.getEffectName = function(gender, object) {
+    cc.log("Tool.getEffectName gender = " + gender);
+    var genderAr = ['voice/Effect/man/', 'voice/Effect/woman/', 'voice/Effect/woman/'];
+    var ef_name = null;
+    // TODO 待优化部分
+    // 音效对象存入数组中
+    if (object.ID == StringDef.ZHADAN_EF.ID) {
+        ef_name = StringDef.ZHADAN_EF.Name;
+
+    } else if (object.ID == StringDef.BUCHU_EF.ID) {
+        ef_name = StringDef.BUCHU_EF.Name;
+
+    } else if (object.ID == StringDef.FEIJI_EF.ID) {
+        ef_name = StringDef.FEIJI_EF.Name;
+        
+    } else if (object.ID == StringDef.HUOJIAN_EF.ID) {
+        ef_name = StringDef.HUOJIAN_EF.Name;
+        
+    } else if (object.ID == StringDef.BUJIAO_EF.ID) {
+        ef_name = StringDef.BUJIAO_EF.Name;
+        
+    } else if (object.ID == StringDef.YIFEN_EF.ID) {
+        ef_name = StringDef.YIFEN_EF.Name;
+        
+    } else if (object.ID == StringDef.ERFEN_EF.ID) {
+        ef_name = StringDef.ERFEN_EF.Name;
+        
+    } else if (object.ID == StringDef.SANFEN_EF.ID) {
+        ef_name = StringDef.SANFEN_EF.Name;
+        
+    } else if (object.ID == StringDef.SHUANGSHUN_EF.ID) {
+        ef_name = StringDef.SHUANGSHUN_EF.Name;
+        
+    } else if (object.ID == StringDef.SHUNZI_EF.ID) {
+        ef_name = StringDef.SHUNZI_EF.Name;
+    }
+    // cc.log("gender = " + gender);
+    cc.log('Tool. effect name = ' + genderAr[gender] + ef_name);
+    return (genderAr[gender] + ef_name).toString();
+};
+
+// 获取当前段位等级
+Tool.getRunkLevel = function (score) {
+    var division = 0;
+    var startCount = 0;
+    if (score >= 3000 && score < 4000) {
+        division = 0;
+        startCount = 1;
+
+    } else if (score >= 4001 && score < 5000) {
+        division = 0;
+        startCount = 2;
+
+    } else if (score >= 5001 && score < 10000) {
+        division = 1;
+        startCount = 1;
+        
+    } else if (score >= 10001 && score < 15000) {
+        division = 1;
+        startCount = 2;
+        
+    } else if (score >= 15001 && score < 20000) {
+        division = 1;
+        startCount = 3;
+        
+    }
+    // TODO
+    // 后续判断待增加
+
+    return {'division': division, 'startCount': startCount};
+};
+
+
+Tool.getLevelInfoByLevelId = function(level_id){
+    return LevelConfig.g_LevelScoreArea[level_id];
+    // for( var i = 0 ; i < LevelConfig.g_LevelScoreArea.length ;i++){
+    // }
+};
+
+
+// 获取段位信息 
+Tool.getLevelInfo = function(score){
+    for( var i = 0 ; i < LevelConfig.g_levelScore.length - 1 ; i++){
+        var data = LevelConfig.g_levelScore[i];
+        // if( i == 0 ){
+        //     data.minScore = 0;
+        // }
+
+        if( score >= data.minScore && score <= data.maxScore){
+            var finallyData = {
+                bigLevel:data.big_level,
+                star:data.star,
+                name:data.desc,
+                index_id: data.index_id
+            }
+            return finallyData;
+        }
+    }
+    var data = LevelConfig.g_levelScore[LevelConfig.g_levelScore.length - 1];
+    var star = 0;
+    if( score >= data.minScore){
+        star = parseInt ((score - data.minScore) /1000000);
+    }
+
+    var finallyData = {
+        bigLevel: data.big_level,
+        star: star,
+        name: data.desc,
+        index_id: data.index_id
+    }
+    return finallyData;
+};
 
 module.exports = Tool;

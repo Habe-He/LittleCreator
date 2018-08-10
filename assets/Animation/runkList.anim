@@ -1,0 +1,31 @@
+{
+  "__type__": "cc.AnimationClip",
+  "_name": "runkList",
+  "_objFlags": 0,
+  "_rawFiles": null,
+  "_duration": 0.5,
+  "sample": 20,
+  "speed": 1,
+  "wrapMode": 1,
+  "curveData": {
+    "props": {
+      "x": [
+        {
+          "frame": 0,
+          "value": -1854
+        },
+        {
+          "frame": 0.5,
+          "value": -1015
+        }
+      ]
+    }
+  },
+  "events": [
+    {
+      "frame": 0.5,
+      "func": "inFinishCall",
+      "params": []
+    }
+  ]
+}

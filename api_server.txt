@@ -1,7 +1,30 @@
 ﻿微信斗地主服务器相关
 
 测试服域名testsgame.kkvs.com
-正式服域名sgame.kkvs.com
+正式服域名sgame.kkvs.com  ---变更为预发布测试服
+
+方块新正式服
+域名sjddz-tbj.phonecoolgame.com/10200
+端口443
+
+this.Client_onLoginSuccessfully = function (args) {
+    var accountName = args.readString();
+    gameEngine.app.username = accountName;
+    gameEngine.app.baseappIp = args.readString();
+    gameEngine.app.baseappPort = args.readUint16();
+    if (WSSTR == "wss://") {
+        //gameEngine.app.baseappIp = gameEngine.app.ip;
+        gameEngine.app.baseappPort = gameEngine.app.baseappPort - 100;
+        gameEngine.app.baseappIp = "sjddz-tbj.phonecoolgame.com/"+ gameEngine.app.baseappPort + "/"
+    }
+    gameEngine.app.serverdatas = args.readBlob();
+
+    cc.log("gameEngineApp::Client_onLoginSuccessfully: accountName(" + accountName + "), addr(" +
+        gameEngine.app.baseappIp + ":" + gameEngine.app.baseappPort + "), datas(" + gameEngine.app.serverdatas.length + ")!");
+
+    gameEngine.app.disconnect();
+    gameEngine.app.login_baseapp(true);
+}
 
 ----------------------------------------------------
 玩家登录成功 
@@ -179,9 +202,34 @@ req_player_msg(PLAYER_MSG_ID_CHANGE_HEAD_FRAME, json{"id": PROP_ID_HEAD_FRAME_1}
 返回 修改成功后的头像框ID  如果 ID =0 则是修改失败
 on_player_msg(PLAYER_MSG_ID_CHANGE_HEAD_FRAME, {'id': PROP_ID_HEAD_FRAME_1})
 
+----------------------排行榜
+待更新
 
 
+仅仅服务器用 与客户端无关
 -----------------排位赛  赛季结束 自动更新机制赛季信息 待更新 
  赛季奖励发放 待更新 
- 客户端有一个固定遮挡全屏的提示框 不领取无法进行游戏 必须领取完上个赛季的奖励才可以进行游戏
+ //客户端有一个固定遮挡全屏的提示框 不领取无法进行游戏 必须领取完上个赛季的奖励才可以进行游戏
+
+ 提前30分钟 或者1小时 关闭排位赛房间 
+
+
+ 具体流程 
+ 1.  23点30分 手动 前30分钟开始 创建新赛季 停止房间进入  //  存储过程 执行 创建新赛季
+
+ 2.  00点 == 30分钟后的整点 存储过程 执行 段位继承 玩家段位继承奖励、记录  发奖励到邮件
+
+ 3.  在线玩家 强制清理排位数据 打开房间 
+
+
+login1 登陆+游戏
+login2 登陆+游戏
+game1 核心服务
+game2 中心服务器
+game3 游戏
+
+
+
+
+
 

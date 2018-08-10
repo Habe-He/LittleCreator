@@ -3,6 +3,15 @@ var ByteBuffer = require("./ByteBuffer");
 
 var WSSTR = 'wss://';
 
+// cc.log("window.serverNum = " + window.serverNum);
+// if (window.serverNum == 0 || window.serverNum == 1) {
+//     WSSTR = 'wss://';
+//     cc.warn("正式 / 测试服")
+// } else {
+//     WSSTR = 'ws://';
+//     cc.warn('本地服');
+// }
+
 var gameEngine = gameEngine || {};
 
 /*-----------------------------------------------------------------------------------------
@@ -2857,16 +2866,52 @@ gameEngine.gameEngineApp = function (gameEngineArgs) {
         gameEngine.app.baseappIp = args.readString();
         gameEngine.app.baseappPort = args.readUint16();
         if (WSSTR == "wss://") {
-            gameEngine.app.baseappIp = gameEngine.app.ip;
+            //gameEngine.app.baseappIp = gameEngine.app.ip;
             gameEngine.app.baseappPort = gameEngine.app.baseappPort - 100;
+            gameEngine.app.baseappIp = "sjddz-tbj.phonecoolgame.com/" + gameEngine.app.baseappPort + "/"
         }
         gameEngine.app.serverdatas = args.readBlob();
 
-        gameEngine.INFO_MSG("gameEngineApp::Client_onLoginSuccessfully: accountName(" + accountName + "), addr(" +
+        cc.log("gameEngineApp::Client_onLoginSuccessfully: accountName(" + accountName + "), addr(" +
             gameEngine.app.baseappIp + ":" + gameEngine.app.baseappPort + "), datas(" + gameEngine.app.serverdatas.length + ")!");
 
         gameEngine.app.disconnect();
         gameEngine.app.login_baseapp(true);
+
+        // if (window.serverNum == 0) {
+        //     var accountName = args.readString();
+        //     gameEngine.app.username = accountName;
+        //     gameEngine.app.baseappIp = args.readString();
+        //     gameEngine.app.baseappPort = args.readUint16();
+        //     if (WSSTR == "wss://") {
+        //         //gameEngine.app.baseappIp = gameEngine.app.ip;
+        //         gameEngine.app.baseappPort = gameEngine.app.baseappPort - 100;
+        //         gameEngine.app.baseappIp = "sjddz-tbj.phonecoolgame.com/" + gameEngine.app.baseappPort + "/"
+        //     }
+        //     gameEngine.app.serverdatas = args.readBlob();
+
+        //     cc.log("gameEngineApp::Client_onLoginSuccessfully: accountName(" + accountName + "), addr(" +
+        //         gameEngine.app.baseappIp + ":" + gameEngine.app.baseappPort + "), datas(" + gameEngine.app.serverdatas.length + ")!");
+
+        //     gameEngine.app.disconnect();
+        //     gameEngine.app.login_baseapp(true);
+        // } else {
+            // var accountName = args.readString();
+            // gameEngine.app.username = accountName;
+            // gameEngine.app.baseappIp = args.readString();
+            // gameEngine.app.baseappPort = args.readUint16();
+            // if (WSSTR == "wss://") {
+            //     gameEngine.app.baseappIp = gameEngine.app.ip;
+            //     gameEngine.app.baseappPort = gameEngine.app.baseappPort - 100;
+            // }
+            // gameEngine.app.serverdatas = args.readBlob();
+
+            // gameEngine.INFO_MSG("gameEngineApp::Client_onLoginSuccessfully: accountName(" + accountName + "), addr(" +
+            //     gameEngine.app.baseappIp + ":" + gameEngine.app.baseappPort + "), datas(" + gameEngine.app.serverdatas.length + ")!");
+
+            // gameEngine.app.disconnect();
+            // gameEngine.app.login_baseapp(true);
+        // }
     }
 
     this.Client_onLoginBaseappFailed = function (failedcode) {

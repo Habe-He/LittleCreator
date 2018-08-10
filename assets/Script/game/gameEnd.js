@@ -2,6 +2,7 @@ var KKVS = require('./../plugin/KKVS');
 var gameModel = require('./gameModel');
 var Tool = require('./../tool/Tool');
 var gameEngine = require('./../plugin/gameEngine');
+var AudioMnger = require('./AudioMnger');
 
 cc.Class({
     extends: cc.Component,
@@ -49,15 +50,20 @@ cc.Class({
 
         var exit = cc.find("exit", prefab);
         var con = cc.find("con", prefab);
+        var next = cc.find("next", prefab);
 
         if (KKVS.GAME_MODEL == 2) {
             exit.active = false;
             con.active = false;
+            if (gameModel.lastJu == true) {
+                gameModel.lastJu = false;
+                next.active = true;
+            }
         }
 
         exit.on("touchend", self.onExitClick, this);
         con.on("touchend", self.onContClick, this);
-
+        next.on("touchend", self.showTotalResult, this);
         for (var i in data) {
             if (data[i].chairID == KKVS.myChairID) {
                 if (data[i].score < 0) {
@@ -68,9 +74,12 @@ cc.Class({
 
                     var bgUrl = cc.url.raw("resources/GameEnd/conbg.png");
                     bg.getComponent(cc.Sprite).spriteFrame = new cc.SpriteFrame(bgUrl);
+
+                    AudioMnger.playEffect('voice/music/lose');
                 } else {
                     win.active = true;
                     winNum.string = data[i].score;
+                    AudioMnger.playEffect('voice/music/win');
                 }
             }
             var viewID = Tool.getViewChairID(data[i].chairID);
@@ -82,7 +91,7 @@ cc.Class({
             } else {
                 playerNode[viewID].money.string = "+" + data[i].score;
             }
-            
+
 
             if (data[i].chairID == gameModel.diZhuCharId) {
                 playerNode[viewID].nodebg.active = true;
@@ -90,8 +99,8 @@ cc.Class({
             }
         }
 
-        this.node.runAction(cc.sequence(cc.delayTime(3.0), cc.callFunc(function() {
-            if (KKVS.GAME_MODEL == 2) {
+        this.node.runAction(cc.sequence(cc.delayTime(3.0), cc.callFunc(function () {
+            if (KKVS.GAME_MODEL == 2 && !gameModel.lastJu) {
                 self._endNodePB.destroy();
             }
         })));
@@ -101,6 +110,16 @@ cc.Class({
         cc.log("退出游戏");
         gameModel.isWaiting = false;
         KKVS.Event.fire("onExitClick");
+    },
+
+    showTotalResult: function (event) {
+        cc.log(" showTotalResult");
+        var self = this;
+        gameModel.isWaiting = false;
+        self._endNodePB.destroy();
+
+        var totalResult = require('totalResult');
+        totalResult.Show(gameModel.totalResultData);
     },
 
     onContClick: function (event) {

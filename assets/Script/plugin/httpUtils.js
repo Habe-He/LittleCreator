@@ -39,7 +39,6 @@ var httpUtils = cc.Class({
         // note: In Internet Explorer, the timeout property may be set only after calling the open()
         // method and before calling the send() method.
         xhr.timeout = 5000;// 5 seconds for timeout
- 
         xhr.send();
     },
     httpPost: function (url, params, callback) {
@@ -59,15 +58,8 @@ var httpUtils = cc.Class({
         }
         // note: In Internet Explorer, the timeout property may be set only after calling the open()
         // method and before calling the send() method.
-        xhr.timeout = 10000;// 5 seconds for timeout
+        xhr.timeout = 5000;// 5 seconds for timeout
         cc.log("params.Code = " + params.Code);
-        params.nickname = "1";
-        params.faceurl = "1a";
-        params.gender = 1;
-
-        cc.log("params.nickname = " + params.nickname);
-        cc.log("params.faceurl = " + params.faceurl);
-        cc.log("params.gender = " + params.gender);
         xhr.send(params);
 
     }

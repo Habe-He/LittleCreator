@@ -11,6 +11,8 @@ var AppHelper = require('./../AppHelper');
 var wxSDK = require('./../tool/wxSDK');
 var StringDef = require('./../tool/StringDef');
 var AniMnger = require('./AniMnger');
+var AudioMnger = require('./AudioMnger');
+var setUI = require('./setUI');
 
 cc.Class({
 
@@ -27,6 +29,8 @@ cc.Class({
         invite: cc.Button,
         exit: cc.Button,
         btnScroeNo: cc.Button,
+        dissmissBtn: cc.Button,
+        dismissPB: cc.Prefab,
 
         pokerCard: {
             default: null,
@@ -38,23 +42,11 @@ cc.Class({
 
     onLoad: function () {
         cc.log("=> onLoad Game");
-        // let isBackGround = false;
-        // cc.game.on(cc.game.EVENT_HIDE, function(event){
-        //     if(!isBackGround){
-        //         isBackGround = true;
-        //         cc.log("Creator 切换后台");
-        //     }
-        // });
-        // cc.game.on(cc.game.EVENT_SHOW, function(event){
-        //     if(isBackGround){
-        //         cc.log("Creator 切换前台");    
-        //         isBackGround = false;
-        //     }
-        // });
 
         this.addEvent();
         this.necData();
-
+        AudioMnger.playBGM();
+        wxSDK.setKeepScreenOn();
         cc.log("进入到游戏场景中 onLoad");
     },
 
@@ -100,6 +92,8 @@ cc.Class({
 
         // 当前出牌用户
         this.operationID = -1;
+
+        this.dismissNode = null;
     },
 
     start: function () {
@@ -121,6 +115,10 @@ cc.Class({
             var headMask = headNode.getChildByName('mask');
             head = headMask.getChildByName("head").getComponent(cc.Sprite);
             var name = headNode.getChildByName("name");
+            var kbBG = headNode.getChildByName("playerKB").getChildByName("kb");
+            if (KKVS.GAME_MODEL != 0) {
+                kbBG.active = false;
+            }
             var money = headNode.getChildByName("playerKB").getChildByName("money");
             var diZhuFlag = headNode.getChildByName("DiZhuFlag");
             var clock = headNode.getChildByName("clock");
@@ -188,11 +186,23 @@ cc.Class({
 
         // 退出
         self.exitBtn = self.bg.getChildByName('exit');
+        // 解散牌局
+        self.dissmissBtn = self.bg.getChildByName('dismissBtn');
+        // 局数
+        self.jushubg = self.bg.getChildByName('jushubg');
+        self.curTime = self.jushubg.getChildByName('cur').getComponent(cc.Label);
+        self.maxTime = self.jushubg.getChildByName('max').getComponent(cc.Label);
 
         if (KKVS.GAME_MODEL == 2) {
             self.inviteWx.node.active = !gameModel.isInGameStart;
             self.exitBtn.active = !gameModel.isInGameStart;
+            self.dissmissBtn.active = gameModel.isInGameStart;
+            self.jushubg.active = true;
         }
+
+        // 设置
+        var setting = self.bg.getChildByName("setting").getComponent(cc.Button);
+        setting.node.on('click', self.onSetting, this);
 
         // 有数据等待初始化
         if (gameModel.isWaiting) {
@@ -202,6 +212,8 @@ cc.Class({
                 this.playerEnter(playerData[gameModel.isWaitingData[i]], gameModel.isWaitingData[i]);
             }
             gameModel.isWaiting = false;
+            gameModel.isWaitingData = [];
+        } else {
             gameModel.isWaitingData = [];
         }
 
@@ -227,31 +239,47 @@ cc.Class({
 
     // 用户进入
     playerEnter: function (args, viewID) {
+        cc.log("game playerEnter viewID = " + viewID);
         var self = this;
         self.m_Chairs[viewID].headNode.active = true;
-        cc.log("用户上桌 args.head_url = " + args.head_url);
         Tool.weChatHeadFile(self.m_Chairs[viewID].head, args.head_url, self.m_Chairs[viewID].headNode);
         self.m_Chairs[viewID].name.getComponent(cc.Label).string = Tool.InterceptDiyStr(Tool.encryptMoblieNumber(args.name), 4);
-        self.m_Chairs[viewID].money.getComponent(cc.Label).string = Tool.goldSplit(args.gold);
+        
 
-        if (viewID == 0 && args.status == 0) {
-            // self.m_Chairs[viewID].clock.active = true;
-            // self.showTime(0, 15);
-            // self.btnReady.active = true;
-            self.onBtnReady(null);
+        if (KKVS.GAME_MODEL == 6) {
+            for (var i in gameModel.PVPSCORES) {
+                var viewID1 = Tool.getViewChairID(i);
+                self.m_Chairs[viewID1].money.getComponent(cc.Label).string = Tool.goldSplit(gameModel.PVPSCORES[i]);
+            }
+        } else if (KKVS.GAME_MODEL == 2) {
+            for (var i in gameModel.FKSCORES) {
+                var viewID2 = Tool.getViewChairID(i);
+                self.m_Chairs[viewID2].money.getComponent(cc.Label).string = Tool.goldSplit(gameModel.FKSCORES[i]);
+            }
+
+            if (self.dismissNode) {
+                self.dismissNode.destroy();
+                self.dismissNode = null;
+            }
         } else {
-            // self.m_Chairs[viewID].ready.active = true;
+            self.m_Chairs[viewID].money.getComponent(cc.Label).string = Tool.goldSplit(args.gold);
         }
+
+        if (viewID == 0) {
+            self.onBtnReady(null);
+        }
+        // 用户发送准备后清空
+        gameModel.isWaitingData = [];
     },
 
     showTime: function (viewID, time) {
         var self = this;
         this.node.stopAllActions();
-        cc.log("showTime veiwID = " + viewID);
         if (viewID == 65535 || viewID == -1) {
 			return;
-		}
+        }
         
+        // 遍历移除所有玩家的倒计时
         
         self.m_Chairs[viewID].clock.active = true;
         self.m_Chairs[viewID].clockTime.getComponent(cc.Label).string = time.toString();
@@ -265,8 +293,8 @@ cc.Class({
                 if (viewID == 0) {
                     if (KKVS.GAME_MODEL != 2) {
                         self.visibleOperation(false);
-                        self.visibleCallScore(false);
                     }
+                    self.visibleCallScore(false);
                 }
                 return;
             };
@@ -334,7 +362,11 @@ cc.Class({
     },
 
     onInviteWx: function(event) {
-        wxSDK.shareAppMessage("开开斗地主OL", './../../static/LoginBG.jpg', KKVS.COM_ROOM_NUMBER);
+        wxSDK.shareAppMessage("随时随地，好友开战！", "res/raw-assets/resources/Lobby/Lv_0.png", KKVS.COM_ROOM_NUMBER);
+    },
+
+    onDismiss: function(event) {
+        gameEngine.app.player().request_disband_game(KKVS.myChairID, 1);
     },
 
     onEx: function(event) {
@@ -351,6 +383,10 @@ cc.Class({
             KKVS.EnterRoomID, KKVS.EnterTableID, KKVS.EnterChairID, []);
         
         gameModel.tipsClickNum = 0;
+    },
+
+    onSetting: function (event) {
+        setUI.Show();
     },
 
     // 发送出牌
@@ -422,7 +458,6 @@ cc.Class({
     // 提示
     toTipsCard: function () {
         var self = this;
-        cc.log("toTipsCard");
         var objCards = null;
         var selfCards = [];
         self.setAllNoneSelectCard();
@@ -432,7 +467,6 @@ cc.Class({
         for (var i = 0; i < clen; ++i) {
             selfCards.push(cardList[i].getComponent(cardfabs).getCardValue());
         }
-        cc.log("别人出的牌型长度 = " + self.lastCardData.length);
         if (self.lastCardData.length != 0) {
             objCards = [];
             var llen = self.lastCardData.length;
@@ -440,8 +474,8 @@ cc.Class({
                 objCards.push(self.lastCardData[i].getComponent(cardfabs).getCardValue());
             }
         }
-        if (objCards != null)
-            cc.log('目标牌型长度 objCards.length = ' + objCards.length);
+        // if (objCards != null)
+        //     cc.log('目标牌型长度 objCards.length = ' + objCards.length);
 
         var obj = cardTypeUtil.tipsCard(selfCards, objCards, 0);
         if (obj) {
@@ -502,7 +536,7 @@ cc.Class({
 
     // 重置桌面
     // bShow ：true 隐藏其余两个玩家头像
-    resettingData: function (bShow) {
+    resettingData: function () {
         var self = this;
         // 清空自己手牌
         self.myCardPanel.removeAllChildren();
@@ -533,8 +567,8 @@ cc.Class({
         // 其余两个玩家信息
         self.m_Chairs[1].cardNum.getComponent(cc.Label).string = "0";
         self.m_Chairs[2].cardNum.getComponent(cc.Label).string = "0";
-        self.m_Chairs[1].headNode.active = !bShow;
-        self.m_Chairs[2].headNode.active = !bShow;
+        self.m_Chairs[1].cardNumBG.active = false;
+        self.m_Chairs[2].cardNumBG.active = false;
 
         // 更新倍数
         self.updataMultiple(1, false);
@@ -549,9 +583,11 @@ cc.Class({
         if (KKVS.GAME_MODEL == 2) {
             self.inviteWx.node.active = !gameModel.isInGameStart;
             self.exitBtn.active = !gameModel.isInGameStart;
+            self.dissmissBtn.active = gameModel.isInGameStart;
+            self.jushubg.active = true;
         }
-
-        self.resettingData(false);
+        
+        self.resettingData();
         self.m_Chairs[0].clock.active = false;
 
         self.myCardPanel.active = true;
@@ -837,8 +873,22 @@ cc.Class({
         cc.log("callBanker tempViewID = " + tempViewID);
         if (data.multiple == 0) {
             self.m_Chairs[tempViewID].unCall.active = true;
+            if (tempViewID == 0) {
+                // 修复在房卡模式下 断线回来刚好到本家叫分操作 倒计时没有走完的情况
+                // 显示了下一家 开始叫分
+                self.visibleCallScore(false);
+            }
+            AudioMnger.playEffect(Tool.getEffectName(gameModel.playerData[tempViewID].gender, StringDef.BUJIAO_EF));
 
         } else if (data.multiple != -1) {
+            if (data.multiple == 1) {
+                AudioMnger.playEffect(Tool.getEffectName(gameModel.playerData[tempViewID].gender, StringDef.YIFEN_EF));
+            } else if (data.multiple == 2) {
+                AudioMnger.playEffect(Tool.getEffectName(gameModel.playerData[tempViewID].gender, StringDef.ERFEN_EF));
+            } else if (data.multiple == 3) {
+                AudioMnger.playEffect(Tool.getEffectName(gameModel.playerData[tempViewID].gender, StringDef.SANFEN_EF));
+            }
+            
             var fenStr = 'GameUI/' + data.multiple + 'fen';
             self.m_Chairs[tempViewID].CallScore.active = true;
             cc.loader.loadRes(fenStr, cc.SpriteFrame, function (err, spriteFrame) {
@@ -888,6 +938,8 @@ cc.Class({
         // 显示地址标识
         var viewID = Tool.getViewChairID(data.chairID);
         self.m_Chairs[viewID].diZhuFlag.active = true;
+
+        AudioMnger.playEffect(Tool.getEffectName(gameModel.playerData[viewID].gender, StringDef.SANFEN_EF));
 
         // 确定地主后，其余玩家操作标志隐藏
         for (var i = 0; i < 3; ++i) {
@@ -957,7 +1009,6 @@ cc.Class({
         var self = this;
         var viewID = Tool.getViewChairID(chairID);
         self.operationID = viewID;
-        cc.log("toPlayCard viewID = " + viewID + " mustPlay = " + mustPlay);
         self.visibleCallScore(false);
         mustPlay = (mustPlay == 1) ? true : false;
         this.mustPlay = mustPlay;
@@ -1045,7 +1096,6 @@ cc.Class({
     // 自己出牌
     playSelfCard: function (cardIds, chairID) {
         var self = this;
-        cc.log("playSelfCard");
 
         var viewID = Tool.getViewChairID(chairID);
         if (self.m_Chairs[viewID].clock.active == true)
@@ -1053,6 +1103,7 @@ cc.Class({
 
         if (cardIds.length == 0) {
             self.m_Chairs[viewID].unOut.active = true;
+            AudioMnger.playEffect(Tool.getEffectName(gameModel.playerData[viewID].gender, StringDef.BUCHU_EF));
             return;
         }
         if (cardIds.length != 0) {
@@ -1079,16 +1130,25 @@ cc.Class({
         var cardType = cardTypeUtil.getCardType(cardvalue);
         if (cardType == cardTypeUtil.rocketCard) {
             AniMnger.Show(StringDef.HUOJIAN);
+            AudioMnger.playEffect(Tool.getEffectName(gameModel.playerData[viewID].gender, StringDef.HUOJIAN_EF));
             self.updataMultiple(gameModel.multiple * 2, true);
+
         } else if (cardType == cardTypeUtil.bormCard || cardType > 100) {
             AniMnger.Show(StringDef.ZHADAN);
             self.updataMultiple(gameModel.multiple * 2, true);
+            AudioMnger.playEffect(Tool.getEffectName(gameModel.playerData[viewID].gender, StringDef.ZHADAN_EF));
+
         } else if (cardType == cardTypeUtil.planeTakeNoneCard || cardType == cardTypeUtil.planeTakeSingleCard || cardType == cardTypeUtil.planeTakeDoubleCard) {
             AniMnger.Show(StringDef.FEIJI);
+            AudioMnger.playEffect(Tool.getEffectName(gameModel.playerData[viewID].gender, StringDef.FEIJI_EF));
+
         } else if (cardType == cardTypeUtil.sequenceCard) {
             AniMnger.Show(StringDef.SHUNZI);
+            AudioMnger.playEffect(Tool.getEffectName(gameModel.playerData[viewID].gender, StringDef.SHUNZI_EF));
+
         } else if (cardType == cardTypeUtil.linkDoubleCard) {
             AniMnger.Show(StringDef.LIANDUI);
+            AudioMnger.playEffect(Tool.getEffectName(gameModel.playerData[viewID].gender, StringDef.SHUANGSHUN_EF));
         }
 
         Tool.sortOutCardList(self.outCardList[0], cardfabs);
@@ -1122,7 +1182,6 @@ cc.Class({
     playerPlayCard: function (cardIds, chairID) {
         var self = this;
         var viewID = Tool.getViewChairID(chairID)
-        cc.log("playerPlayCard viewID = " + viewID + " cardIds.length = " + cardIds.length);
 
         for (var i = 0; i < 3; ++i) {
             self.m_Chairs[viewID].unOut.active = false;
@@ -1132,6 +1191,7 @@ cc.Class({
 
         if (cardIds.length == 0) {
             self.m_Chairs[viewID].unOut.active = true;
+            AudioMnger.playEffect(Tool.getEffectName(gameModel.playerData[viewID].gender, StringDef.BUCHU_EF));
             return;
         }
 
@@ -1158,15 +1218,24 @@ cc.Class({
         if (cardType == cardTypeUtil.rocketCard) {
             AniMnger.Show(StringDef.HUOJIAN);
             self.updataMultiple(gameModel.multiple * 2, true);
+            AudioMnger.playEffect(Tool.getEffectName(gameModel.playerData[viewID].gender, StringDef.HUOJIAN_EF));
+
         } else if (cardType == cardTypeUtil.bormCard || cardType > 100) {
             AniMnger.Show(StringDef.ZHADAN);
             self.updataMultiple(gameModel.multiple * 2, true);
+            AudioMnger.playEffect(Tool.getEffectName(gameModel.playerData[viewID].gender, StringDef.ZHADAN_EF));
+
         } else if (cardType == cardTypeUtil.planeTakeNoneCard || cardType == cardTypeUtil.planeTakeSingleCard || cardType == cardTypeUtil.planeTakeDoubleCard) {
             AniMnger.Show(StringDef.FEIJI);
+            AudioMnger.playEffect(Tool.getEffectName(gameModel.playerData[viewID].gender, StringDef.FEIJI_EF));
+
         } else if (cardType == cardTypeUtil.sequenceCard) {
             AniMnger.Show(StringDef.SHUNZI);
+            AudioMnger.playEffect(Tool.getEffectName(gameModel.playerData[viewID].gender, StringDef.SHUNZI_EF));
+
         } else if (cardType == cardTypeUtil.linkDoubleCard) {
             AniMnger.Show(StringDef.LIANDUI);
+            AudioMnger.playEffect(Tool.getEffectName(gameModel.playerData[viewID].gender, StringDef.SHUANGSHUN_EF));
         }
         cardIds = Tool.toolSortArray(cardIds);
 
@@ -1196,15 +1265,18 @@ cc.Class({
     // 结算界面
     endInfo: function (data) {
         var self = this;
-        // if (data.masterWin) {
 
-        // } else {
-
-        // }
-
-        var endNode = cc.instantiate(this.endPrefab);
-        endNode.getComponent(endNodePrefab).setData(data, endNode);
-        this.node.addChild(endNode, 9999);
+        if( KKVS.GAME_MODEL == 6){
+            // 6是排位赛
+            var pvpGameEnd = require('./pvpGameEnd');
+            cc.log("KKVS.myChairID = " + KKVS.myChairID);
+            cc.log("myScore = " + Number(data[0].score));
+            pvpGameEnd.Show(Number(data[0].score));
+        } else{
+            var endNode = cc.instantiate(this.endPrefab);
+            endNode.getComponent(endNodePrefab).setData(data, endNode);
+            this.node.addChild(endNode, 9999);
+        }        
     },
 
     // 断线重连后   更新其余玩家手牌数量
@@ -1212,7 +1284,6 @@ cc.Class({
         var self = this;
         for (var i = 0; i < data.length; ++i) {
             var viewID = Tool.getViewChairID(i);
-            cc.log("viewID = " + viewID + " cardNum = " + data[i]);
             if (viewID == 1) {
                 self.m_Chairs[1].cardNum.getComponent(cc.Label).string = data[i].toString();
             } else if (viewID == 2) {
@@ -1339,7 +1410,6 @@ cc.Class({
         if (args == 1) {
             cc.director.loadScene("Lobby");
         } else if (args == 2) {
-            // cc.director.loadScene("GameUI");
             OnLineManager._autoConnect = true;
             gameEngine.app.player().reqReConnectGameTable();
             gameModel.isOnReconnection = false;
@@ -1361,7 +1431,7 @@ cc.Class({
     refreshOtherScoreDDZ: function(playerID, money) {
         var self = this;
         var len = gameModel.playerData.length;
-		console.log("refreshOtherScoreDDZ = " + money);
+		cc.log("refreshOtherScoreDDZ = " + money);
 		var msn = parseInt(money);
 		for (var i = 0; i < len; i++) {
 			if (gameModel.playerData[i].playerId == playerID) {
@@ -1410,6 +1480,8 @@ cc.Class({
     onContClick: function() {
         var self = this;
         self.resettingData(true);
+        self.m_Chairs[1].headNode.active = false;
+        self.m_Chairs[2].headNode.active = false;
         gameModel.diZhuCharId = 65535;
         if (gameEngine.app) {
             gameEngine.app.player().reqLeaveTable();
@@ -1422,6 +1494,7 @@ cc.Class({
         var self = this;
         if (data == 1) {
             cc.log("摊牌收到春天的消息");
+            AniMnger.Show(StringDef.CHUNTIAN);
             self.updataMultiple(gameModel.multiple * 2, true);
         }
     },
@@ -1429,13 +1502,63 @@ cc.Class({
     // 房卡模式下 更新玩家金币
     fuckUpdate: function(data) {
         var self = this;
+        gameModel.FKSCORES = [];
+        gameModel.FKSCORES = data.scores;
         for (var i in data.scores) {
             var viewID = Tool.getViewChairID(i);
             self.m_Chairs[viewID].money.getComponent(cc.Label).string = Tool.goldSplit(data.scores[i]);
         }
 
-        // var currentRund = data.curJuShu + 1;
-		// var maxRund = args.zongJuShu;
+        self.curTime.string = data.curJuShu.toString();
+        self.maxTime.string = '/' + data.zongJuShu.toString() + '局';
+        
+        gameModel.curRun = data.curJuShu;
+        gameModel.maxRun = data.zongJuShu;
+    },
+
+    // 排位赛 更新玩家积分
+    mode_score: function (data) {
+        var self = this;
+        gameModel.PVPSCORES = [];
+        gameModel.PVPSCORES = data;
+        for (var i in data) {
+            var viewID = Tool.getViewChairID(i);
+            self.m_Chairs[viewID].money.getComponent(cc.Label).string = Tool.goldSplit(data[i]);
+        }
+    },
+
+    onHappyFuckFinish: function(data){
+        // var totalResult = require('./totalResult');
+        // totalResult.Show(data, 10000);
+    },
+
+    // 收到牌局解散的消息
+    DismissGame: function(mAgreeArray, mLastResult, mFristName) {
+        var self = this;
+        if (self.dismissNode == null) {
+            self.dismissNode = cc.instantiate(this.dismissPB);
+            this.node.addChild(self.dismissNode, 1000);
+            self.dismissNode.getComponent('Dismiss').setData(mAgreeArray, mLastResult, mFristName);
+        } else {
+            self.dismissNode.getComponent('Dismiss').showResult(mAgreeArray, mLastResult, mFristName);
+        }
+
+        if (mLastResult == 0) {
+            self.dismissNode = null;
+        } else if (mLastResult == 1) {
+            self.dismissNode = null;
+            gameModel.lastJu = true;
+        }
+    },
+
+    // 
+    DisssRemove: function () {
+        var self = this;
+        cc.log("1-2-2-2-2-2-2");
+        self.dismissNode.destroy();
+        cc.log("s-w-e-d-d-o");
+        self.dismissNode = null;
+        
     },
 
     addEvent() {
@@ -1451,6 +1574,7 @@ cc.Class({
         self.btnYaoBuQi.node.on("touchend", self.onBtnNotPlay, this);
         self.invite.node.on('touchend', self.onInviteWx, this);
         self.exit.node.on('touchend', self.onEx, this);
+        self.dissmissBtn.node.on("click", self.onDismiss, this);
         
         KKVS.Event.register("playerEnter", this, "playerEnter");
         KKVS.Event.register("showSelfCard", this, "showSelfCard");
@@ -1474,6 +1598,11 @@ cc.Class({
         KKVS.Event.register("onContClick", this, "onContClick");
         KKVS.Event.register("openCardSpring", this, "openCardSpring");
         KKVS.Event.register("fuckUpdate", this, "fuckUpdate");
+        KKVS.Event.register("mode_score", this, "mode_score");
+        KKVS.Event.register("onHappyFuckFinish" ,this ,"onHappyFuckFinish");
+        KKVS.Event.register("DismissGame" ,this ,"DismissGame");
+        KKVS.Event.register("DisssRemove" ,this ,"DisssRemove");
+        
         cc.log("GameUI 注册Kbe事件");
     },
 
@@ -1502,6 +1631,10 @@ cc.Class({
         KKVS.Event.deregister("onContClick", this);
         KKVS.Event.deregister("openCardSpring", this);
         KKVS.Event.deregister("fuckUpdate", this);
+        KKVS.Event.deregister("mode_score", this);
+        KKVS.Event.deregister("onHappyFuckFinish", this);
+        KKVS.Event.deregister("DismissGame", this);
+        KKVS.Event.deregister("DisssRemove", this);
 
         cc.log("GameUI has been destroy");
     },

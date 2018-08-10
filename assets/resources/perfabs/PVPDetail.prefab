@@ -350,7 +350,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 174,
+      "width": 173,
       "height": 51
     },
     "_rotationX": 0,
@@ -378,7 +378,7 @@
     },
     "_enabled": true,
     "_spriteFrame": {
-      "__uuid__": "b3861fea-4bc3-42e3-a07d-6ba4b2b803e0"
+      "__uuid__": "12eed055-37cb-4e0e-9f68-f79eacfd8d81"
     },
     "_type": 0,
     "_sizeMode": 1,
@@ -723,12 +723,12 @@
     "_anchorPoint": {
       "__type__": "cc.Vec2",
       "x": 0.5,
-      "y": 0.5
+      "y": 0
     },
     "_contentSize": {
       "__type__": "cc.Size",
       "width": 830,
-      "height": 120
+      "height": 280
     },
     "_rotationX": 0,
     "_rotationY": 0,
@@ -736,8 +736,8 @@
     "_scaleY": 1,
     "_position": {
       "__type__": "cc.Vec2",
-      "x": 0,
-      "y": 219
+      "x": -4,
+      "y": -13
     },
     "_skewX": 0,
     "_skewY": 0,
@@ -760,9 +760,9 @@
     "_lineHeight": 40,
     "_enableWrapText": true,
     "_N$file": null,
-    "_isSystemFontUsed": true,
+    "_isSystemFontUsed": false,
     "_spacingX": 0,
-    "_N$string": "本赛季将于2018年12月20日结束，奖励按照赛季段位于次日发放\n",
+    "_N$string": "本赛季将于2018年12月20日结束，奖励按照赛季段位于次日发放,本赛季将于2018年12月20日结束，奖励按照赛季段位于次日发放,本赛季将于2018年12月20日结束，奖励按照赛季段位于次日发放,本赛季将于2018年12月20日结束，奖励按照赛季段位于次日发放\n",
     "_N$horizontalAlign": 1,
     "_N$verticalAlign": 0,
     "_N$fontFamily": "Arial",
