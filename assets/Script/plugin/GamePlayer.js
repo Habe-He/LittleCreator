@@ -63,7 +63,9 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
 
         KKVS.NICKNAME = params.nickname;
         KKVS.GENDER = params.gender;
-        KKVS.KGOLD = params.gamemoney;
+        if (gameModel.GAME_MODEL != 2) {
+            KKVS.KGOLD = params.gamemoney;
+        }
         KKVS.EXP = params.exp;
         KKVS.VIP = params.vip;
         KKVS.HEAD_URL = params.head_url;
@@ -645,7 +647,6 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
 
     onHappy_Again: function () {
         cc.log("->onHappy_Again====");
-        // this.baseCall("reqKent_Trusteeship", lobbyID, fieldID, roomID, tableID, KKVS.myChairID);
         var args = arguments;
         Tool.logObj(args);
         var data = {
@@ -673,7 +674,6 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
 
     onHappy_Trusteeship: function (lobbyID, fieldID, roomID, tableID) {
         cc.log("->onHappy_SendCallBanker====");
-        // GameManager.inTrusteeship();
         this.baseCall("reqKent_Trusteeship", lobbyID, fieldID, roomID, tableID, KKVS.myChairID);
     },
 

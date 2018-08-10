@@ -280,6 +280,9 @@ cc.Class({
         }
         
         // 遍历移除所有玩家的倒计时
+        for (var i = 0; i < 3; ++i) {
+            self.m_Chairs[i].clock.active = false;
+        }
         
         self.m_Chairs[viewID].clock.active = true;
         self.m_Chairs[viewID].clockTime.getComponent(cc.Label).string = time.toString();
@@ -1023,8 +1026,8 @@ cc.Class({
         self.outCardList[viewID] = [];
         if (viewID == 0) {
             self.btnPlay.active = true;
-            self.btnNotPlay.active = true;
             self.btnNotPlay.getComponent(cc.Button).interactable = !mustPlay;
+            self.btnNotPlay.active = true;
             self.btnTips.active = true;
 
             var objCards = [];
@@ -1319,7 +1322,14 @@ cc.Class({
                 if (data.User_cards_count[0] != 0 && data.User_cards_count[1] != 0 && data.User_cards_count[2] != 0) {
                     cc.log("自己出牌按钮");
                     self.visibleOperation(true);
-                    self.btnNotPlay.getComponent(cc.Button).interactable = (data.mustPlay == 2) ? false : true;
+                    cc.log('Fuck mustPlay = ' + data.mustplay);
+                    if (data.mustplay == 2 || data.mustplay == 0 || data.mustplay == 1) {
+                        self.mustPlay = false;
+                        cc.log("不出可点击");
+                    } else  {
+                        cc.log("不出bu可点击");
+                        self.mustPlay = true;
+                    }
                 } else {
                     cc.log("没有牌了  不出现出牌操作按钮");
                 }
