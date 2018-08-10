@@ -1322,14 +1322,15 @@ cc.Class({
                 if (data.User_cards_count[0] != 0 && data.User_cards_count[1] != 0 && data.User_cards_count[2] != 0) {
                     cc.log("自己出牌按钮");
                     self.visibleOperation(true);
-                    cc.log('Fuck mustPlay = ' + data.mustplay);
-                    if (data.mustplay == 2 || data.mustplay == 0 || data.mustplay == 1) {
-                        self.mustPlay = false;
-                        cc.log("不出可点击");
-                    } else  {
-                        cc.log("不出bu可点击");
-                        self.mustPlay = true;
-                    }
+                    self.btnNotPlay.getComponent(cc.Button).interactable = (data.mustplay == 2) ? false : true;
+                    // cc.log('Fuck mustPlay = ' + data.mustplay);
+                    // if (data.mustplay == 2 || data.mustplay == 0 || data.mustplay == 1) {
+                    //     self.mustPlay = false;
+                    //     cc.log("不出可点击");
+                    // } else  {
+                    //     cc.log("不出bu可点击");
+                    //     self.mustPlay = true;
+                    // }
                 } else {
                     cc.log("没有牌了  不出现出牌操作按钮");
                 }
