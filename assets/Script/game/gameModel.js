@@ -53,7 +53,13 @@ var gameModel = {
     // 总局数
     maxRun: 0,
     lastJu:false,
-    totalResultData:{}
+    totalResultData:{},
+
+    // 邮件列表
+    mailList: [],
+
+    // 邀请好友弹窗是否已显示
+    isInviteVaild: false,
 };
 
 

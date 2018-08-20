@@ -63,6 +63,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
 
         KKVS.NICKNAME = params.nickname;
         KKVS.GENDER = params.gender;
+        cc.log("KKVS.GENDER = " + KKVS.GENDER);
         if (gameModel.GAME_MODEL != 2) {
             KKVS.KGOLD = params.gamemoney;
         }
@@ -83,6 +84,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     on_item: function (props) {
         gameModel.propsMsg = [];
         gameModel.propsMsg = props;
+        KKVS.Event.fire("refreshPropsInfo");
     },
 
 
@@ -92,12 +94,57 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
             // 季赛当前状态  0 未开始, 1 进行中, 2 已结束
             cc.log("排位赛季信息");
             cc.log("datas = " + datas);
-            // gameModel.levelMsg = JSON.parse(datas);
             KKVS.levelMsg = JSON.parse(datas);
-            // var str = Tool.getByTimeDetail(gameModel.levelMsg.start);
-            // cc.log("str = " + str);
 
+        } else if (cmd == StringDef.PLAYER_MSG_ID_MAIL_LIST) {
+            cc.log("收到邮件列表");
+            cc.log("datas = " + datas);
+            gameModel.mailList = [];
+            gameModel.mailList = JSON.parse(datas);
+
+        } else if (cmd == StringDef.PLAYER_MSG_ID_MAIL_OPT) {
+            cc.log("玩家邮件查看|领取");
+            cc.log("datas = " + datas);
+            var msg = JSON.parse(datas);
+            if (msg.success) {
+                cc.log('邮件领取成功');
+                for (var i = 0; i < gameModel.mailList.length; ++i) {
+                    if (gameModel.mailList[i].id == msg.mail_id) {
+                        gameModel.mailList[i].status = 1;
+                        gameModel.mailList[i].type = 0;
+                    }
+                }
+
+                KKVS.Event.fire("updateMail");
+            }
+
+        } else if (cmd == StringDef.PLAYER_MSG_ID_MAIL_DEL) {
+            cc.log("玩家邮件删除");
+            cc.log("datas = " + datas);
+            var msg = JSON.parse(datas);
+            if (msg.success) {
+                KKVS.Event.fire("updateMail");
+            }
         }
+    },
+
+
+    req_opt_mail: function(id, type) {
+        var data = {
+            id: id,
+            type: type
+        };
+        var json_str = JSON.stringify(data);
+        this.baseCall('req_player_msg', StringDef.PLAYER_MSG_ID_MAIL_OPT, json_str);
+    },
+
+    req_del_mail: function(idArray) {
+        var data = {
+            id: idArray,
+            is_all: false
+        };
+        var json_str = JSON.stringify(data);
+        this.baseCall('req_player_msg', StringDef.PLAYER_MSG_ID_MAIL_DEL, json_str);
     },
 
     onEnterLobby: function (lobbyID, bSuccess, ret_code) {
@@ -113,10 +160,10 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
     },
 
     on_player_game_money_update: function (money) {
-        // if (KKVS.GAME_MODEL == 0) {
-        //     KKVS.KGOLD = money;
-        // }
-        KKVS.KGOLD = money;
+        if (KKVS.GAME_MODEL != 2) {
+            KKVS.KGOLD = money;
+        }
+        // KKVS.KGOLD = money;
         cc.log("GamePlayer->>>>on_player_game_money_update money = " + money);
         KKVS.Event.fire("refreshMyScore", money);
     },
@@ -317,6 +364,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
 
     on_lobby_msg: function (cmd, msg) {
         cc.log("Player::on_lobby_msg cmd = " + cmd);
+        cc.log("msg = " + msg);
         var params = JSON.parse(msg);
         if (cmd == StringDef.LOBBY_MSG_BASE_ACT_CREATE_ROOM) {
             var success = params.success;
@@ -334,6 +382,7 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
                     type: 1
                 }).show();
             }
+
         } else if (cmd == StringDef.LOBBY_MSG_BASE_ACT_JOIN_ROOM) {
             // modulelobby.hideLoading();
             if (params.success) {
@@ -351,15 +400,44 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
             if(params.success){
                 KKVS.Event.fire("leaveCardRoomSuccess");
             }
+        } else if (cmd == StringDef.LOBBY_MSG_RANK_LIST_GOLD) {
+            cc.log("收到国服金币排行榜");
+            cc.log(params);
+            KKVS.Event.fire("runkListGold", params);
+        } else if (cmd == StringDef.LOBBY_MSG_RANK_LIST_SCORE) {
+            cc.log("收到国服积分排行榜");
+            cc.log(params);
+            KKVS.Event.fire("runkListScore", params);
+        } else if( cmd == StringDef.LOBBY_MSG_SHARE_RECORD){
+            cc.log("收到分享记录的消息");
+            cc.log("params = " + params);
+        } else if( cmd == StringDef.LOBBY_MSG_SHARE_SUCCESS) {
+            cc.log("收到分享成功的消息");
+            cc.log("params = " + params);
+            if( params.type == 1){
+                if( params.success == true){
+                    cc.log("分享成功");
+                    var str = "分享成功,获得";
+                    for( var i = 0 ; i < params.awards.length ; i++){
+                        var data = params.awards[i];
+                        if( data.prop_id == 1050){
+                            str += (data.prop_count.toString() + "钻石"); 
+                        }
+                    }
+                    (new DialogView()).build(TxtDialogComp, {
+                        txt: str,
+                        type: 1
+                    }).show();
+                } else{
+                   
+                }
+            }
         }
     },
-
-
 
     // 用户进入 
     onEnterGameTable: function () {
         cc.log(">> onEnterGameTable 用户进入桌子");
-        
         var args = arguments;
         var data = [];
         var chairID = args[4];
@@ -402,8 +480,8 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
             playerID: playerID
         };
         if (chairID == KKVS.EnterChairID) {
-            // cc.log("自己离开桌子")
-            // KKVS.Event.fire("leaveGame");
+            cc.log("自己离开桌子")
+            KKVS.Event.fire("leaveGame");
         } else {
             cc.log("别的玩家被踢出桌子");
             KKVS.Event.fire("otherLeaveGame", chairID);
@@ -730,6 +808,18 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         this.baseCall('req_lobby_msg', StringDef.LOBBY_MSG_BASE_ACT_LEAVE_ROOM, json_str);
     },
 
+    // 获取排行榜信息 -- 金币
+    req_runk_coin: function() {
+        cc.log('请求排行金币');
+        this.baseCall('req_lobby_msg', StringDef.LOBBY_MSG_RANK_LIST_GOLD, JSON.stringify({}));
+    },
+
+    // 获取排行榜信息 -- 积分
+    req_runk_scores: function() {
+        cc.log("请求排行积分");
+        this.baseCall('req_lobby_msg', StringDef.LOBBY_MSG_RANK_LIST_SCORE, JSON.stringify({}));
+    },
+
     ////////////
     // 新增红包消息
     ////////////
@@ -862,4 +952,49 @@ gameEngine.GamePlayer = gameEngine.Entity.extend({
         cc.log('send_disband_req');
         KKVS.Event.fire("DismissGame", mAgreeArray, mLastResult, mFristName);
     },
+
+    // 发送兑换金币
+    sendChangeGold :function(count){
+        this.baseCall("req_exc",StringDef.CMD_DIAMOND_EXCHANGE_GM,count);
+    },
+
+    opt_ret:function(cmd ,erorStr){
+        if( cmd == StringDef.CMD_DIAMOND_EXCHANGE_GM){
+            if(erorStr.length > 0  ){
+                (new DialogView()).build(TxtDialogComp, {
+                    txt: erorStr,
+                    type: 1
+                }).show();
+            } else{
+                (new DialogView()).build(TxtDialogComp, {
+                    txt: "兑换成功",
+                    type: 1
+                }).show();
+            }
+        }
+    },
+
+
+    sendGetMailList :function(){
+        var params = {};
+        var datas = JSON.stringify(params);
+        this.baseCall("req_player_msg", StringDef.PLAYER_MSG_ID_MAIL_LIST, datas);
+    },
+
+
+    // 请求分享相关
+    reqShareRecord:function(){
+        // 
+        return;
+        this.baseCall('req_lobby_msg', StringDef.LOBBY_MSG_SHARE_RECORD, JSON.stringify({}));
+    },
+    // 通知哪个类型的分享成功 1: loby(群)  2:lobby(好友) 3 :result(qun) 4:haoyou ,
+    reqShareSuccess:function(type , ticket){
+        var params = {
+            'type': type,
+            'ticket':ticket
+        };
+        var datas = JSON.stringify(params);
+        this.baseCall('req_lobby_msg' , StringDef.LOBBY_MSG_SHARE_SUCCESS ,datas);
+    }
 });

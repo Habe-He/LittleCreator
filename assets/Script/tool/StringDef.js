@@ -12,6 +12,29 @@ StringDef.LOBBY_MSG_BASE_ACT_JOIN_ROOM = 151;
 // 离开房间
 StringDef.LOBBY_MSG_BASE_ACT_LEAVE_ROOM = 153;
 
+// 金币排行
+StringDef.LOBBY_MSG_RANK_LIST_GOLD = 180;
+
+// 积分排行
+StringDef.LOBBY_MSG_RANK_LIST_SCORE = 181;
+
+// 玩家邮件列表
+StringDef.PLAYER_MSG_ID_MAIL_LIST = 20;
+
+// 玩家邮件查看|领取
+StringDef.PLAYER_MSG_ID_MAIL_OPT = 21;
+
+// 玩家邮件删除
+StringDef.PLAYER_MSG_ID_MAIL_DEL = 22;
+
+StringDef.LOBBY_MSG_SHARE_RECORD = 190; //请求获取分享记录
+StringDef.LOBBY_MSG_SHARE_SUCCESS = 191; //通知服务器分享成功
+
+
+
+// 兑换钻石
+StringDef.CMD_DIAMOND_EXCHANGE_GM = 5;// # 命令码 5:钻石 兑换 游戏币
+
 // 钻石 | 房卡 数字ID
 StringDef.Diamond = 1050;
 

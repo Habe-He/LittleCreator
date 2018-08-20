@@ -6,6 +6,8 @@ var cardInfo = require('./../card/cardInfo');
 var cardfabs = require('./../card/cardPer');
 var StringDef = require('./StringDef');
 var LevelConfig = require("./config.js");
+var AppHelper = require('./../AppHelper');
+var httpUtils = require('./../plugin/httpUtils')
 
 var Tool = Tool || {};
 
@@ -436,10 +438,8 @@ Tool.goldSplit = function(money) {
         }
     }
 };
-
 // 获取音效的名字
 Tool.getEffectName = function(gender, object) {
-    cc.log("Tool.getEffectName gender = " + gender);
     var genderAr = ['voice/Effect/man/', 'voice/Effect/woman/', 'voice/Effect/woman/'];
     var ef_name = null;
     // TODO 待优化部分
@@ -474,8 +474,6 @@ Tool.getEffectName = function(gender, object) {
     } else if (object.ID == StringDef.SHUNZI_EF.ID) {
         ef_name = StringDef.SHUNZI_EF.Name;
     }
-    // cc.log("gender = " + gender);
-    cc.log('Tool. effect name = ' + genderAr[gender] + ef_name);
     return (genderAr[gender] + ef_name).toString();
 };
 
@@ -522,11 +520,7 @@ Tool.getLevelInfoByLevelId = function(level_id){
 Tool.getLevelInfo = function(score){
     for( var i = 0 ; i < LevelConfig.g_levelScore.length - 1 ; i++){
         var data = LevelConfig.g_levelScore[i];
-        // if( i == 0 ){
-        //     data.minScore = 0;
-        // }
-
-        if( score >= data.minScore && score <= data.maxScore){
+        if( score >= data.minScore && score < data.maxScore){
             var finallyData = {
                 bigLevel:data.big_level,
                 star:data.star,
@@ -537,6 +531,12 @@ Tool.getLevelInfo = function(score){
         }
     }
     var data = LevelConfig.g_levelScore[LevelConfig.g_levelScore.length - 1];
+    // cc.log("data.big_level = " + data.big_level);
+    // cc.log("data.star = " + data.star);
+    // cc.log("data.minScore = " + data.minScore);
+    // cc.log("data.maxScore = " + data.maxScore);
+
+
     var star = 0;
     if( score >= data.minScore){
         star = parseInt ((score - data.minScore) /1000000);
@@ -551,4 +551,97 @@ Tool.getLevelInfo = function(score){
     return finallyData;
 };
 
+Tool.sendOrderNumber = function(orderNumber){
+    var reqURL = "https://sjddz-yxjh.17fengyou.com/pay/order-notify";
+    var sign_init = "order_no=" + orderNumber.toString() + KKVS.Acc.toString() + KKVS.sid.toString(); 
+    var signStr = md5.hex_md5(sign_init);
+    var params = {
+        order_no:orderNumber,
+        sign:signStr
+    };
+    cc.log("sendOrderNumber:signStr = " + signStr);
+    httpUtils.getInstance().httpPost(reqURL, params ,function(data) {
+        if (data == -1) {
+            cc.log('请检查网络！');
+        } else {
+            AppHelper.get().hideLoading();
+            var jsonD = JSON.parse(data);
+            cc.log("jsonD.http_code = " + jsonD.http_code);
+            cc.log("jsonD.msg = " + jsonD.msg);
+            cc.log("jsonD.data = " + jsonD.data);
+            if( jsonD.http_code != 200){
+            } else{
+                cc.log("奖励已发送至邮箱，请注意查收");
+                KKVS.Event.fire("ChargeSuccess");
+                cc.log("支付成功 , 奖励发送的邮箱");
+                if (!gameEngine.app || !gameEngine.app.player()) {
+                    return;
+                }
+
+                gameEngine.app.player().sendGetMailList();
+            }
+        }
+    });
+};
+
+Tool.getOrderNumber = function(rmb){
+    // rmb = 1;
+    AppHelper.get().showLoading(null, null, 10);
+    var reqURL = "https://sjddz-yxjh.17fengyou.com/pay/order";
+    var sign_init = "user_id=" + KKVS.GUID.toString() + "&rmb=" + rmb.toString() +  KKVS.Acc.toString() + 
+    KKVS.sid.toString();
+    cc.log("sign_init = " + sign_init);
+    var signStr = md5.hex_md5(sign_init);
+    var params = {
+        user_id:KKVS.GUID,
+        rmb:rmb,
+        sign:signStr
+    };
+    httpUtils.getInstance().httpPost(reqURL, params ,function(data) {
+        if (data == -1) {
+            cc.log('请检查网络！');
+        } else {
+            AppHelper.get().hideLoading();
+            var jsonD = JSON.parse(data);
+            cc.log("jsonD.http_code = " + jsonD.http_code);
+            cc.log("jsonD.msg = " + jsonD.msg);
+            cc.log("jsonD.data = " + jsonD.data);
+            cc.log("jsonD.orderNumber = " + jsonD.data.order_no);
+            if( jsonD.http_code != 200){
+
+            } else{
+                cc.log("充值调用失败");
+            }
+            var orderNumber = jsonD.data.order_no;
+            // Tool.sendOrderNumber(orderNumber);
+            // return;
+            var gemNum = rmb;
+            // 创建 wxSdk
+            // env = 0 ( 正式 ) 1(测试)
+            wx.requestMidasPayment({
+                    mode: 'game',
+                    env: 0,
+                    platform: 'android',
+                    offerId: '1450016529',
+                    buyQuantity: rmb * 10,
+                    zoneId: 1,
+                    currencyType: 'CNY',
+                    success(res) {
+                        // 支付成功
+                        console.log('购买成功')
+                        console.log(res);
+                        cc.log("orderNumber " + orderNumber);
+                        Tool.sendOrderNumber(orderNumber);
+                    },
+                    fail({errMsg, errCode}) {
+                        // 支付失败
+                        console.log(errMsg, errCode)
+                    },
+                    complete(res) {
+                        console.log(res)
+                    }
+            })
+        }
+    });
+};
 module.exports = Tool;

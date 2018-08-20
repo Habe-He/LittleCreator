@@ -153,7 +153,7 @@ KKVS.UINT64 = function (lo, hi) {
  debug
  -----------------------------------------------------------------------------------------*/
 KKVS.INFO_MSG = function (s) {
-    cc.log("*****INFO***** " + s);
+    // cc.log("*****INFO***** " + s);
 }
 
 KKVS.DEBUG_MSG = function (s) {
@@ -1363,8 +1363,12 @@ KKVS.reset = function () {
     KKVS.HEAD_FRAME = 0;
     // 玩家段位信息
     KKVS.levelMsg = [];
-
     KKVS.RoomOutData = null; //jie shan fang jian shu ju
+
+    KKVS.sid = "";
+    KKVS.isShareSuccess = false;
+    KKVS.onHideType = 0;   // 用于处理断网的模式 0:正常断网， 1:不断网(结算分享时候)
+
 };
 
 KKVS.reset();

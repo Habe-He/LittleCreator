@@ -61,12 +61,18 @@ cc.Class({
         cc.game.addPersistRootNode(this.node);
         //add listener
         wx.onHide(function() {
+            if( KKVS.onHideType == 1){
+                return;
+            }
             cc.log("=> 监听到微信小游戏  切换后台");
             self.onEventHide();
             AudioMnger.pauseMusic();
             AudioMnger.pauseAllEffects();
         });
         wx.onShow(function(res) {
+            if( KKVS.onHideType == 1){
+                return;
+            }
             cc.log("=> 监听到微信小游戏  切换前台");
             self.onEventShow();
             AudioMnger.resumeMusic();

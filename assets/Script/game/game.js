@@ -198,6 +198,8 @@ cc.Class({
             self.exitBtn.active = !gameModel.isInGameStart;
             self.dissmissBtn.active = gameModel.isInGameStart;
             self.jushubg.active = true;
+        } else if (KKVS.GAME_MODEL == 0) {
+            self.diText.string = 100;
         }
 
         // 设置
@@ -659,9 +661,9 @@ cc.Class({
     // 自己被踢出桌子
     leaveGame: function () {
         cc.log("game leaveGame");
-        // cc.director.loadScene("Lobby");
-        var self = this;
-        self.onDestroy();
+        cc.director.loadScene("Lobby");
+        // var self = this;
+        // self.onDestroy();
     },
 
     // 选牌操作
@@ -830,22 +832,17 @@ cc.Class({
             if (self.cardList[i] == self.upCard) {
                 self.upCard = null;
             }
-            if (bool)
+            if (bool) {
                 v.node.setColor(cc.color(255, 255, 255, 255));
+            } else {
+                cc.log("所有牌设置为未选中");
+            }
+                
 
             if (self.cardList[i].isSelect) {
                 selfCards.push(v.cardValue);
             }
         }
-
-        // if (selfCards.length > 0) {
-        //     self.btnPlay.setTouchEnabled(true);
-        //     self.btnPlay.setBright(true);
-        // } else {
-        //     self.btnPlay.stopAllActions();
-        //     self.btnPlay.setTouchEnabled(false);
-        //     self.btnPlay.setBright(false);
-        // }
     },
 
     // 断线重连数据
@@ -932,17 +929,10 @@ cc.Class({
 
     // 确定地主
     BankerInfo: function (data) {
-        // 地主标识显示
-        // 显示地主牌
-        // 更新地主手牌数量
-        // 更新倍数
-
         var self = this;
         // 显示地址标识
         var viewID = Tool.getViewChairID(data.chairID);
         self.m_Chairs[viewID].diZhuFlag.active = true;
-
-        AudioMnger.playEffect(Tool.getEffectName(gameModel.playerData[viewID].gender, StringDef.SANFEN_EF));
 
         // 确定地主后，其余玩家操作标志隐藏
         for (var i = 0; i < 3; ++i) {
@@ -998,13 +988,15 @@ cc.Class({
             self.cardList[k].getComponent(cardfabs).node.setPosition(objX + 80, self.ghp * 2 - 140);
             self.cardList[k].getComponent(cardfabs).node.setLocalZOrder(k + 1);
         };
-        self.setTopCard();
-        self.showAllSelectCard(false);
-        var delay = cc.delayTime(2);
-        var callfunc = cc.callFunc(function () {
-            self.setAllNoneSelectCard();
-        });
-        self.myCardPanel.runAction(cc.sequence(delay, callfunc));
+        // self.setTopCard();
+        self.resortCardListPos();
+        
+        // var delay = cc.delayTime(2);
+        // var callfunc = cc.callFunc(function () {
+        //     self.showAllSelectCard(false);
+        //     self.setAllNoneSelectCard();
+        // });
+        // self.myCardPanel.runAction(cc.sequence(delay, callfunc));
     },
 
     // 出牌操作
@@ -1434,6 +1426,7 @@ cc.Class({
 
     // 更新自己金币
     refreshMyScore: function(money) {
+        cc.log("zzzzzzzzzz money = " + money);
         var self = this;
         self.m_Chairs[0].money.getComponent(cc.Label).string = Tool.goldSplit(money);
     },
@@ -1534,6 +1527,9 @@ cc.Class({
         gameModel.PVPSCORES = data;
         for (var i in data) {
             var viewID = Tool.getViewChairID(i);
+            cc.log("viewID = " + viewID);
+            cc.log("data[" + i + "] = " + data[i]);
+
             self.m_Chairs[viewID].money.getComponent(cc.Label).string = Tool.goldSplit(data[i]);
         }
     },

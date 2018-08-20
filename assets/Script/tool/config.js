@@ -18,8 +18,8 @@ LevelConfig.g_LevelScoreArea = [
 	{ "big_level": 3, "minScore": 10001, "maxScore": 70000, "reward_01": 2001 ,"reward_02" :100 ,"name":"中级牌手"}, 
 	{ "big_level": 4, "minScore": 70001, "maxScore": 360000,"reward_01": 2002 ,"reward_02" :300 ,"name":"高级牌手"}, 
 	{ "big_level": 5, "minScore": 360001, "maxScore": 2000000,"reward_01": 2003 ,"reward_02" :500 ,"name":"牌王"}, 
-	{ "big_level": 6, "minScore": 2000001, "maxScore": 100000000 ,"reward_01": 2004 ,"reward_02" :1000 ,"name":"牌圣"}, 
-	{ "big_level": 7, "minScore": 100000001, "maxScore": 0, "reward_01": 2005 ,"reward_02" :1500 ,"name":"牌神"}
+	{ "big_level": 6, "minScore": 2000001, "maxScore": 10000000 ,"reward_01": 2004 ,"reward_02" :1000 ,"name":"牌圣"}, 
+	{ "big_level": 7, "minScore": 10000001, "maxScore": 0, "reward_01": 2005 ,"reward_02" :1500 ,"name":"牌神"}
 ]
 
 // LevelConfig.g_bigLevelScore = [
@@ -50,9 +50,8 @@ LevelConfig.g_levelScore = [
 	{"big_level":6 ,"minScore":3500001 , "maxScore":5000000 , "levelBase":10000,"star":1,"desc":'牌圣',"index_id":13},
 	{"big_level":6 ,"minScore":5000001 , "maxScore":6500000 , "levelBase":10000,"star":2,"desc":'牌圣',"index_id":14},
 	{"big_level":6 ,"minScore":6500001 , "maxScore":8000000 , "levelBase":10000,"star":3,"desc":'牌圣',"index_id":15},
-	{"big_level":6 ,"minScore":8000001 , "maxScore":100000000 , "levelBase":10000,"star":4,"desc":'牌圣',"index_id":16},
-
-	{"s_level":7 ,"minScore":100000001 , "maxScore":0 , "levelBase":10000,"star":-2,"desc":'牌神',"index_id":17}
+	{"big_level":6 ,"minScore":8000001 , "maxScore":10000000 , "levelBase":10000,"star":4,"desc":'牌圣',"index_id":16},
+	{"big_level":7 ,"minScore":10000001 , "maxScore":0 , "levelBase":10000,"star":-2,"desc":'牌神',"index_id":17}
 ]
 
 module.exports = LevelConfig;

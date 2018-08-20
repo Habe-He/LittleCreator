@@ -14,15 +14,11 @@ CreateRoom.Show = function () {
 
     // 当前选中的倍数
     self.currentMultiple = 0;
-
-
     cc.loader.loadRes("perfabs/CreateRoom", cc.Prefab, function (error, prefab) {
-
         if (error) {
             cc.error(error);
             return;
         }
-
         // 实例 
         self._creatRoom = cc.instantiate(prefab);
         self._creatRoom.parent = cc.find('Canvas');

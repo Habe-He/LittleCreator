@@ -16,7 +16,6 @@ AudioMnger.playEffect = function(effectName) {
             cc.log('没有此音效 ' + effectName);
             return;
         }
-        cc.log("播放的音效 = " + effectName);
         cc.loader.loadRes(effectName, cc.AudioClip, function (err, clip) {
             cc.audioEngine.playEffect(clip, false);
         });

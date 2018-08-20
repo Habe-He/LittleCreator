@@ -24,6 +24,10 @@ cc.Class({
         var lost = cc.find('bg/lost', prefab);
         var winNum = cc.find('bg/win/num', prefab).getComponent(cc.Label);
         var lostNum = cc.find('bg/lost/num', prefab).getComponent(cc.Label);
+        var kbLabel = cc.find("bg/line/kBi", prefab).getComponent(cc.Label);
+        if (gameModel.GAME_MODEL == 2) {
+            kbLabel.string = "积分";
+        }
 
         var playerNode = [];
         for (var i = 0; i < 3; ++i) {

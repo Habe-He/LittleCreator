@@ -13,7 +13,7 @@ var gameEngine = require('./plugin/gameEngine');
 var StringDef = require('./tool/StringDef');
 var wxSDK = require('./tool/wxSDK');
 var AudioMnger = require('./game/AudioMnger');
-var RunkList = require("./game/RunkList");
+var MailCenter = require("./game/MailCenter");
 
 cc.Class({
     extends: cc.Component,
@@ -59,32 +59,51 @@ cc.Class({
 
         moreGameBtn.on("click", self.moreGameClick, this);
         Btn_Changer.on("click", self.moreGameClick, this);
-        Btn_Mail.on("click", self.moreGameClick, this);
-        Btn_View.on("click", self.moreGameClick, this);
-        Btn_Share.on("click", self.moreGameClick, this);
+        Btn_Mail.on("click", self.mailBtnClick, this);
+        Btn_View.on("click", self.onViewClick, this);
+        Btn_Share.on("click", self.shareGameClick, this);
 
 
         var bg = this.node.getChildByName('bg');
         var nameBG = bg.getChildByName('NameBG');
-        var name = nameBG.getChildByName('name').getComponent(cc.Label);
-        name.string = Tool.InterceptDiyStr(Tool.encryptMoblieNumber(KKVS.NICKNAME), 5);
+        self.name = nameBG.getChildByName('name').getComponent(cc.Label);
+        self.name.string = Tool.InterceptDiyStr(Tool.encryptMoblieNumber(KKVS.NICKNAME), 5);
 
         var coinbg = bg.getChildByName('coin');
         self.coinCount = coinbg.getChildByName('count').getComponent(cc.Label);
         self.coinCount.string = Tool.goldSplit(KKVS.KGOLD);
+        var addScore = coinbg.getChildByName("addScore");
+        addScore.on('click', self.showBuyScoreUI, this);
 
         var diamond = bg.getChildByName('ZuanShi');
-        var diamondCount = diamond.getChildByName('count').getComponent(cc.Label);
+        self.diamondCount = diamond.getChildByName('count').getComponent(cc.Label);
         for (var i in gameModel.propsMsg) {
             if (gameModel.propsMsg[i].prop_id == StringDef.Diamond) {
                 cc.log("钻石 = ", gameModel.propsMsg[i].count);
-                diamondCount.string = gameModel.propsMsg[i].count;
+                self.diamondCount.string = gameModel.propsMsg[i].count;
             }
         }
 
+
+        var recharge = diamond.getChildByName("recharge");
+        if (cc.sys.os == cc.sys.OS_IOS) {
+           recharge.active = false;
+        } else{
+           recharge.active = true;
+        }
+
+
+        recharge.on('click', self.showRechargeUI, this);
+
+
         var mSprite = bg.getChildByName("msak");
-        var head = mSprite.getChildByName('Head_0').getComponent(cc.Sprite);
-        Tool.weChatHeadFile(head, KKVS.HEAD_URL, mSprite);
+        self.head = mSprite.getChildByName('Head_0');
+        Tool.weChatHeadFile(self.head.getComponent(cc.Sprite), KKVS.HEAD_URL, mSprite);
+
+        self.head.getComponent(cc.Button).node.on('click', function() {
+            cc.log("head heav clicked");
+            wxSDK.getSetting();
+        }, this);
 
         self.lv = cc.find('bg/Lv', this.node);
         self.lv.on('touchend', self.ShowPvPInfo, this);
@@ -100,19 +119,29 @@ cc.Class({
 
         // 注册wx事件
         wxSDK.getLaunchOptionsSync(false, null);
+        wx.updateShareMenu({
+            withShareTicket: true
+        });
         wxSDK.onNetworkStatusChange();
         wxSDK.showShareMenu();
         wxSDK.onShareAppMessage();
+
+        var phoneRes = wxSDK.getSystemInfoSync();
+        var tempClickBtn = bg.getChildByName('RunkBtn');
+        cc.log("phoneRes.model = " + phoneRes.model);
+        cc.log('tempClickBtn.x = ' + tempClickBtn.x);
+        if (phoneRes.model == 'iPhone X') {
+            tempClickBtn.x = tempClickBtn.x + 70;
+            cc.log('2 tempClickBtn.x = ' + tempClickBtn.x);
+        } else if (phoneRes.model == 'vivo X21A' || phoneRes.model == 'OPPO R15') {
+            tempClickBtn.x = tempClickBtn.x + 50;
+        }
 
         AudioMnger.playBGM();
 
         gameModel.isInGameStart = false;
 
         // 更新微信数据信息
-        wx.postMessage({
-            messageType: 4,
-            messageData: 0
-        });
         cc.log("KKVS.PVPSCORES = " + KKVS.PVPSCORES);
         var sco = parseInt(KKVS.PVPSCORES)
         wx.postMessage({
@@ -127,8 +156,13 @@ cc.Class({
         });
     },
 
-    moreGameClick: function (event) {
-        cc.log("更多游戏");
+    shareGameClick:function(){
+        // wxSDK.shareAppMessageOnly();
+        wxSDK.shareToGroup();
+        // KKVS.Event.fire("shareSuccess");
+    },
+
+    onViewClick: function(event) {
         var text = "功能暂未开启";
         (new DialogView()).build(TxtDialogComp, {
             txt: text,
@@ -136,9 +170,44 @@ cc.Class({
         }).show();
     },
 
+    moreGameClick: function (event) {
+        cc.log("更多游戏");
+        var urlArray = [
+        "https://apiwxgame.kkvs.com/game/res/shareImg/sb.jpg"];
+        wx.previewImage({
+            urls: urlArray // 需要预览的图片 http 链接列表
+        })
+        // wx.navigateToMiniProgram({
+        //     appId: 'wx845a2f34af2f4235',
+        //     path: "",
+        //     success: (res) => {
+        //         cc.log("res = ", res);
+        //     },
+        // });
+    },
+
+    mailBtnClick: function (event) {
+        cc.log("点击了邮件");
+        (new DialogView()).build(MailCenter).show();
+    },
+
+    showRechargeUI:function(event){
+        cc.log("点击充值界面");
+        var RechargeUI = require('./game/RechargeUI');
+        RechargeUI.Show();
+
+    },
+
+    showBuyScoreUI:function(event){
+        cc.log("显示兑换金币UI");
+        var BuyScoreUI = require('./game/BuyScoreUI');
+        BuyScoreUI.Show();
+    },
+
 
     ShowPvPInfo: function (event) {
         cc.log("点击排位界面");
+        // wxSDK.shareToGroup(1);
         PvpInfo.Show();
     },
 
@@ -168,28 +237,33 @@ cc.Class({
 
     runkTouchEvent: function (event) {
         cc.log("点击排行榜");
-        var text = "功能暂未开启";
-        (new DialogView()).build(TxtDialogComp, {
-            txt: text,
-            type: 1
-        }).show();
-        // AppHelper.get().showLoading(null, null, 150);
+        // var text = "功能暂未开启";
+        // (new DialogView()).build(TxtDialogComp, {
+        //     txt: text,
+        //     type: 1
+        // }).show();
+        AppHelper.get().showLoading(null, null, 150);
 
-        // var cardNode = cc.instantiate(this.runkListPB);
-        // cardNode.getComponent('RunkList').setPB(cardNode);
-        // this.node.addChild(cardNode, 10);
+        var cardNode = cc.instantiate(this.runkListPB);
+        cardNode.getComponent('RunkList').setPB(cardNode);
+        this.node.addChild(cardNode, 10);
     },
 
     _serversRoomConfig: function () {
-        var reqURL = "https://apiwxgame.kkvs.com/MobileApi/GetRoomConfig";
-        httpUtils.getInstance().httpGets(reqURL, function (data) {
-            if (data == -1) {
-                cc.log('获取大厅房间配置失败！');
-            } else {
-                var jsonD = JSON.parse(data);
-                gameModel.roomConfig = jsonD;
-            }
-        });
+
+        var reqUrl = "https://sjddz-yxjh.17fengyou.com/room/configure"
+        // var reqURL = "https://apiwxgame.kkvs.com/MobileApi/GetRoomConfig";
+        // httpUtils.getInstance().httpPost(reqUrl, "",function (data) {
+        //     if (data == -1) {
+        //         cc.log('获取大厅房间配置失败！');
+        //     } else {
+        //         cc.log("获取大厅房间配置 data = " + data);
+        //         var jsonD = JSON.parse(data);
+        //         cc.log("data.code = " + jsonD.http_code);
+        //         cc.log("jsonD = " + (jsonD.data));
+        //         gameModel.roomConfig = jsonD;
+        //     }
+        // });
     },
 
     _updateLobbyLevel: function () {
@@ -203,6 +277,7 @@ cc.Class({
             self.starIcon.active = true;
             self.starCount.getComponent(cc.Label).string = data.star.toString();
         }
+        cc.log("data.bigLevel = " + data.bigLevel);
         cc.loader.loadRes("Lobby/Lv_" + (data.bigLevel - 1), cc.SpriteFrame, function (err, spriteFrame) {
             if (err) {
                 cc.log("Lobby getLobbyLevel err = " + err);
@@ -230,6 +305,7 @@ cc.Class({
         // self.coinCount.string = money.toString();
         
     },
+
     dissolveRoom: function () {
         if (KKVS.RoomOutData) {
             if (KKVS.RoomOutData.back_score == 0) {
@@ -249,13 +325,68 @@ cc.Class({
         }
     },
 
+    // 用户再次手动授权后
+    onLoginGameSuccess: function() {
+        var self = this;
+        cc.log("用户再次手动授权后");
+        // TODO 只刷新当前页面的信息
+        for (var i in gameModel.propsMsg) {
+            if (gameModel.propsMsg[i].prop_id == StringDef.Diamond) {
+                cc.log("钻石 = ", gameModel.propsMsg[i].count);
+                self.diamondCount.string = gameModel.propsMsg[i].count;
+            }
+        }
+        
+        Tool.weChatHeadFile(self.head.getComponent(cc.Sprite), KKVS.HEAD_URL, null);
+        self.name.string = Tool.InterceptDiyStr(Tool.encryptMoblieNumber(KKVS.NICKNAME), 5);
+        self.coinCount.string = Tool.goldSplit(KKVS.KGOLD);
+
+        if( KKVS.isShareSuccess == true){
+            KKVS.isShareSuccess = false;
+            KKVS.Event.fire("shareSuccess");
+        }
+    },
+
+    refreshPropsInfo:function(){
+        //  主要用于刷新钻石
+        for (var i in gameModel.propsMsg) {
+            if (gameModel.propsMsg[i].prop_id == StringDef.Diamond) {
+                cc.log("钻石 = ", gameModel.propsMsg[i].count);
+                this.diamondCount.string = gameModel.propsMsg[i].count;
+            }
+        }
+    },
+
+    shareSuccess:function(){
+        cc.log("分享成功");
+        gameEngine.app.player().reqShareSuccess(1);
+    },
+
+    ChargeSuccess:function(){
+        cc.log("充值成功");
+        var text = "充值成功,奖励已发送至邮箱,请注意查收.";
+        (new DialogView()).build(TxtDialogComp, {
+            txt: text,
+            type: 1
+        }).show();
+    },
+
     addEvent: function () {
         cc.log("Lobby addEvent");
         KKVS.Event.register("create_room_success", this, "create_room_success");
         KKVS.Event.register("on_player_join_room", this, "on_player_join_room");
         KKVS.Event.register("refreshMyScore", this, "refreshMyScore");
         KKVS.Event.register("on_breakroom", this, "dissolveRoom");
+        KKVS.Event.register("onLoginGameSuccess", this, "onLoginGameSuccess");
+        KKVS.Event.register("refreshPropsInfo", this, "refreshPropsInfo");
+        KKVS.Event.register("shareSuccess", this, "shareSuccess");
+        KKVS.Event.register("ChargeSuccess", this, "ChargeSuccess");
+        // send msg
+        gameEngine.app.player().reqShareRecord();
     },
+
+
+
 
     onDestroy() {
         cc.log("=> Lobby::onDestroy()");
@@ -263,7 +394,10 @@ cc.Class({
         KKVS.Event.deregister("on_player_join_room", this);
         KKVS.Event.deregister("refreshMyScore", this);
         KKVS.Event.deregister("on_breakroom", this);
-
+        KKVS.Event.deregister("onLoginGameSuccess", this);
+        KKVS.Event.deregister("refreshPropsInfo", this);
+        KKVS.Event.deregister("shareSuccess", this);
+        KKVS.Event.deregister("ChargeSuccess", this);
     },
 
 });

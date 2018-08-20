@@ -21,5 +21,16 @@
       ]
     }
   },
-  "events": []
+  "events": [
+    {
+      "frame": 0.45,
+      "func": "moveOutFinish",
+      "params": []
+    },
+    {
+      "frame": 0.5,
+      "func": "moveOutFinish",
+      "params": []
+    }
+  ]
 }

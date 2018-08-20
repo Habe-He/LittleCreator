@@ -30,7 +30,7 @@
   "title": "LittleCreator",
   "webOrientation": "auto",
   "wechatgame": {
-    "REMOTE_SERVER_ROOT": "https://apiwxgame.kkvs.com/game",
+    "REMOTE_SERVER_ROOT": "https://apiwxgame.kkvs.com/gametest",
     "appid": "wx55e5d6e62ac6c8ed",
     "isSubdomain": false,
     "orientation": "landscape",

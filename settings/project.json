@@ -14,10 +14,9 @@
   "design-resolution-height": 1080,
   "design-resolution-width": 1920,
   "excluded-modules": [
+    "CCSpriteDistortion",
     "ParticleSystem",
     "TiledMap",
-    "ScrollBar",
-    "ScrollView",
     "PageView",
     "PageViewIndicator",
     "Slider",
@@ -25,6 +24,7 @@
     "VideoPlayer",
     "WebView",
     "RichText",
+    "AudioSource",
     "MotionStreak",
     "Collider",
     "Graphics",
@@ -32,7 +32,8 @@
     "Physics",
     "StudioComponent",
     "Chipmunk",
-    "Intersection"
+    "Intersection",
+    "Native NetWork"
   ],
   "fit-height": true,
   "fit-width": false,

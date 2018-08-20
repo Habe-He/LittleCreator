@@ -2,72 +2,43 @@ var KKVS = require('./../plugin/KKVS');
 var gameModel = require('./../game/gameModel');
 var Tool = require('./../tool/Tool');
 var gameEngine = require('./../plugin/gameEngine');
+var StringDef = require('./../tool/StringDef');
 
-cc.Class({
-    extends: cc.Component,
+var UserInfo = UserInfo || {};
 
-    properties: {
-        nick_name: cc.Label,
-        game_gold: cc.Label,
-        game_money: cc.Label,
-        name_btn: cc.Button,
-        face_btn: cc.Button,
+UserInfo.Show = function() {
+    var self = this;
+    cc.loader.loadRes("perfabs/SelfInfo", cc.Prefab, function (error, prefab) {
+        if (error) {
+            cc.error(error);
+            return;
+        }
+        // 实例 
+        self._creatRoom = cc.instantiate(prefab);
+        self._creatRoom.parent = cc.find('Canvas');
 
-        max_win: cc.Label,
-        all_count: cc.Label,
-        win_rate: cc.Label,
-        duanwei: cc.Label,
+        // 界面上面节点
+        var closeBtn = cc.find('bg/close', self._creatRoom);
+        closeBtn.on('click', function () {
+            self._creatRoom.destroy();
+        }, self);
 
-        spring_count: cc.Label,
-        win_score: cc.Label,
-        double_count: cc.Label,
-        boom_count: cc.Label,
-    },
+        var name = cc.find('bg/NameBg/Name', self._creatRoom).getComponent(cc.Label);
+        name.string = Tool.InterceptDiyStr(Tool.encryptMoblieNumber(KKVS.NICKNAME), 10);
 
-    // LIFE-CYCLE CALLBACKS:
+        var kb = cc.find('bg/NameBg/goldicon/goldnum', self._creatRoom).getComponent(cc.Label);
+        kb.string = Tool.goldSplit(KKVS.KGOLD);
 
-    onLoad () {
-        this.addEvent();
-    },
+        var zs = cc.find('bg/NameBg/zsicon/money', self._creatRoom).getComponent(cc.Label);
+        for (var i in gameModel.propsMsg) {
+            if (gameModel.propsMsg[i].prop_id == StringDef.Diamond) {
+                zs.string = gameModel.propsMsg[i].count;
+            }
+        }
 
-    start () {
-        this.nick_name.string = KKVS.NICKNAME;
-        this.game_gold.string = KKVS.KGOLD.toString();
-        this.game_money.string = KKVS.ROOM_CARD.toString();
-        /* 如果头像信息已经保存 再这里就可以修改头像和头像框*/
-    },
+        var head = cc.find('bg/NameBg/Face', self._creatRoom);
+        Tool.weChatHeadFile(head.getComponent(cc.Sprite), KKVS.HEAD_URL, null);
+    });
+};
 
-    addEvent() {
-        var self = this;
-        self.name_btn.node.on("touchend", self.onShowChangeName, this);
-        self.face_btn.node.on("touchend", self.onShowChangeFace, this);
-        self.closeBtn.node.on("touchend", self.close, this);
-    },
-
-    InitGameInfo: function(args) {
-        var self = this;
-        self.max_win.string = args.max_win.toString();
-        self.all_count.string = args.all_count.toString();
-        self.win_rate.string = args.win_rate.toString();
-        self.duanwei.string = args.duanwei;
-        self.spring_count.string = args.spring_count.toString();
-        self.win_score.string = args.win_score.toString();
-        self.double_count.string = args.double_count.toString();
-        self.boom_count.string = args.boom_count.toString();
-    },
-
-    onShowChangeName: function(event) {
-        cc.log("=== onShowChangeName ===");
-    },
-
-    onShowChangeFace: function(event) {
-        cc.log("=== onShowChangeFace ===");
-    },
-
-    close: function(event) {
-        var self = this;
-        self.node.close();
-    },
-
-    // update (dt) {},
-});
+module.exports = UserInfo;

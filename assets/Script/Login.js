@@ -54,7 +54,10 @@ cc.Class({
         var self = this;
         cc.log("Login onLoad");
         if (!wxSDK.updateManager()) {
-            self._weChatCheckSession();
+            // self._weChatCheckSession();
+            self._wxLoginCode(function (data) {
+                self._serverLogin(data.code);
+            });
         }
         // testsgame.kkvs.com   10200 
     },
@@ -116,6 +119,14 @@ cc.Class({
         cc.log("nickName = " + nickName);
         cc.log("avatarUrl = " + avatarUrl);
         cc.log("nickName = " + nickName);
+
+        if (gender == 1) {
+            gender = 0;
+        } else if (gender == 2) {
+            gender = 1;
+        } else{
+            gender = 0;
+        }
         // avatarUrl = "http://wx.qlogo.cn/mmopen/vi_32/DYAIOgq83erjeyqibRRqMhkrIERB27SvG5UIv1w2455FwJXUIyqaxBGW81lB3Xic1I00JMVQvog74gxdg94r3LMg/132";
         var datas = {
             'Code': code,
@@ -123,10 +134,10 @@ cc.Class({
             'faceurl': avatarUrl,
             'gender': gender
         };
-        //https://apiwxgame.kkvs.com/MobileApi/GetSgameAccounts?Code=061Alg7V09sPpV1PGF3V0IZB7V0Alg7K?
-        // var reqURL = "https://apiwxgame.kkvs.com/MobileApi/GetSgameAccounts";
+        cc.log("nickname = " + datas.nickname.toString());
+        cc.log("datas.faceurl.toString() = " + datas.faceurl.toString());
         var reqURL = "https://sjddz-yxjh.17fengyou.com/public/login";
-        // demoQuest = http://clientweb.kkvs.com/MobileApi/GetAccountInfoByWeChatJZ?Code=1111
+        // var reqURL = "https://sjddz-yxjh.17fengyou.com/publictest/login";
         var newUrl = reqURL + "?Code=" + datas.Code.toString() + "&nickname=" + datas.nickname.toString() +
             "&faceurl=" + datas.faceurl.toString() + "&gender=" + datas.gender.toString();
         cc.log('newUrl = ' + newUrl);
@@ -140,6 +151,8 @@ cc.Class({
                 KKVS.Login_type = Tool.VISITOR_LOGIN;
                 KKVS.Acc = jsonD.data[0].Accounts;
                 KKVS.Pwd = jsonD.data[0].PassWord;
+                cc.log("KKVS.sid = " + jsonD.data[0].sid);
+                KKVS.sid = jsonD.data[0].sid;
                 OnLineManager.onLine();
             }
         });

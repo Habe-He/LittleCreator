@@ -59,7 +59,6 @@ var httpUtils = cc.Class({
         // note: In Internet Explorer, the timeout property may be set only after calling the open()
         // method and before calling the send() method.
         xhr.timeout = 5000;// 5 seconds for timeout
-        cc.log("params.Code = " + params.Code);
         xhr.send(params);
 
     }

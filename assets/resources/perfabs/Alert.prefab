@@ -579,8 +579,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 713,
-      "height": 200
+      "width": 800,
+      "height": 90
     },
     "_rotationX": 0,
     "_rotationY": 0,
@@ -609,16 +609,16 @@
     "_useOriginalSize": false,
     "_actualFontSize": 45,
     "_fontSize": 45,
-    "_lineHeight": 200,
+    "_lineHeight": 45,
     "_enableWrapText": true,
     "_N$file": null,
     "_isSystemFontUsed": true,
     "_spacingX": 0,
-    "_N$string": "与服务器断开连接,确认重新连接吗?",
+    "_N$string": "获取不到你的昵称和头像，请开启授权手重试",
     "_N$horizontalAlign": 1,
     "_N$verticalAlign": 1,
     "_N$fontFamily": "Arial",
-    "_N$overflow": 0
+    "_N$overflow": 3
   },
   {
     "__type__": "cc.Widget",
@@ -631,9 +631,9 @@
     "isAlignOnce": true,
     "_target": null,
     "_alignFlags": 41,
-    "_left": 123.5,
-    "_right": 123.5,
-    "_top": 163,
+    "_left": 80,
+    "_right": 80,
+    "_top": 218,
     "_bottom": 100,
     "_verticalCenter": 0,
     "_horizontalCenter": 0,

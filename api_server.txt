@@ -87,7 +87,27 @@ on_player_msg(
     # status: 季赛当前状态  0 未开始, 1 进行中, 2 已结束
 
 
+--------------------------------------邮件相关
+PLAYER_MSG_ID_MAIL_LIST                                             = 20    # 玩家邮件列表
+PLAYER_MSG_ID_MAIL_OPT                                              = 21    # 玩家邮件查看|领取
+PLAYER_MSG_ID_MAIL_DEL                                              = 22    # 玩家邮件删除
 
+请求邮件相关
+
+1.请求邮件列表
+req_player_msg(PLAYER_MSG_ID_MAIL_LIST, json{})
+返回
+on_player_msg(PLAYER_MSG_ID_MAIL_LIST, json[ {{'id': mail_id, 'title': title, 'content': content, 'type': type, 'status': status,'gift_id': gift_id, 'fr': fr, 'create_time': create_time}}])
+
+2.请求查看|领取
+req_player_msg(PLAYER_MSG_ID_MAIL_OPT, json{'id': id, 'type': type})
+返回
+on_player_msg(PLAYER_MSG_ID_MAIL_OPT, json.dumps({'success': True, 'code': '邮件领取成功', 'mail_id': mail_id}))
+
+2.请求删除
+req_player_msg(PLAYER_MSG_ID_MAIL_OPT, json{'id': [1,2,3]], 'is_all': true or false})
+返回
+on_player_msg(opt_code, json.dumps({'success': True, 'code': '邮件删除成功！'}))
 
 ----------------------------------------------------
 
@@ -203,7 +223,50 @@ req_player_msg(PLAYER_MSG_ID_CHANGE_HEAD_FRAME, json{"id": PROP_ID_HEAD_FRAME_1}
 on_player_msg(PLAYER_MSG_ID_CHANGE_HEAD_FRAME, {'id': PROP_ID_HEAD_FRAME_1})
 
 ----------------------排行榜
-待更新
+LOBBY_MSG_RANK_LIST_GOLD                                            = 180     # 金币排行
+LOBBY_MSG_RANK_LIST_SCORE                                           = 181     # 积分排行
+
+客户端请求排行榜 ---参数1 cmd = LOBBY_MSG_RANK_LIST_GOLD 或者 LOBBY_MSG_RANK_LIST_SCORE 
+req_lobby_msg(cmd, json{})
+
+返回
+on_lobby_msg(cmd, json.dump('my': 99, 'list': [item1, item2, itemN]))
+item : 
+
+ 分数榜列表item
+ {'r': 1, 'n': "", 'u': "", 'h':头像框, 's': 100}
+
+ 金币榜列表item
+ {'r': 1, 'n': "", 'u': "", 'h':头像框, 'g': 100}
+'r'排名 
+'n'昵称
+'u'头像地址
+'s':分数
+'g':金币
+
+----------------------分享
+LOBBY_MSG_SHARE_RECORD                                              = 190     # 请求获取分享记录
+LOBBY_MSG_SHARE_SUCCESS												= 191     # 通知服务器分享成功
+
+分享类型定义 
+type:1 分享到群  每日 上限3次  每次奖励 道具ID 1050 数量10 （钻石 ）
+type:2 看视频    每日 上限2次  每次奖励 道具ID 1050 数量10 （钻石 ）
+
+客户端请求分享记录|通知服务器分享成功 
+---参数1 cmd = LOBBY_MSG_SHARE_RECORD 或者 LOBBY_MSG_SHARE_SUCCESS 
+---参数2 json (type: 通知哪个类型的分享成功  ，) 请求获取分享记录时 直接填json{}即可
+
+req_lobby_msg(cmd, json{"type": 1})
+
+请求获取分享记录
+返回
+on_lobby_msg(cmd, json([{'type': 1, 'use': 0}, {'type': 2, 'use': 0}]))
+
+type:分享类型
+use:已使用次数
+
+通知服务器分享成功返回 (有错误时候 success 为false error为错误消息)
+on_lobby_msg(cmd, json({'type': type, 'success': false, 'award': [], 'error': ''}))
 
 
 仅仅服务器用 与客户端无关
@@ -216,10 +279,17 @@ on_player_msg(PLAYER_MSG_ID_CHANGE_HEAD_FRAME, {'id': PROP_ID_HEAD_FRAME_1})
 
  具体流程 
  1.  23点30分 手动 前30分钟开始 创建新赛季 停止房间进入  //  存储过程 执行 创建新赛季
+	https://tool.lu/timestamp/
+	时间戳 创建下一个赛季
+	更新赛季信息
+KBEngine.globalData['ModuleCompetitiveRanking'].on_module_config_update()
+KBEngine.globalData['ModuleCompetitiveRanking'].close_competitive()
 
  2.  00点 == 30分钟后的整点 存储过程 执行 段位继承 玩家段位继承奖励、记录  发奖励到邮件
-
+m_score_record
+start_award
  3.  在线玩家 强制清理排位数据 打开房间 
+KBEngine.globalData['ModuleCompetitiveRanking'].start_new_competitive()
 
 
 login1 登陆+游戏
@@ -229,7 +299,19 @@ game2 中心服务器
 game3 游戏
 
 
+-- web后端通知加道具（客户端请求web后端 分享成功，web后端 post内网游戏服务器地址 通知给玩家加道具）
+curl -l -H "Content-type: application/json" -X POST -d '{"method":"add_prop","user_id": 120010, "prop_id": 1050, "prop_count": 1}' http://内网ip:端口
+
+-- 游戏服务器收到加道具post 返回
+{
+"method": "add_prop",
+"success": 1
+}
+
+curl -l -H "Content-type: application/json" -X POST -d '{"method":"add_prop","user_id": 120010, "prop_id": 1050, "prop_count": 1}' http://172.17.0.127:39999
 
 
-
-
+KBEngine.globalData["Rank"].last_refresh_time_stamp = 0
+KBEngine.executeRawDatabaseCommand(
+            'INSERT INTO rank_list_gold_record(rank_id, rank_no, user_id, nick_name, head_url, head_frame, gold, create_time) SELECT %i, cur_rank_gold.rank_no, cur_rank_gold.user_id, cur_rank_gold.nick_name,cur_rank_gold.head_url, cur_rank_gold.head_frame,cur_rank_gold.gold, cur_rank_gold.create_time FROM rank_list_gold cur_rank_gold;'% (1),
+            None, -1, 'gamelog')
